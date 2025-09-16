@@ -37,7 +37,7 @@ export function MainNav() {
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Button asChild variant="outline">
+                    <Button asChild variant="outline" size="sm">
                         <Link href="/">
                             <Home className="mr-2 h-4 w-4" />
                             Back to Home
