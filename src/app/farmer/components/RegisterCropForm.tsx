@@ -111,7 +111,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         <FormItem>
                         <FormLabel>Crop Name</FormLabel>
                         <FormControl>
-                            <Input placeholder="e.g., Tomato, Onion" {...field} />
+                            <Input placeholder="e.g., Wheat, Rice" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
