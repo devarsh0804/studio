@@ -1,7 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { MainNav } from '@/components/MainNav';
 
 export const metadata: Metadata = {
   title: 'AgriChain Trace',
@@ -22,7 +21,6 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <div className="min-h-screen flex flex-col">
-          <MainNav />
           {children}
         </div>
         <Toaster />
