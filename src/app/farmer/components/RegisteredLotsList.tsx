@@ -12,7 +12,18 @@ export function RegisteredLotsList() {
     const registeredLots = getAllLots();
 
     if (registeredLots.length === 0) {
-        return null;
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Registered Lots</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground text-center py-4">
+                        No lots have been registered yet.
+                    </p>
+                </CardContent>
+            </Card>
+        );
     }
 
     return (

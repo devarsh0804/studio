@@ -1,11 +1,11 @@
 "use client";
 
-import { RegisterCropForm } from "./RegisterCropForm";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
 import dynamic from 'next/dynamic';
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Lot } from "@/lib/types";
+import { QrCodeDisplay } from "./QrCodeDisplay";
+import { useAgriChainStore }from "@/hooks/use-agrichain-store";
 
 const RegisteredLotsList = dynamic(() => import('./RegisteredLotsList').then(mod => mod.RegisteredLotsList), {
   ssr: false,
@@ -46,9 +46,25 @@ const RegisterCropFormWithPersistence = dynamic(() => import('./RegisterCropForm
 
 
 export function FarmerView() {
+  const [registeredLot, setRegisteredLot] = useState<Lot | null>(null);
+  const { addLot } = useAgriChainStore();
+
+  const handleRegister = (lot: Lot) => {
+    addLot(lot);
+    setRegisteredLot(lot);
+  };
+
+  const handleRegisterNew = () => {
+    setRegisteredLot(null);
+  };
+  
+  if (registeredLot) {
+    return <QrCodeDisplay lot={registeredLot} onRegisterNew={handleRegisterNew} />;
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <RegisterCropFormWithPersistence />
+      <RegisterCropFormWithPersistence onRegister={handleRegister} />
       <RegisteredLotsList />
     </div>
   );
