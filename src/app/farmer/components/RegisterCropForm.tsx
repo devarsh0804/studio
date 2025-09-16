@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat, BadgeIndianRupee } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, BadgeIndianRupee, MapPin } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -29,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 const formSchema = z.object({
   farmerName: z.string().min(2, { message: "Farmer name must be at least 2 characters." }),
   cropName: z.string().min(2, { message: "Crop name must be at least 2 characters." }),
+  location: z.string().min(2, { message: "Location is required." }),
   weight: z.coerce.number().positive({ message: "Weight must be a positive number." }),
   harvestDate: z.date({ required_error: "A harvest date is required." }),
   price: z.coerce.number().positive({ message: "Price must be a positive number." }),
@@ -46,6 +47,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
     defaultValues: {
       farmerName: "",
       cropName: "",
+      location: "",
       quality: "Standard",
     },
   });
@@ -61,6 +63,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       lotId,
       farmer: values.farmerName,
       cropName: values.cropName,
+      location: values.location,
       weight: values.weight,
       harvestDate: formattedDate,
       photoUrl: cropImage?.imageUrl || "",
@@ -99,6 +102,22 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input placeholder="e.g., Ramesh Kumar" {...field} className="pl-10" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="location"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Location</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="e.g., Punjab" {...field} className="pl-10" />
                             </div>
                           </FormControl>
                           <FormMessage />
