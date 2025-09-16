@@ -21,7 +21,7 @@ export default function FarmerPage() {
   const handleLogin = (credentials: FarmerLoginCredentials) => {
     if (
       credentials.mandiName === VALID_CREDENTIALS.mandiName &&
-      credentials.officerName === VALID_CcolorENTIALS.officerName &&
+      credentials.officerName === VALID_CREDENTIALS.officerName &&
       credentials.code === VALID_CREDENTIALS.code
     ) {
       setFarmerUser(credentials);
