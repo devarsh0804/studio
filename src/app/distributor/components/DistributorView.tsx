@@ -89,11 +89,8 @@ export function DistributorView() {
         description: `You now own Lot ${lotToPay.lotId}.`,
       });
 
-      // Update the main view if the paid lot was scanned or becomes the scanned lot
-      const updatedLot = findLot(lotToPay.lotId);
-      if (scannedLot && scannedLot.lotId === lotToPay.lotId) {
-        setScannedLot(updatedLot || null);
-      }
+      // Instead of showing the transport page, just reset the view
+      resetView();
       
       setLotToPay(null);
       setIsPaying(false);
