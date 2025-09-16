@@ -40,8 +40,17 @@ export function TransportView() {
   const { findLot, addTransportEvent } = useAgriChainStore();
   const { toast } = useToast();
 
-  const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
-  const transportForm = useForm<TransportFormValues>({ resolver: zodResolver(transportSchema) });
+  const scanForm = useForm<ScanFormValues>({ 
+    resolver: zodResolver(scanSchema),
+    defaultValues: { lotId: "" },
+  });
+  const transportForm = useForm<TransportFormValues>({ 
+    resolver: zodResolver(transportSchema),
+    defaultValues: {
+      vehicleNumber: "",
+      warehouseEntryDateTime: "",
+    }
+  });
   
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
