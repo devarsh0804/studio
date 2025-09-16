@@ -65,7 +65,7 @@ export function LotDetailsCard({ lot }: LotDetailsCardProps) {
           </div>
           <div className="flex items-center">
             <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
-            <p className="w-28 text-muted-foreground">Harvest Date</p>p>
+            <p className="w-28 text-muted-foreground">Harvest Date</p>
             <p className="font-medium">{lot.harvestDate}</p>
           </div>
         </div>
