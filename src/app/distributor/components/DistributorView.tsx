@@ -196,8 +196,13 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                         ))}
                                     </div>
                                     <Alert className="mt-4">
-                                        <AlertDescription>The parent lot's weight has been set to 0. These new sub-lots are now available for retailers to scan and purchase. You can now add transport details for each sub-lot.</AlertDescription>
+                                        <AlertDescription>The parent lot's weight has been set to 0. These new sub-lots are now available for retailers to scan and purchase.</AlertDescription>
                                     </Alert>
+                                    <Button asChild className="mt-4 w-full">
+                                        <Link href="/distributor/transport">
+                                            <Truck className="mr-2" /> Add Transport Details for Sub-lots
+                                        </Link>
+                                    </Button>
                                 </div>
                             )}
                         </CardContent>
