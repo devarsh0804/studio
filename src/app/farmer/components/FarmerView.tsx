@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Lot } from "@/lib/types";
 import { QrCodeDisplay } from "./QrCodeDisplay";
 import { useAgriChainStore }from "@/hooks/use-agrichain-store";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
@@ -36,7 +36,7 @@ const RegisterCropFormWithPersistence = dynamic(() => import('./RegisterCropForm
     <Card>
       <CardHeader>
          <Skeleton className="h-8 w-1/2" />
-      </Header>
+      </CardHeader>
       <CardContent>
         <div className="space-y-8">
             <Skeleton className="h-96 w-full" />
