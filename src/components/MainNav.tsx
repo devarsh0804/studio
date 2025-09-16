@@ -36,12 +36,14 @@ export function MainNav() {
                         })}
                     </nav>
                 </div>
-                <Button asChild variant="outline">
-                    <Link href="/">
-                        <Home className="mr-2 h-4 w-4" />
-                        Back to Home
-                    </Link>
-                </Button>
+                <div className="flex items-center gap-4">
+                    <Button asChild variant="outline">
+                        <Link href="/">
+                            <Home className="mr-2 h-4 w-4" />
+                            Back to Home
+                        </Link>
+                    </Button>
+                </div>
             </div>
         </header>
     );
