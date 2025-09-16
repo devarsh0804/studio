@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { FarmerView } from "./components/FarmerView";
 import { FarmerLogin, type FarmerLoginCredentials } from "./components/FarmerLogin";
 import { useToast } from "@/hooks/use-toast";
+import RolesLayout from "../(roles)/layout";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -20,7 +21,7 @@ export default function FarmerPage() {
   const handleLogin = (credentials: FarmerLoginCredentials) => {
     if (
       credentials.mandiName === VALID_CREDENTIALS.mandiName &&
-      credentials.officerName === VALID_CREDENTIALS.officerName &&
+      credentials.officerName === VALID_CcolorENTIALS.officerName &&
       credentials.code === VALID_CREDENTIALS.code
     ) {
       setFarmerUser(credentials);
@@ -46,7 +47,7 @@ export default function FarmerPage() {
   };
 
   return (
-    <>
+    <RolesLayout>
       <PageHeader 
         title="Farmer / Sahayak"
         description={farmerUser ? "Register your new crop lot and generate a unique tracking QR code." : "Please log in to continue."}
@@ -58,6 +59,6 @@ export default function FarmerPage() {
           <FarmerView onLogout={handleLogout} />
         )}
       </main>
-    </>
+    </RolesLayout>
   );
 }
