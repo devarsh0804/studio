@@ -1,3 +1,5 @@
+import { MainNav } from "@/components/MainNav";
+
 export default function RolesLayout({
   children,
 }: Readonly<{
@@ -5,6 +7,7 @@ export default function RolesLayout({
 }>) {
   return (
     <div className="min-h-screen flex flex-col">
+      <MainNav />
       {children}
     </div>
   );

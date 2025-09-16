@@ -39,8 +39,8 @@ export default function DistributorPage() {
   return (
     <>
       <PageHeader 
-        title="Distributor"
-        description={distributor ? "Purchase lots and add transport & storage information." : "Please log in to continue."}
+        title="Distributor Dashboard"
+        description={distributor ? "Purchase lots, split them, and add transport details." : "Please log in to continue."}
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!distributor ? (
