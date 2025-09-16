@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Loader2, ScanLine, Search, XCircle, Package, Calendar, Wheat, Weight, BadgeIndianRupee, Award } from "lucide-react";
+import { Loader2, ScanLine, Search, XCircle, Package, Calendar, Wheat, Weight, BadgeIndianRupee, Award, User } from "lucide-react";
 import { Timeline } from "@/components/Timeline";
 import Image from "next/image";
 import { placeHolderImages } from "@/lib/placeholder-images";
@@ -135,7 +135,7 @@ export function CustomerView() {
         <Card>
             <CardContent className="p-6 grid md:grid-cols-2 gap-6 items-center">
                 <div className="relative aspect-[4/3] rounded-lg overflow-hidden">
-                    {cropImage && <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>}
+                    {cropImage && <Image src={cropImage.imageUrl} alt={cropImage.description} fill objectFit="cover" data-ai-hint={cropImage.imageHint}/>}
                 </div>
                 <div className="space-y-4">
                     <h2 className="text-3xl font-bold font-headline text-primary">{history.lot.cropName}</h2>
@@ -149,6 +149,10 @@ export function CustomerView() {
                         <div className="flex items-center">
                             <Wheat className="w-4 h-4 mr-3 text-muted-foreground" />
                             <p>From Lot: <span className="font-medium font-mono">{history.lot.lotId}</span></p>
+                        </div>
+                        <div className="flex items-center">
+                            <User className="w-4 h-4 mr-3 text-muted-foreground" />
+                            <p>Farmer: <span className="font-medium">{history.lot.farmer}</span></p>
                         </div>
                         <div className="flex items-center">
                             <Award className="w-4 h-4 mr-3 text-muted-foreground" />

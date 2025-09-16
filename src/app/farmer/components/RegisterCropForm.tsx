@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, Wheat } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -26,6 +26,7 @@ import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
+  farmerName: z.string().min(2, { message: "Farmer name must be at least 2 characters." }),
   cropName: z.string().min(2, { message: "Crop name must be at least 2 characters." }),
   weight: z.coerce.number().positive({ message: "Weight must be a positive number." }),
   harvestDate: z.date({ required_error: "A harvest date is required." }),
@@ -41,6 +42,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      farmerName: "",
       cropName: "",
     },
   });
@@ -53,7 +55,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
     
     const newLot: Lot = {
       lotId,
-      farmer: "Farmer123", // Mock data
+      farmer: values.farmerName,
       cropName: values.cropName,
       weight: values.weight,
       harvestDate: formattedDate,
@@ -77,6 +79,22 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-8">
+                    <FormField
+                      control={form.control}
+                      name="farmerName"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Farmer Name</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="e.g., Ramesh Kumar" {...field} className="pl-10" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                    />
                     <FormField
                     control={form.control}
                     name="cropName"
@@ -186,7 +204,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                     <FormLabel>Crop Photo</FormLabel>
                     <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
                         {cropImage ? (
-                            <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
+                            <Image src={cropImage.imageUrl} alt={cropImage.description} fill objectFit="cover" data-ai-hint={cropImage.imageHint}/>
                         ) : (
                             <p className="text-muted-foreground text-sm">No Image</p>
                         )}
