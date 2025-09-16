@@ -5,7 +5,7 @@ import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
 import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/hooks/use-toast";
-import RolesLayout from "../(roles)/layout";
+import { MainNav } from "@/components/MainNav";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -38,7 +38,8 @@ export default function RetailerPage() {
   };
 
   return (
-    <RolesLayout>
+    <>
+      <MainNav />
       <PageHeader 
         title="Retailer"
         description={retailer ? "Scan a lot to view its history and manage retail inventory." : "Please log in to continue."}
@@ -50,6 +51,6 @@ export default function RetailerPage() {
           <RetailerView retailerId={retailer.storeName} onLogout={handleLogout} />
         )}
       </main>
-    </RolesLayout>
+    </>
   );
 }

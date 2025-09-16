@@ -1,14 +1,11 @@
 import { MainNav } from "@/components/MainNav";
+import { ReactNode } from "react";
 
-export default function RolesLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RolesLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <MainNav />
       {children}
     </>
-  );
+  )
 }
