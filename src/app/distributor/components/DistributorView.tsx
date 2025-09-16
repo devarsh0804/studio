@@ -14,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart, BadgeIndianRupee } from "lucide-react";
+import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard } from "lucide-react";
 import { detectConflictAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
@@ -33,9 +33,11 @@ type DistributorFormValues = z.infer<typeof distributorSchema>;
 export function DistributorView() {
   const [scannedLot, setScannedLot] = useState<Lot | null>(null);
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
+  const [lotToPay, setLotToPay] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const [conflict, setConflict] = useState<DistributorUpdateConflictDetectionOutput | null>(null);
   
   const { findLot, addTransportEvent, updateLot, getAllLots } = useAgriChainStore();
@@ -62,26 +64,36 @@ export function DistributorView() {
     }, 500); // Simulate network delay
   };
 
-  const handleBuyLot = () => {
+  const handleConfirmPurchase = () => {
     if (!lotToBuy) return;
+    setLotToPay(lotToBuy);
+    setLotToBuy(null);
+  }
+
+  const handlePayment = () => {
+    if (!lotToPay) return;
+
+    setIsPaying(true);
     
     // In a real app, this would be a user profile.
     const distributorId = "Distributor-XYZ"; 
     
-    updateLot(lotToBuy.lotId, { owner: distributorId });
-    
-    toast({
-      title: "Purchase Successful!",
-      description: `You now own Lot ${lotToBuy.lotId}.`,
-    });
+    // Simulate payment processing
+    setTimeout(() => {
+      updateLot(lotToPay.lotId, { owner: distributorId });
+      
+      toast({
+        title: "Purchase Successful!",
+        description: `You now own Lot ${lotToPay.lotId}.`,
+      });
 
-    // If the bought lot was the one being viewed, update its state
-    if (scannedLot && scannedLot.lotId === lotToBuy.lotId) {
-        const updatedLot = findLot(lotToBuy.lotId);
-        if (updatedLot) setScannedLot(updatedLot);
-    }
-    
-    setLotToBuy(null);
+      // Update the main view if the paid lot was scanned or becomes the scanned lot
+      const updatedLot = findLot(lotToPay.lotId);
+      setScannedLot(updatedLot || null);
+      
+      setLotToPay(null);
+      setIsPaying(false);
+    }, 1500);
   }
 
   const handleFormSubmit: SubmitHandler<DistributorFormValues> = async (data) => {
@@ -116,6 +128,7 @@ export function DistributorView() {
   }
 
   const isOwnedByFarmer = scannedLot && scannedLot.owner === scannedLot.farmer;
+  const isOwnedByDistributor = scannedLot && scannedLot.owner === "Distributor-XYZ";
 
   if (scannedLot) {
     return (
@@ -136,11 +149,11 @@ export function DistributorView() {
                 </Card>
             )}
 
-            {!isOwnedByFarmer && (
+            {isOwnedByDistributor && (
                 <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center"><Truck className="mr-2"/> Add Transport Details</CardTitle>
-                    <CardDescription>Fill in the details for this phase of the supply chain journey.</CardDescription>
+                    <CardDescription>You own this lot. Fill in the details for this phase of the supply chain journey.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...distributorForm}>
@@ -221,8 +234,29 @@ export function DistributorView() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleBuyLot}>Confirm Purchase</AlertDialogAction>
+                    <AlertDialogAction onClick={handleConfirmPurchase}>Confirm Purchase</AlertDialogAction>
                 </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={!!lotToPay} onOpenChange={(open) => !open && !isPaying && setLotToPay(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Finalize Payment</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Proceed to pay the farmer for Lot {lotToPay?.lotId}. Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />{lotToPay ? lotToPay.price * lotToPay.weight : 0}.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="py-4 text-center text-muted-foreground">
+                        (This is a simulated payment screen)
+                    </div>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isPaying} onClick={() => setLotToPay(null)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handlePayment} disabled={isPaying}>
+                            {isPaying ? <Loader2 className="animate-spin" /> : <CreditCard className="mr-2"/>}
+                            {isPaying ? 'Processing...' : 'Pay Now'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         </div>
@@ -306,10 +340,33 @@ export function DistributorView() {
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleBuyLot}>Confirm Purchase</AlertDialogAction>
+                <AlertDialogAction onClick={handleConfirmPurchase}>Confirm Purchase</AlertDialogAction>
             </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={!!lotToPay} onOpenChange={(open) => !open && !isPaying && setLotToPay(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Finalize Payment</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Proceed to pay the farmer for Lot {lotToPay?.lotId}. Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />{lotToPay ? lotToPay.price * lotToPay.weight : 0}.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="py-4 text-center text-muted-foreground">
+                    (This is a simulated payment screen)
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isPaying} onClick={() => setLotToPay(null)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handlePayment} disabled={isPaying}>
+                        {isPaying ? <Loader2 className="animate-spin" /> : <CreditCard className="mr-2"/>}
+                        {isPaying ? 'Processing...' : 'Pay Now'}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
     </div>
   );
 }
+
+    
