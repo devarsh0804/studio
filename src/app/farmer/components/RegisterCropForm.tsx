@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, BadgeIndianRupee } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -136,10 +136,13 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                       name="price"
                       render={({ field }) => (
                           <FormItem>
-                          <FormLabel>Price (₹ per quintal)</FormLabel>
-                          <FormControl>
-                              <Input type="number" placeholder="e.g., 2000" {...field} />
-                          </FormControl>
+                          <FormLabel>Price (per quintal)</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
+                                </div>
+                            </FormControl>
                           <FormMessage />
                           </FormItem>
                       )}

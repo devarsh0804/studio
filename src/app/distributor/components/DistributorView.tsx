@@ -14,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart } from "lucide-react";
+import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart, BadgeIndianRupee } from "lucide-react";
 import { detectConflictAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
@@ -130,7 +130,7 @@ export function DistributorView() {
                 </CardHeader>
                 <CardContent>
                     <Button size="lg" className="w-full" onClick={() => setLotToBuy(scannedLot)}>
-                    <ShoppingCart className="mr-2" /> Buy Lot for ₹{scannedLot.price * scannedLot.weight}
+                        <ShoppingCart className="mr-2" /> Buy Lot for <BadgeIndianRupee className="w-5 h-5 mx-1" />{scannedLot.price * scannedLot.weight}
                     </Button>
                 </CardContent>
                 </Card>
@@ -216,7 +216,7 @@ export function DistributorView() {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Confirm Purchase</AlertDialogTitle>
                     <AlertDialogDescription>
-                    Are you sure you want to purchase Lot {lotToBuy?.lotId} for a total of ₹{lotToBuy ? lotToBuy.price * lotToBuy.weight : 0}? This action will be recorded on the ledger.
+                    Are you sure you want to purchase Lot {lotToBuy?.lotId} for a total of <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />{lotToBuy ? lotToBuy.price * lotToBuy.weight : 0}? This action will be recorded on the ledger.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -283,7 +283,7 @@ export function DistributorView() {
                             <LotDetailsCard lot={lot} />
                             <div className="mt-4 flex justify-end">
                                 <Button onClick={() => setLotToBuy(lot)}>
-                                    <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for ₹{lot.price * lot.weight}
+                                    <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />{lot.price * lot.weight}
                                 </Button>
                             </div>
                         </div>
@@ -301,7 +301,7 @@ export function DistributorView() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Confirm Purchase</AlertDialogTitle>
                 <AlertDialogDescription>
-                Are you sure you want to purchase Lot {lotToBuy?.lotId} for a total of ₹{lotToBuy ? lotToBuy.price * lotToBuy.weight : 0}? This action will be recorded on the ledger.
+                Are you sure you want to purchase Lot {lotToBuy?.lotId} for a total of <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />{lotToBuy ? lotToBuy.price * lotToBuy.weight : 0}? This action will be recorded on the ledger.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

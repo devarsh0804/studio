@@ -47,7 +47,11 @@ export function LotDetailsCard({ lot }: LotDetailsCardProps) {
           <div className="flex items-center">
             <BadgeIndianRupee className="w-4 h-4 mr-2 text-muted-foreground" />
             <p className="w-28 text-muted-foreground">Price</p>
-            <p className="font-medium">₹{lot.price} / quintal</p>
+            <p className="font-medium">
+              <span className="inline-flex items-center">
+                {lot.price} / quintal
+              </span>
+            </p>
           </div>
           <div className="flex items-center">
             <Award className="w-4 h-4 mr-2 text-muted-foreground" />
