@@ -21,7 +21,7 @@ export function MainNav() {
     }
 
     return (
-        <header className="p-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <header className="p-4 border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50">
             <div className="container mx-auto flex justify-between items-center">
                 <div className="flex items-center gap-4">
                     <Link href="/" className="text-lg font-bold font-headline text-primary">AgriChain Trace</Link>
