@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Lot } from "@/lib/types";
 import Image from "next/image";
 import { placeHolderImages } from "@/lib/placeholder-images";
-import { Box, Calendar, Wheat, Weight } from "lucide-react";
+import { Box, Calendar, Wheat, Weight, BadgeIndianRupee, Award } from "lucide-react";
 
 interface LotDetailsCardProps {
   lot: Lot;
@@ -32,7 +32,17 @@ export function LotDetailsCard({ lot }: LotDetailsCardProps) {
           <div className="flex items-center">
             <Weight className="w-4 h-4 mr-2 text-muted-foreground" />
             <p className="w-28 text-muted-foreground">Weight</p>
-            <p className="font-medium">{lot.weight} kg</p>
+            <p className="font-medium">{lot.weight} quintals</p>
+          </div>
+          <div className="flex items-center">
+            <BadgeIndianRupee className="w-4 h-4 mr-2 text-muted-foreground" />
+            <p className="w-28 text-muted-foreground">Price</p>
+            <p className="font-medium">₹{lot.price} / quintal</p>
+          </div>
+          <div className="flex items-center">
+            <Award className="w-4 h-4 mr-2 text-muted-foreground" />
+            <p className="w-28 text-muted-foreground">Quality</p>
+            <p className="font-medium">{lot.quality}</p>
           </div>
           <div className="flex items-center">
             <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />

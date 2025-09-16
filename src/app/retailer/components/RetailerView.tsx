@@ -77,8 +77,9 @@ export function RetailerView() {
   const handlePackSubmit: SubmitHandler<PackFormValues> = (data) => {
     if (!history) return;
     const { lot } = history;
+    const lotWeightInKg = lot.weight * 100; // Convert quintals to kg
     const packs: RetailPack[] = [];
-    const packWeight = Number((lot.weight / data.packCount).toFixed(2));
+    const packWeight = Number((lotWeightInKg / data.packCount).toFixed(2));
 
     for (let i = 0; i < data.packCount; i++) {
         packs.push({
@@ -111,7 +112,7 @@ export function RetailerView() {
       timestamp: format(new Date(history.lot.harvestDate), 'PP'),
       details: <>
         <p><strong>Crop:</strong> {history.lot.cropName}</p>
-        <p><strong>Weight:</strong> {history.lot.weight} kg</p>
+        <p><strong>Weight:</strong> {history.lot.weight} quintals</p>
         <p><strong>Farmer:</strong> {history.lot.farmer}</p>
       </>
     });
@@ -208,7 +209,7 @@ export function RetailerView() {
                 <Form {...packForm}>
                     <form onSubmit={packForm.handleSubmit(handlePackSubmit)} className="flex gap-2">
                         <FormField control={packForm.control} name="packCount" render={({field}) => (
-                            <FormItem className="flex-1"><FormControl><Input type="number" placeholder={`Split ${history.lot.weight}kg lot into...`} {...field}/></FormControl><FormMessage/></FormItem>
+                            <FormItem className="flex-1"><FormControl><Input type="number" placeholder={`Split ${history.lot.weight * 100}kg lot into...`} {...field}/></FormControl><FormMessage/></FormItem>
                         )}/>
                         <Button type="submit"><ShoppingBag className="h-4 w-4"/></Button>
                     </form>

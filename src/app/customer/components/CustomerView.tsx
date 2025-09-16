@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Loader2, ScanLine, Search, XCircle, Package, Calendar, Wheat, Weight } from "lucide-react";
+import { Loader2, ScanLine, Search, XCircle, Package, Calendar, Wheat, Weight, BadgeIndianRupee, Award } from "lucide-react";
 import { Timeline } from "@/components/Timeline";
 import Image from "next/image";
 import { placeHolderImages } from "@/lib/placeholder-images";
@@ -70,7 +70,7 @@ export function CustomerView() {
       timestamp: format(new Date(history.lot.harvestDate), 'PP'),
       details: <>
         <p><strong>Farmer:</strong> {history.lot.farmer}</p>
-        <p><strong>Original Lot Weight:</strong> {history.lot.weight} kg</p>
+        <p><strong>Original Lot Weight:</strong> {history.lot.weight} quintals</p>
       </>
     });
 
@@ -149,6 +149,10 @@ export function CustomerView() {
                         <div className="flex items-center">
                             <Wheat className="w-4 h-4 mr-3 text-muted-foreground" />
                             <p>From Lot: <span className="font-medium font-mono">{history.lot.lotId}</span></p>
+                        </div>
+                        <div className="flex items-center">
+                            <Award className="w-4 h-4 mr-3 text-muted-foreground" />
+                            <p>Quality: <span className="font-medium">{history.lot.quality}</span></p>
                         </div>
                         <div className="flex items-center">
                             <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />

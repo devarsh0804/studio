@@ -2,9 +2,11 @@ export interface Lot {
   lotId: string;
   farmer: string;
   cropName: string;
-  weight: number;
+  weight: number; // in quintals
   harvestDate: string;
   photoUrl: string;
+  price: number; // per quintal
+  quality: string;
 }
 
 export interface TransportEvent {

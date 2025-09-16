@@ -23,11 +23,14 @@ import { format } from "date-fns";
 import type { Lot } from "@/lib/types";
 import { placeHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   cropName: z.string().min(2, { message: "Crop name must be at least 2 characters." }),
   weight: z.coerce.number().positive({ message: "Weight must be a positive number." }),
   harvestDate: z.date({ required_error: "A harvest date is required." }),
+  price: z.coerce.number().positive({ message: "Price must be a positive number." }),
+  quality: z.string().min(1, { message: "Quality is required." }),
 });
 
 interface RegisterCropFormProps {
@@ -55,6 +58,8 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       weight: values.weight,
       harvestDate: formattedDate,
       photoUrl: cropImage?.imageUrl || "",
+      price: values.price,
+      quality: values.quality,
     };
 
     onRegister(newLot);
@@ -85,19 +90,56 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         </FormItem>
                     )}
                     />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                      control={form.control}
+                      name="weight"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Weight (in quintals)</FormLabel>
+                          <FormControl>
+                              <Input type="number" placeholder="e.g., 5" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                      />
+                      <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Price (per quintal)</FormLabel>
+                          <FormControl>
+                              <Input type="number" placeholder="e.g., 2000" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                      />
+                    </div>
                     <FormField
-                    control={form.control}
-                    name="weight"
-                    render={({ field }) => (
+                      control={form.control}
+                      name="quality"
+                      render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Weight (in kg)</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="e.g., 50" {...field} />
-                        </FormControl>
-                        <FormMessage />
+                          <FormLabel>Quality</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select quality grade" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Premium">Premium</SelectItem>
+                              <SelectItem value="Standard">Standard</SelectItem>
+                              <SelectItem value="Basic">Basic</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
                         </FormItem>
-                    )}
-                    />
+                      )}
+                      />
                     <FormField
                     control={form.control}
                     name="harvestDate"
