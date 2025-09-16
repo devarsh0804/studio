@@ -14,7 +14,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut } from "lucide-react";
+import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline } from "lucide-react";
+import QRCode from "qrcode.react";
 import { detectConflictAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
@@ -30,6 +31,12 @@ const distributorSchema = z.object({
 });
 type DistributorFormValues = z.infer<typeof distributorSchema>;
 
+const subLotSchema = z.object({
+    subLotCount: z.coerce.number().int().min(2, "Must create at least 2 sub-lots.").max(100),
+});
+type SubLotFormValues = z.infer<typeof subLotSchema>;
+
+
 interface DistributorViewProps {
     distributorId: string;
     onLogout: () => void;
@@ -44,16 +51,19 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [conflict, setConflict] = useState<DistributorUpdateConflictDetectionOutput | null>(null);
+  const [subLots, setSubLots] = useState<Lot[]>([]);
   
-  const { findLot, addTransportEvent, updateLot, getAllLots } = useAgriChainStore();
+  const { findLot, addTransportEvent, updateLot, getAllLots, addLots } = useAgriChainStore();
   const { toast } = useToast();
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const distributorForm = useForm<DistributorFormValues>({ resolver: zodResolver(distributorSchema) });
+  const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema) });
   
   const allLots = getAllLots();
-  const availableLots = allLots.filter(lot => lot.owner === lot.farmer);
-  const purchasedLots = allLots.filter(lot => lot.owner === distributorId);
+  const availableLots = allLots.filter(lot => lot.owner === lot.farmer && !lot.parentLotId);
+  const purchasedLots = allLots.filter(lot => lot.owner === distributorId && !lot.parentLotId && lot.weight > 0);
+  const createdSubLots = allLots.filter(lot => lot.parentLotId && findLot(lot.parentLotId)?.owner === distributorId);
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -63,6 +73,8 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
       if (lot) {
         setScannedLot(lot);
         distributorForm.reset();
+        subLotForm.reset();
+        setSubLots([]);
       } else {
         setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
         setScannedLot(null);
@@ -91,7 +103,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         description: `You now own Lot ${lotToPay.lotId}.`,
       });
 
-      // Instead of showing the transport page, just reset the view
       resetView();
       
       setLotToPay(null);
@@ -123,19 +134,54 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     setIsSubmitting(false);
   };
   
+  const handleSubLotSubmit: SubmitHandler<SubLotFormValues> = (data) => {
+    if (!scannedLot) return;
+
+    const newSubLots: Lot[] = [];
+    const newWeight = parseFloat((scannedLot.weight / data.subLotCount).toFixed(2));
+    const newPrice = parseFloat((scannedLot.price / data.subLotCount).toFixed(2));
+
+    for (let i = 0; i < data.subLotCount; i++) {
+        const newLot: Lot = {
+            ...scannedLot,
+            lotId: `${scannedLot.lotId}-SUB-${String(i + 1).padStart(3, '0')}`,
+            parentLotId: scannedLot.lotId,
+            weight: newWeight,
+            price: newPrice, // Adjust price proportionally
+            owner: distributorId,
+        };
+        newSubLots.push(newLot);
+    }
+    
+    addLots(newSubLots);
+    updateLot(scannedLot.lotId, { weight: 0 }); // Mark original lot as fully distributed
+    setSubLots(newSubLots);
+
+    toast({
+        title: "Sub-lots Created!",
+        description: `${data.subLotCount} new lots have been created and are ready for retailers.`
+    });
+  }
+
   const resetView = () => {
     setScannedLot(null);
     setError(null);
+    setSubLots([]);
     scanForm.reset();
     distributorForm.reset();
+    subLotForm.reset();
   }
 
   const isOwnedByFarmer = scannedLot && scannedLot.owner === scannedLot.farmer;
   const isOwnedByDistributor = scannedLot && scannedLot.owner === distributorId;
+  const canBeSplit = isOwnedByDistributor && scannedLot.weight > 0 && !scannedLot.parentLotId;
 
   if (scannedLot) {
     return (
         <div className="max-w-4xl mx-auto space-y-8">
+            <div className="flex justify-end">
+                <Button variant="outline" onClick={resetView}>Scan Another Lot</Button>
+            </div>
             <LotDetailsCard lot={scannedLot} />
 
             {isOwnedByFarmer && (
@@ -153,61 +199,104 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             )}
 
             {isOwnedByDistributor && (
+                <>
                 <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center"><Truck className="mr-2"/> Add Transport Details</CardTitle>
-                    <CardDescription>You own this lot. Fill in the details for this phase of the supply chain journey.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...distributorForm}>
-                    <form onSubmit={distributorForm.handleSubmit(handleFormSubmit)} className="space-y-6">
-                        <div className="grid md:grid-cols-2 gap-6">
-                        <FormField control={distributorForm.control} name="vehicleNumber" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Vehicle Number</FormLabel>
-                                <FormControl><Input placeholder="e.g., OD-01-AB-1234" {...field} /></FormControl>
+                    <CardHeader>
+                        <CardTitle className="flex items-center"><Truck className="mr-2"/> Add Transport Details</CardTitle>
+                        <CardDescription>You own this lot. Fill in the details for this phase of the supply chain journey.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...distributorForm}>
+                        <form onSubmit={distributorForm.handleSubmit(handleFormSubmit)} className="space-y-6">
+                            <div className="grid md:grid-cols-2 gap-6">
+                            <FormField control={distributorForm.control} name="vehicleNumber" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Vehicle Number</FormLabel>
+                                    <FormControl><Input placeholder="e.g., OD-01-AB-1234" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )} />
+                            <FormField control={distributorForm.control} name="transportCondition" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Transport Condition</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger><SelectValue placeholder="Select a condition" /></SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Cold Storage">Cold Storage</SelectItem>
+                                        <SelectItem value="Normal">Normal</SelectItem>
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )} />
+                            </div>
+                            <FormField control={distributorForm.control} name="warehouseEntryDateTime" render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Warehouse Entry Date/Time</FormLabel>
+                                <FormControl><Input type="datetime-local" {...field} /></FormControl>
                                 <FormMessage />
-                            </FormItem>
+                                </FormItem>
                             )} />
-                        <FormField control={distributorForm.control} name="transportCondition" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Transport Condition</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger><SelectValue placeholder="Select a condition" /></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="Cold Storage">Cold Storage</SelectItem>
-                                    <SelectItem value="Normal">Normal</SelectItem>
-                                </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                            )} />
-                        </div>
-                        <FormField control={distributorForm.control} name="warehouseEntryDateTime" render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Warehouse Entry Date/Time</FormLabel>
-                            <FormControl><Input type="datetime-local" {...field} /></FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )} />
-                        <Alert>
-                        <Sparkles className="h-4 w-4" />
-                        <AlertTitle>AI-Powered Conflict Detection</AlertTitle>
-                        <AlertDescription>Upon submission, our AI will check for potential conflicts with existing lot data (e.g., transport conditions vs. crop type).</AlertDescription>
-                        </Alert>
-                        <div className="flex gap-4">
-                        <Button type="button" variant="outline" onClick={resetView}>Scan Another Lot</Button>
-                        <Button type="submit" disabled={isSubmitting} className="flex-1">
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Submit to Ledger
-                        </Button>
-                        </div>
-                    </form>
-                    </Form>
-                </CardContent>
+                            <Alert>
+                            <Sparkles className="h-4 w-4" />
+                            <AlertTitle>AI-Powered Conflict Detection</AlertTitle>
+                            <AlertDescription>Upon submission, our AI will check for potential conflicts with existing lot data (e.g., transport conditions vs. crop type).</AlertDescription>
+                            </Alert>
+                            <div className="flex justify-end">
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Submit to Ledger
+                            </Button>
+                            </div>
+                        </form>
+                        </Form>
+                    </CardContent>
                 </Card>
+
+                {canBeSplit && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center"><Spline className="mr-2"/> Create Sub-lots for Retailers</CardTitle>
+                            <CardDescription>Split this lot into smaller quantities for different retailers. The total weight will be divided equally.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Form {...subLotForm}>
+                                <form onSubmit={subLotForm.handleSubmit(handleSubLotSubmit)} className="flex gap-2">
+                                    <FormField control={subLotForm.control} name="subLotCount" render={({field}) => (
+                                        <FormItem className="flex-1">
+                                            <FormControl><Input type="number" placeholder={`Split ${scannedLot.weight} quintal lot into...`} {...field}/></FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}/>
+                                    <Button type="submit"><PackagePlus className="h-4 w-4"/></Button>
+                                </form>
+                            </Form>
+                            {subLots.length > 0 && (
+                                <div className="mt-6">
+                                    <h4 className="font-semibold mb-4">Generated Sub-lot QRs:</h4>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-1">
+                                        {subLots.map(lot => (
+                                            <div key={lot.lotId} className="text-center p-2 rounded-lg border">
+                                                <div className="p-2 bg-white rounded-md inline-block">
+                                                    <QRCode value={lot.lotId} size={80} level={"H"} />
+                                                </div>
+                                                <p className="text-xs font-mono mt-1 truncate">{lot.lotId}</p>
+                                                <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <Alert className="mt-4">
+                                        <AlertDescription>The parent lot's weight has been set to 0. These new sub-lots are now available for retailers to scan and purchase.</AlertDescription>
+                                    </Alert>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                </>
             )}
             
             <AlertDialog open={!!conflict} onOpenChange={() => setConflict(null)}>
@@ -310,57 +399,91 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
         <Separator />
 
-        <Card>
-            <CardHeader>
-                <CardTitle>Available Lots for Purchase</CardTitle>
-                <CardDescription>
-                    Browse lots currently available directly from farmers.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                {availableLots.length > 0 ? (
-                    availableLots.map((lot, index) => (
-                        <div key={lot.lotId}>
-                            {index > 0 && <Separator className="my-6" />}
-                            <LotDetailsCard lot={lot} />
-                            <div className="mt-4 flex justify-end">
-                                <Button onClick={() => setLotToBuy(lot)}>
-                                    <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />{lot.price * lot.weight}
-                                </Button>
+        <div className="grid md:grid-cols-2 gap-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Available Lots for Purchase</CardTitle>
+                    <CardDescription>
+                        Browse lots currently available directly from farmers.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {availableLots.length > 0 ? (
+                        availableLots.map((lot) => (
+                            <div key={lot.lotId} className="border p-4 rounded-lg">
+                                <LotDetailsCard lot={lot} />
+                                <div className="mt-4 flex justify-end">
+                                    <Button onClick={() => setLotToBuy(lot)}>
+                                        <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />{lot.price * lot.weight}
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
-                    ))
-                ) : (
-                    <p className="text-muted-foreground text-center py-4">
-                        There are no lots currently available for purchase.
-                    </p>
-                )}
-            </CardContent>
-        </Card>
-
-        {purchasedLots.length > 0 && (
-          <>
-            <Separator />
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center py-4">
+                            There are no lots currently available for purchase.
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+            
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center">
                         <ShoppingBag className="mr-2" /> Your Purchased Lots
                     </CardTitle>
                     <CardDescription>
-                        These are lots you own. You can scan their QR code to add transport details.
+                        These are lots you own. Scan or select them to add details or split them into sub-lots.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    {purchasedLots.map((lot, index) => (
-                        <div key={lot.lotId}>
-                            {index > 0 && <Separator className="my-6" />}
-                            <LotDetailsCard lot={lot} />
-                        </div>
-                    ))}
+                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {purchasedLots.length > 0 ? (
+                        purchasedLots.map((lot) => (
+                            <div key={lot.lotId} className="border p-4 rounded-lg">
+                                <LotDetailsCard lot={lot} />
+                                <div className="mt-4 flex justify-end">
+                                    <Button variant="secondary" onClick={() => handleScan({lotId: lot.lotId})}>
+                                        <Spline className="mr-2 h-4 w-4" /> Manage Lot
+                                    </Button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center py-4">
+                            You have not purchased any lots yet.
+                        </p>
+                    )}
                 </CardContent>
             </Card>
-          </>
-        )}
+
+            {createdSubLots.length > 0 && (
+                <div className="md:col-span-2">
+                    <Separator />
+                    <Card className="mt-8">
+                        <CardHeader>
+                            <CardTitle>Your Created Sub-Lots</CardTitle>
+                            <CardDescription>
+                                These are the sub-lots you have created for retailers.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {createdSubLots.map((lot) => (
+                                <div key={lot.lotId} className="border p-4 rounded-lg space-y-2">
+                                    <div className="flex justify-center">
+                                      <QRCode value={lot.lotId} size={64} level={"H"} />
+                                    </div>
+                                    <p className="font-mono text-xs text-center">{lot.lotId}</p>
+                                    <p className="text-xs text-center text-muted-foreground">
+                                        {lot.weight} quintals from Lot {lot.parentLotId}
+                                    </p>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+        </div>
+
 
         <AlertDialog open={!!lotToBuy} onOpenChange={() => setLotToBuy(null)}>
             <AlertDialogContent>
@@ -394,9 +517,9 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                         {isPaying ? <Loader2 className="animate-spin" /> : <CreditCard className="mr-2"/>}
                         {isPaying ? 'Processing...' : 'Pay Now'}
                     </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    </div>
-  );
-}
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
+    );
+  }

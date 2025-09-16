@@ -9,6 +9,7 @@ export interface Lot {
   quality: string;
   owner?: string; // e.g., 'farmer', 'distributor-1', etc.
   location?: string;
+  parentLotId?: string; // To link sub-lots to their origin
 }
 
 export interface TransportEvent {
@@ -34,4 +35,6 @@ export interface LotHistory {
   lot: Lot;
   transportEvents: TransportEvent[];
   retailEvents: RetailEvent[];
+  parentLot?: Lot;
+  childLots?: Lot[];
 }

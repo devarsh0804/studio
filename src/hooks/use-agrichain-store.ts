@@ -10,6 +10,7 @@ interface AgriChainState {
   retailEvents: Record<string, RetailEvent[]>;
   retailPacks: Record<string, RetailPack>;
   addLot: (lot: Lot) => void;
+  addLots: (lots: Lot[]) => void;
   updateLot: (lotId: string, updates: Partial<Lot>) => void;
   addTransportEvent: (lotId: string, event: TransportEvent) => void;
   addRetailEvent: (lotId: string, event: RetailEvent) => void;
@@ -33,6 +34,17 @@ export const useAgriChainStore = create<AgriChainState>()(
           set((state) => ({
             lots: { ...state.lots, [lot.lotId]: lot },
           })),
+        
+        addLots: (lots) =>
+          set((state) => {
+            const newLots = lots.reduce((acc, lot) => {
+                acc[lot.lotId] = lot;
+                return acc;
+            }, {} as Record<string, Lot>);
+            return {
+                lots: { ...state.lots, ...newLots }
+            };
+          }),
         
         updateLot: (lotId, updates) =>
             set((state) => {
@@ -85,11 +97,15 @@ export const useAgriChainStore = create<AgriChainState>()(
           
           const transport = get().transportEvents[lotId] || [];
           const retail = get().retailEvents[lotId] || [];
+          const parentLot = lot.parentLotId ? get().findLot(lot.parentLotId) : undefined;
+          const childLots = Object.values(get().lots).filter(l => l.parentLotId === lotId);
 
           return {
             lot,
             transportEvents: transport,
             retailEvents: retail,
+            parentLot,
+            childLots,
           };
         },
       }),
