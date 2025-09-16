@@ -51,6 +51,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
   });
 
   const cropImage = placeHolderImages.find(p => p.id === 'crop1');
+  const farmerImage = placeHolderImages.find(p => p.id === 'farmer1');
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const formattedDate = format(values.harvestDate, "yyyy-MM-dd");
@@ -213,20 +214,35 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                     />
                 </div>
                 <div className="space-y-4">
-                    <FormLabel>Crop Photo</FormLabel>
-                    <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
-                        {cropImage ? (
-                            <Image src={cropImage.imageUrl} alt={cropImage.description} fill objectFit="cover" data-ai-hint={cropImage.imageHint}/>
-                        ) : (
-                            <p className="text-muted-foreground text-sm">No Image</p>
-                        )}
+                    <div className="space-y-2">
+                        <FormLabel>Farmer Photo</FormLabel>
+                        <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
+                            {farmerImage ? (
+                                <Image src={farmerImage.imageUrl} alt={farmerImage.description} fill objectFit="cover" data-ai-hint={farmerImage.imageHint}/>
+                            ) : (
+                                <p className="text-muted-foreground text-sm">No Image</p>
+                            )}
+                        </div>
+                        <Button type="button" variant="outline" className="w-full">
+                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                        </Button>
                     </div>
-                    <Button type="button" variant="outline" className="w-full">
-                        <Camera className="mr-2 h-4 w-4" /> Upload Photo
-                    </Button>
-                    <FormDescription>
-                        For demo purposes, a placeholder image is used.
-                    </FormDescription>
+                    <div className="space-y-2">
+                        <FormLabel>Crop Photo</FormLabel>
+                        <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
+                            {cropImage ? (
+                                <Image src={cropImage.imageUrl} alt={cropImage.description} fill objectFit="cover" data-ai-hint={cropImage.imageHint}/>
+                            ) : (
+                                <p className="text-muted-foreground text-sm">No Image</p>
+                            )}
+                        </div>
+                        <Button type="button" variant="outline" className="w-full">
+                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                        </Button>
+                        <FormDescription>
+                            For demo purposes, placeholder images are used.
+                        </FormDescription>
+                    </div>
                 </div>
             </div>
             

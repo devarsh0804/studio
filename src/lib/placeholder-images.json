@@ -5,6 +5,12 @@
       "description": "A basket of freshly harvested ripe tomatoes.",
       "imageUrl": "https://picsum.photos/seed/tomato1/600/400",
       "imageHint": "tomatoes basket"
+    },
+    {
+      "id": "farmer1",
+      "description": "A portrait of a smiling farmer.",
+      "imageUrl": "https://picsum.photos/seed/farmer1/600/400",
+      "imageHint": "farmer portrait"
     }
   ]
 }
