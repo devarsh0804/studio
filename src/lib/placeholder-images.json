@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "crop1",
+      "description": "A basket of freshly harvested ripe tomatoes.",
+      "imageUrl": "https://picsum.photos/seed/tomato1/600/400",
+      "imageHint": "tomatoes basket"
+    }
+  ]
 }
