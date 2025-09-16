@@ -136,7 +136,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                       name="price"
                       render={({ field }) => (
                           <FormItem>
-                          <FormLabel>Price (per quintal)</FormLabel>
+                          <FormLabel>Price (₹ per quintal)</FormLabel>
                           <FormControl>
                               <Input type="number" placeholder="e.g., 2000" {...field} />
                           </FormControl>
