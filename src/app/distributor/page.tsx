@@ -5,7 +5,6 @@ import { DistributorView } from "./components/DistributorView";
 import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
 import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/hooks/use-toast";
-import RolesLayout from "../(roles)/layout";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -38,7 +37,7 @@ export default function DistributorPage() {
   };
 
   return (
-    <RolesLayout>
+    <>
       <PageHeader 
         title="Distributor Dashboard"
         description={distributor ? "Purchase lots, split them, and add transport details." : "Please log in to continue."}
@@ -50,6 +49,6 @@ export default function DistributorPage() {
           <DistributorView distributorId={distributor.name} onLogout={handleLogout} />
         )}
       </main>
-    </RolesLayout>
+    </>
   );
 }
