@@ -14,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag } from "lucide-react";
+import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut } from "lucide-react";
 import { detectConflictAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
@@ -30,10 +30,12 @@ const distributorSchema = z.object({
 });
 type DistributorFormValues = z.infer<typeof distributorSchema>;
 
-// In a real app, this would be a user profile.
-const DISTRIBUTOR_ID = "Distributor-XYZ"; 
+interface DistributorViewProps {
+    distributorId: string;
+    onLogout: () => void;
+}
 
-export function DistributorView() {
+export function DistributorView({ distributorId, onLogout }: DistributorViewProps) {
   const [scannedLot, setScannedLot] = useState<Lot | null>(null);
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
@@ -51,7 +53,7 @@ export function DistributorView() {
   
   const allLots = getAllLots();
   const availableLots = allLots.filter(lot => lot.owner === lot.farmer);
-  const purchasedLots = allLots.filter(lot => lot.owner === DISTRIBUTOR_ID);
+  const purchasedLots = allLots.filter(lot => lot.owner === distributorId);
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -82,7 +84,7 @@ export function DistributorView() {
     
     // Simulate payment processing
     setTimeout(() => {
-      updateLot(lotToPay.lotId, { owner: DISTRIBUTOR_ID });
+      updateLot(lotToPay.lotId, { owner: distributorId });
       
       toast({
         title: "Purchase Successful!",
@@ -129,7 +131,7 @@ export function DistributorView() {
   }
 
   const isOwnedByFarmer = scannedLot && scannedLot.owner === scannedLot.farmer;
-  const isOwnedByDistributor = scannedLot && scannedLot.owner === DISTRIBUTOR_ID;
+  const isOwnedByDistributor = scannedLot && scannedLot.owner === distributorId;
 
   if (scannedLot) {
     return (
@@ -265,7 +267,12 @@ export function DistributorView() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="space-y-8">
+        <div className="flex justify-end">
+            <Button variant="ghost" onClick={onLogout}>
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+            </Button>
+        </div>
         <Card className="max-w-xl mx-auto">
             <CardHeader>
             <CardTitle className="flex items-center"><ScanLine className="mr-2" /> Scan Lot QR Code</CardTitle>
