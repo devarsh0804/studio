@@ -70,7 +70,7 @@ export default function Home() {
 
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
       <div className="absolute top-4 right-4">
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -107,6 +107,6 @@ export default function Home() {
           <RoleCard key={role.title} {...role} />
         ))}
       </div>
-    </main>
+    </div>
   );
 }
