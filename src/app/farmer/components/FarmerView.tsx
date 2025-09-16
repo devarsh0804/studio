@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Lot } from "@/lib/types";
 import { QrCodeDisplay } from "./QrCodeDisplay";
 import { useAgriChainStore }from "@/hooks/use-agrichain-store";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const RegisteredLotsList = dynamic(() => import('./RegisteredLotsList').then(mod => mod.RegisteredLotsList), {
   ssr: false,
