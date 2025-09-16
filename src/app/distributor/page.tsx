@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DistributorView } from "./components/DistributorView";
 import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
 import { PageHeader } from "@/components/PageHeader";
+import { useToast } from "@/hooks/use-toast";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -13,13 +14,21 @@ const VALID_CREDENTIALS = {
 
 export default function DistributorPage() {
   const [distributor, setDistributor] = useState<DistributorLoginCredentials | null>(null);
+  const { toast } = useToast();
 
   const handleLogin = (credentials: DistributorLoginCredentials) => {
     if (credentials.name === VALID_CREDENTIALS.name && credentials.code === VALID_CREDENTIALS.code) {
       setDistributor(credentials);
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${credentials.name}!`,
+      });
     } else {
-      // In a real app, show an error message
-      alert("Invalid credentials!");
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
+      });
     }
   };
 
