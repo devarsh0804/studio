@@ -10,12 +10,14 @@ interface AgriChainState {
   retailEvents: Record<string, RetailEvent[]>;
   retailPacks: Record<string, RetailPack>;
   addLot: (lot: Lot) => void;
+  updateLot: (lotId: string, updates: Partial<Lot>) => void;
   addTransportEvent: (lotId: string, event: TransportEvent) => void;
   addRetailEvent: (lotId: string, event: RetailEvent) => void;
   addRetailPacks: (packs: RetailPack[]) => void;
   findLot: (lotId: string) => Lot | undefined;
   findPack: (packId: string) => RetailPack | undefined;
   getLotHistory: (lotId: string) => LotHistory | null;
+  getAllLots: () => Lot[];
 }
 
 export const useAgriChainStore = create<AgriChainState>()(
@@ -31,6 +33,19 @@ export const useAgriChainStore = create<AgriChainState>()(
           set((state) => ({
             lots: { ...state.lots, [lot.lotId]: lot },
           })),
+        
+        updateLot: (lotId, updates) =>
+            set((state) => {
+                if (state.lots[lotId]) {
+                    return {
+                        lots: {
+                            ...state.lots,
+                            [lotId]: { ...state.lots[lotId], ...updates },
+                        },
+                    };
+                }
+                return state;
+            }),
 
         addTransportEvent: (lotId, event) =>
           set((state) => ({
@@ -62,6 +77,8 @@ export const useAgriChainStore = create<AgriChainState>()(
         findLot: (lotId) => get().lots[lotId],
 
         findPack: (packId) => get().retailPacks[packId],
+        
+        getAllLots: () => Object.values(get().lots).sort((a, b) => new Date(b.harvestDate).getTime() - new Date(a.harvestDate).getTime()),
 
         getLotHistory: (lotId) => {
           const lot = get().findLot(lotId);

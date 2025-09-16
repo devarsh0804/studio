@@ -24,6 +24,7 @@ import type { Lot } from "@/lib/types";
 import { placeHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   farmerName: z.string().min(2, { message: "Farmer name must be at least 2 characters." }),
@@ -39,11 +40,13 @@ interface RegisterCropFormProps {
 }
 
 export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
+  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       farmerName: "",
       cropName: "",
+      quality: "Standard",
     },
   });
 
@@ -62,9 +65,15 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       photoUrl: cropImage?.imageUrl || "",
       price: values.price,
       quality: values.quality,
+      owner: values.farmerName,
     };
 
     onRegister(newLot);
+    toast({
+      title: "Lot Registered!",
+      description: `Lot ID ${lotId} has been successfully created.`,
+    })
+    form.reset();
   }
 
   return (
@@ -218,7 +227,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                 </div>
             </div>
             
-            <Button type="submit" size="lg" className="w-full">Generate QR Code</Button>
+            <Button type="submit" size="lg" className="w-full">Register Lot</Button>
           </form>
         </Form>
       </CardContent>

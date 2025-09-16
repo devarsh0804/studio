@@ -7,6 +7,7 @@ export interface Lot {
   photoUrl: string;
   price: number; // per quintal
   quality: string;
+  owner?: string; // e.g., 'farmer', 'distributor-1', etc.
 }
 
 export interface TransportEvent {

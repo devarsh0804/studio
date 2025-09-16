@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Lot } from "@/lib/types";
 import Image from "next/image";
 import { placeHolderImages } from "@/lib/placeholder-images";
-import { Box, Calendar, Wheat, Weight, BadgeIndianRupee, Award, User } from "lucide-react";
+import { Box, Calendar, Wheat, Weight, BadgeIndianRupee, Award, User, Milestone } from "lucide-react";
 
 interface LotDetailsCardProps {
   lot: Lot;
@@ -28,6 +28,11 @@ export function LotDetailsCard({ lot }: LotDetailsCardProps) {
             <User className="w-4 h-4 mr-2 text-muted-foreground" />
             <p className="w-28 text-muted-foreground">Farmer</p>
             <p className="font-medium">{lot.farmer}</p>
+          </div>
+          <div className="flex items-center">
+            <Milestone className="w-4 h-4 mr-2 text-muted-foreground" />
+            <p className="w-28 text-muted-foreground">Current Owner</p>
+            <p className="font-medium">{lot.owner}</p>
           </div>
           <div className="flex items-center">
             <Wheat className="w-4 h-4 mr-2 text-muted-foreground" />
