@@ -1,8 +1,26 @@
-import { Tractor, Truck, Store, User } from 'lucide-react';
+
+"use client";
+
+import { Tractor, Truck, Store, User, RotateCcw } from 'lucide-react';
 import { RoleCard } from '@/components/RoleCard';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 export default function Home() {
+  const { toast } = useToast();
+
   const roles = [
     {
       title: 'Farmer / Sahayak',
@@ -30,8 +48,51 @@ export default function Home() {
     },
   ];
 
+  const handleResetData = () => {
+    try {
+      localStorage.removeItem('agrichain-storage');
+      toast({
+        title: "Application Data Cleared",
+        description: "All entered data has been removed. The page will now reload.",
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (e) {
+      console.error("Could not reset data:", e);
+      toast({
+        variant: 'destructive',
+        title: "Error",
+        description: "Could not clear application data.",
+      });
+    }
+  };
+
+
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
+      <div className="absolute top-4 right-4">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="sm">
+              <RotateCcw className="mr-2 h-4 w-4" /> Reset Data
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete all application data from your browser's local storage.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleResetData}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+
       <div className="text-center mb-12">
         <h1 className="font-headline text-5xl md:text-6xl font-bold text-primary">
           AgriChain Trace
