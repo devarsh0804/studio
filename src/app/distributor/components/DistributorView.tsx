@@ -14,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard } from "lucide-react";
+import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag } from "lucide-react";
 import { detectConflictAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
@@ -29,6 +29,9 @@ const distributorSchema = z.object({
   warehouseEntryDateTime: z.string().min(1, "Warehouse entry date/time is required"),
 });
 type DistributorFormValues = z.infer<typeof distributorSchema>;
+
+// In a real app, this would be a user profile.
+const DISTRIBUTOR_ID = "Distributor-XYZ"; 
 
 export function DistributorView() {
   const [scannedLot, setScannedLot] = useState<Lot | null>(null);
@@ -46,7 +49,9 @@ export function DistributorView() {
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const distributorForm = useForm<DistributorFormValues>({ resolver: zodResolver(distributorSchema) });
   
-  const availableLots = getAllLots().filter(lot => lot.owner === lot.farmer);
+  const allLots = getAllLots();
+  const availableLots = allLots.filter(lot => lot.owner === lot.farmer);
+  const purchasedLots = allLots.filter(lot => lot.owner === DISTRIBUTOR_ID);
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -75,12 +80,9 @@ export function DistributorView() {
 
     setIsPaying(true);
     
-    // In a real app, this would be a user profile.
-    const distributorId = "Distributor-XYZ"; 
-    
     // Simulate payment processing
     setTimeout(() => {
-      updateLot(lotToPay.lotId, { owner: distributorId });
+      updateLot(lotToPay.lotId, { owner: DISTRIBUTOR_ID });
       
       toast({
         title: "Purchase Successful!",
@@ -89,7 +91,9 @@ export function DistributorView() {
 
       // Update the main view if the paid lot was scanned or becomes the scanned lot
       const updatedLot = findLot(lotToPay.lotId);
-      setScannedLot(updatedLot || null);
+      if (scannedLot && scannedLot.lotId === lotToPay.lotId) {
+        setScannedLot(updatedLot || null);
+      }
       
       setLotToPay(null);
       setIsPaying(false);
@@ -128,7 +132,7 @@ export function DistributorView() {
   }
 
   const isOwnedByFarmer = scannedLot && scannedLot.owner === scannedLot.farmer;
-  const isOwnedByDistributor = scannedLot && scannedLot.owner === "Distributor-XYZ";
+  const isOwnedByDistributor = scannedLot && scannedLot.owner === DISTRIBUTOR_ID;
 
   if (scannedLot) {
     return (
@@ -330,6 +334,30 @@ export function DistributorView() {
             </CardContent>
         </Card>
 
+        {purchasedLots.length > 0 && (
+          <>
+            <Separator />
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center">
+                        <ShoppingBag className="mr-2" /> Your Purchased Lots
+                    </CardTitle>
+                    <CardDescription>
+                        These are lots you own. You can scan their QR code to add transport details.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {purchasedLots.map((lot, index) => (
+                        <div key={lot.lotId}>
+                            {index > 0 && <Separator className="my-6" />}
+                            <LotDetailsCard lot={lot} />
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
+          </>
+        )}
+
         <AlertDialog open={!!lotToBuy} onOpenChange={() => setLotToBuy(null)}>
             <AlertDialogContent>
             <AlertDialogHeader>
@@ -368,5 +396,3 @@ export function DistributorView() {
     </div>
   );
 }
-
-    

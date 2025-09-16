@@ -37,12 +37,11 @@ export const useAgriChainStore = create<AgriChainState>()(
         updateLot: (lotId, updates) =>
             set((state) => {
                 if (state.lots[lotId]) {
-                    return {
-                        lots: {
-                            ...state.lots,
-                            [lotId]: { ...state.lots[lotId], ...updates },
-                        },
+                    const updatedLots = {
+                        ...state.lots,
+                        [lotId]: { ...state.lots[lotId], ...updates },
                     };
+                    return { lots: updatedLots };
                 }
                 return state;
             }),

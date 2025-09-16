@@ -6,7 +6,7 @@ export default function DistributorPage() {
     <>
       <PageHeader 
         title="Distributor"
-        description="Scan a lot's QR code to add transportation and storage information."
+        description="Purchase lots from farmers and add transport & storage information."
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         <DistributorView />
