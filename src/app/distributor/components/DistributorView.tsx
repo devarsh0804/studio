@@ -68,7 +68,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   
   const allLots = getAllLots();
   const availableLots = allLots.filter(lot => lot.owner === lot.farmer);
-  const purchasedLots = allLots.filter(lot => lot.owner === distributorId && lot.weight > 0 && !lot.parentLotId);
+  const purchasedLots = allLots.filter(lot => lot.owner === distributorId && !lot.parentLotId);
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -355,7 +355,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                 <LotDetailsCard lot={lot} />
                                 <div className="mt-4 flex justify-end">
                                     <Button variant="secondary" onClick={() => handleScan({lotId: lot.lotId})}>
-                                        <Spline className="mr-2 h-4 w-4" /> Add Transport / Split
+                                        <Spline className="mr-2 h-4 w-4" /> Manage Lot
                                     </Button>
                                 </div>
                             </div>
@@ -486,9 +486,5 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
   }
-
-    
-
-    
 
     
