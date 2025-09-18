@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight, PoundSterling } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight, PoundSterling, Upload } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -275,31 +275,36 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
             </div>
             
             <div className="space-y-6 pt-6 border-t">
-              <FormField
-                  control={form.control}
-                  name="quality"
-                  render={({ field }) => (
-                      <FormItem>
-                          <FormLabel>Manual Quality Grade</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                  <SelectTrigger>
-                                      <SelectValue placeholder="Select a quality grade for the crop" />
-                                  </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                  <SelectItem value="Premium">Premium</SelectItem>
-                                  <SelectItem value="Standard">Standard</SelectItem>
-                                  <SelectItem value="Basic">Basic</SelectItem>
-                              </SelectContent>
-                          </Select>
-                           <FormDescription>
-                              Select the quality grade determined by the manual inspection.
-                           </FormDescription>
-                          <FormMessage />
-                      </FormItem>
-                  )}
-              />
+              <div className="grid md:grid-cols-2 gap-6 items-end">
+                <FormField
+                    control={form.control}
+                    name="quality"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Quality Grade</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a quality grade for the crop" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Premium">Premium</SelectItem>
+                                    <SelectItem value="Standard">Standard</SelectItem>
+                                    <SelectItem value="Basic">Basic</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormDescription>
+                                Select the quality grade determined by the manual inspection.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <Button type="button" variant="secondary">
+                    <Upload className="mr-2" /> Upload Certificate
+                </Button>
+              </div>
               
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
