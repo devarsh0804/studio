@@ -48,9 +48,13 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      farmerName: "",
-      cropName: "",
-      location: "",
+      farmerName: "Ramesh Kumar",
+      cropName: "Wheat",
+      location: "APMC, Punjab",
+      weight: 5,
+      price: 2000,
+      harvestDate: new Date(),
+      quality: "Premium",
     },
   });
 
