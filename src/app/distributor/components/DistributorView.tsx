@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,10 +14,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from '@/components/ui/dialog';
+
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -37,6 +39,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [scannedLot, setScannedLot] = useState<Lot | null>(null);
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
+  const [lotToPrint, setLotToPrint] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
@@ -45,6 +48,8 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
   const { findLot, updateLot, getAllLots, addLots } = useAgriChainStore();
   const { toast } = useToast();
+  const qrRef = useRef<HTMLDivElement>(null);
+
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
@@ -135,6 +140,25 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     });
   };
 
+  const handlePrint = () => {
+    const printContent = qrRef.current;
+    if (printContent) {
+      const printWindow = window.open('', '', 'height=600,width=800');
+      if (printWindow) {
+        printWindow.document.write('<html><head><title>Print QR Code</title>');
+        printWindow.document.write('<style>body { display: flex; justify-content: center; align-items: center; height: 100%; } .qr-container { text-align: center; }</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write('<div class="qr-container">');
+        printWindow.document.write(printContent.innerHTML);
+        printWindow.document.write('</div>');
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+      }
+    }
+  };
+
+
   const resetView = () => {
     setScannedLot(null);
     setError(null);
@@ -190,20 +214,17 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               {subLots.length > 0 && (
                 <div className="mt-6">
                   <h4 className="font-semibold mb-4">Generated Sub-lots:</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
                     {subLots.map((lot) => (
-                      <Card key={lot.lotId} className="flex items-center justify-between p-4">
-                          <div className="flex items-center gap-4">
-                            <div className="p-1 bg-white rounded-md">
-                                <QRCode value={lot.lotId} size={48} level={"H"} />
-                            </div>
-                            <div>
-                                <p className="font-mono text-sm">{lot.lotId}</p>
-                                <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
-                                <p className='text-xs text-muted-foreground'>Owner: {lot.owner}</p>
-                            </div>
-                        </div>
-                      </Card>
+                      <Button 
+                        key={lot.lotId}
+                        variant="secondary"
+                        className="w-full justify-start"
+                        onClick={() => setLotToPrint(lot)}
+                      >
+                        <QrCode className="mr-2" />
+                        Show QR for <span className='font-mono mx-2'>{lot.lotId}</span> ({lot.weight} quintals)
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -211,6 +232,27 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             </CardContent>
           </Card>
         )}
+         <Dialog open={!!lotToPrint} onOpenChange={() => setLotToPrint(null)}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>QR Code for Lot {lotToPrint?.lotId}</DialogTitle>
+                </DialogHeader>
+                {lotToPrint && (
+                    <div className="flex flex-col items-center gap-4 py-4" >
+                        <div ref={qrRef} className="p-4 bg-white rounded-lg inline-block">
+                           <div className="text-center">
+                             <QRCode value={lotToPrint.lotId} size={256} level={"H"} includeMargin={true} />
+                             <p className="font-mono text-lg font-bold text-black mt-2">{lotToPrint.lotId}</p>
+                           </div>
+                        </div>
+                    </div>
+                )}
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setLotToPrint(null)}>Done</Button>
+                    <Button onClick={handlePrint}><Printer className="mr-2"/> Print</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -365,3 +407,5 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
+
+    
