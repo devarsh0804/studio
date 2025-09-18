@@ -68,7 +68,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   
   const allLots = getAllLots();
   const availableLots = allLots.filter(lot => lot.owner === lot.farmer);
-  const purchasedLots = allLots.filter(lot => lot.owner === distributorId && lot.weight > 0);
+  const purchasedLots = allLots.filter(lot => lot.owner === distributorId && lot.weight > 0 && !lot.parentLotId);
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -486,6 +486,8 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
   }
+
+    
 
     
 
