@@ -13,18 +13,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -64,7 +59,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const qrRef = useRef<HTMLDivElement>(null);
 
 
-  const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
+  const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema), defaultValues: { lotId: "" } });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
   const assignForm = useForm<AssignFormValues>({ 
     resolver: zodResolver(assignSchema),
@@ -519,27 +514,64 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!lotToPay} onOpenChange={(open) => !open && !isPaying && setLotToPay(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Finalize Payment</AlertDialogTitle>
+      <Dialog open={!!lotToPay} onOpenChange={(open) => !open && !isPaying && setLotToPay(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Finalize Payment</DialogTitle>
             <AlertDialogDescription>
-              Proceed to pay the farmer for Lot {lotToPay?.lotId}. Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
-              {lotToPay ? lotToPay.price * lotToPay.weight : 0}.
+              Proceed to pay the farmer for Lot {lotToPay?.lotId}. <br /> Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
+              <span className="font-bold">{lotToPay ? lotToPay.price * lotToPay.weight : 0}</span>
             </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4 text-center text-muted-foreground">(This is a simulated payment screen)</div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPaying} onClick={() => setLotToPay(null)}>
+          </DialogHeader>
+          
+          <Tabs defaultValue="upi" className="w-full pt-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upi"><QrCode className="mr-2"/> UPI</TabsTrigger>
+                <TabsTrigger value="bank"><Landmark className="mr-2"/> Bank Transfer</TabsTrigger>
+              </TabsList>
+              <TabsContent value="upi">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Pay with UPI</CardTitle>
+                    <CardDescription>Scan the QR code with your UPI app.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col items-center justify-center space-y-4">
+                    <div className="p-4 bg-white rounded-lg">
+                       <QRCode value={`upi://pay?pa=farmer@agrichain&pn=Farmer&am=${lotToPay ? lotToPay.price * lotToPay.weight : 0}&cu=INR&tn=Lot%20${lotToPay?.lotId}`} size={180} />
+                    </div>
+                    <p className="text-sm text-muted-foreground">Or pay to UPI ID: <span className="font-mono">farmer@agrichain</span></p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="bank">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Bank Transfer Details</CardTitle>
+                    <CardDescription>Use these details to make a bank transfer.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Beneficiary:</span> <span className="font-medium">Ramesh Kumar</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Account No:</span> <span className="font-mono">1234567890</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">IFSC Code:</span> <span className="font-mono">AGRI0001234</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Bank:</span> <span className="font-medium">AgriChain Bank</span></div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+
+          <DialogFooter className="!mt-6">
+             <Button variant="outline" disabled={isPaying} onClick={() => setLotToPay(null)}>
               Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handlePayment} disabled={isPaying}>
-              {isPaying ? <Loader2 className="animate-spin" /> : <><CreditCard className="mr-2" />Pay Now</>}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+            <Button onClick={handlePayment} disabled={isPaying}>
+              {isPaying ? <Loader2 className="animate-spin" /> : <><CreditCard className="mr-2" />Confirm Payment</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
 }
+
+    
