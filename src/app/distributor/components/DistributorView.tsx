@@ -354,7 +354,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                             <div key={lot.lotId} className="border p-4 rounded-lg">
                                 <LotDetailsCard lot={lot} />
                                 <div className="mt-4 flex justify-end">
-                                    <Button variant="secondary" onClick={() => scanForm.handleSubmit(handleScan)({ lotId: lot.lotId })}>
+                                    <Button variant="secondary" onClick={() => handleScan({ lotId: lot.lotId })}>
                                         <Spline className="mr-2 h-4 w-4" /> Manage Lot
                                     </Button>
                                 </div>
