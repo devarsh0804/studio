@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -19,10 +18,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, Sparkles, Printer } from "lucide-react";
 import QRCode from "qrcode.react";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
 import { detectConflictAction } from "@/app/actions";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
 import { format } from "date-fns";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
@@ -60,6 +59,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [conflict, setConflict] = useState<DistributorUpdateConflictDetectionOutput | null>(null);
   const [printMode, setPrintMode] = useState(false);
   const [submittedTransportData, setSubmittedTransportData] = useState<TransportFormValues | null>(null);
+  const [activeTab, setActiveTab] = useState("dashboard");
   
   const { findLot, updateLot, getAllLots, addLots, addTransportEvent } = useAgriChainStore();
   const { toast } = useToast();
@@ -123,6 +123,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
       
       setLotToPay(null);
       setIsPaying(false);
+      setActiveTab("dashboard");
     }, 1500);
   }
   
@@ -199,7 +200,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex justify-end">
-                <Button variant="outline" onClick={resetView}>Scan Another Lot</Button>
+                <Button variant="outline" onClick={resetView}>Back to Dashboard</Button>
             </div>
             <LotDetailsCard lot={scannedLot} />
             
@@ -241,6 +242,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                                 size="sm"
                                                 className="w-full mt-1"
                                                 onClick={() => {
+                                                    resetTransportDialog();
                                                     setLotForTransport(lot);
                                                 }}
                                             >
@@ -267,11 +269,76 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
         </div>
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="dashboard"><ShoppingBag className="mr-2"/>Dashboard</TabsTrigger>
+            <TabsTrigger value="purchase"><ShoppingCart className="mr-2"/>Purchase Lots</TabsTrigger>
+            <TabsTrigger value="scan"><ScanLine className="mr-2"/>Scan Lot</TabsTrigger>
+        </TabsList>
+        <TabsContent value="dashboard">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center">
+                        <ShoppingBag className="mr-2" /> Your Purchased Lots
+                    </CardTitle>
+                    <CardDescription>
+                        These are lots you own. Select a lot to add details or split it into sub-lots.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {purchasedLots.length > 0 ? (
+                        purchasedLots.map((lot) => (
+                            <div key={lot.lotId} className="border p-4 rounded-lg">
+                                <LotDetailsCard lot={lot} />
+                                <div className="mt-4 flex justify-end">
+                                    <Button variant="secondary" onClick={() => handleScan({lotId: lot.lotId})}>
+                                        <Spline className="mr-2 h-4 w-4" /> Manage Lot
+                                    </Button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center py-4">
+                            You have not purchased any lots yet. Go to the &quot;Purchase Lots&quot; tab to buy one.
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="purchase">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Available Lots for Purchase</CardTitle>
+                    <CardDescription>
+                        Browse lots currently available directly from farmers.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {availableLots.length > 0 ? (
+                        availableLots.map((lot) => (
+                            <div key={lot.lotId} className="border p-4 rounded-lg">
+                                <LotDetailsCard lot={lot} />
+                                <div className="mt-4 flex justify-end">
+                                    <Button onClick={() => setLotToBuy(lot)}>
+                                        <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />{lot.price * lot.weight}
+                                    </Button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center py-4">
+                            There are no lots currently available for purchase.
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="scan">
             <Card>
             <CardHeader>
                 <CardTitle className="flex items-center"><ScanLine className="mr-2" /> Scan Lot QR Code</CardTitle>
-                <CardDescription>Enter the Lot ID to fetch its details. In a real app, you could use a camera to scan.</CardDescription>
+                <CardDescription>Enter the Lot ID to fetch its details and manage it.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...scanForm}>
@@ -302,65 +369,8 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 )}
             </CardContent>
             </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center">
-                        <ShoppingBag className="mr-2" /> Your Purchased Lots
-                    </CardTitle>
-                    <CardDescription>
-                        These are lots you own. Scan or select them to add details or split them into sub-lots.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    {purchasedLots.length > 0 ? (
-                        purchasedLots.map((lot) => (
-                            <div key={lot.lotId} className="border p-4 rounded-lg">
-                                <LotDetailsCard lot={lot} />
-                                <div className="mt-4 flex justify-end">
-                                    <Button variant="secondary" onClick={() => handleScan({lotId: lot.lotId})}>
-                                        <Spline className="mr-2 h-4 w-4" /> Manage Lot
-                                    </Button>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-muted-foreground text-center py-4">
-                            You have not purchased any lots yet.
-                        </p>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
-        
-        <Separator />
-        
-        <Card>
-            <CardHeader>
-                <CardTitle>Available Lots for Purchase</CardTitle>
-                <CardDescription>
-                    Browse lots currently available directly from farmers.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-                {availableLots.length > 0 ? (
-                    availableLots.map((lot) => (
-                        <div key={lot.lotId} className="border p-4 rounded-lg">
-                            <LotDetailsCard lot={lot} />
-                            <div className="mt-4 flex justify-end">
-                                <Button onClick={() => setLotToBuy(lot)}>
-                                    <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />{lot.price * lot.weight}
-                                </Button>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <p className="text-muted-foreground text-center py-4">
-                        There are no lots currently available for purchase.
-                    </p>
-                )}
-            </CardContent>
-        </Card>
-
+        </TabsContent>
+      </Tabs>
 
         <AlertDialog open={!!lotToBuy} onOpenChange={() => setLotToBuy(null)}>
             <AlertDialogContent>
@@ -391,8 +401,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 <AlertDialogFooter>
                     <AlertDialogCancel disabled={isPaying} onClick={() => setLotToPay(null)}>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handlePayment} disabled={isPaying}>
-                        {isPaying ? <Loader2 className="animate-spin" /> : <CreditCard className="mr-2"/>}
-                        {isPaying ? 'Processing...' : 'Pay Now'}
+                        {isPaying ? <Loader2 className="animate-spin" /> : <><CreditCard className="mr-2"/>Pay Now</>}
                     </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -491,5 +500,3 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
 }
-
-    
