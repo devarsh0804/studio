@@ -122,7 +122,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
       setPaymentStatus('success');
       toast({
         title: 'Purchase Successful!',
-        description: `You now own Lot ${lotToPay.lotId}.`,
+        description: `Collect crop from the mandi at: ${lotToPay.location}`,
       });
 
       // Wait a moment on the success state, then close
@@ -130,7 +130,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         setLotToPay(null);
         setPaymentStatus('idle'); // Reset for next time
         setActiveTab('purchased-lots');
-      }, 1000);
+      }, 2500);
     }, 1500);
   };
 
