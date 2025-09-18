@@ -8,9 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
-  mandiName: "apmc",
-  officerName: "officer1",
-  code: "7890"
+  farmerName: "Ramesh",
+  farmerId: "FARM123",
+  farmerCode: "7890"
 };
 
 export default function FarmerPage() {
@@ -19,14 +19,14 @@ export default function FarmerPage() {
   
   const handleLogin = (credentials: FarmerLoginCredentials) => {
     if (
-      credentials.mandiName === VALID_CREDENTIALS.mandiName &&
-      credentials.officerName === VALID_CREDENTIALS.officerName &&
-      credentials.code === VALID_CREDENTIALS.code
+      credentials.farmerName === VALID_CREDENTIALS.farmerName &&
+      credentials.farmerId === VALID_CREDENTIALS.farmerId &&
+      credentials.farmerCode === VALID_CREDENTIALS.farmerCode
     ) {
       setFarmerUser(credentials);
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${credentials.officerName}!`,
+        description: `Welcome back, ${credentials.farmerName}!`,
       });
     } else {
       toast({
@@ -48,7 +48,7 @@ export default function FarmerPage() {
   return (
     <>
       <PageHeader 
-        title="Farmer / Sahayak"
+        title="Farmer"
         description={farmerUser ? "Register your new crop lot and generate a unique tracking QR code." : "Please log in to continue."}
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
