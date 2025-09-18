@@ -22,7 +22,7 @@ interface RetailerLoginProps {
 export function RetailerLogin({ onLogin }: RetailerLoginProps) {
   const form = useForm<RetailerLoginCredentials>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { storeName: "", storeCode: "" },
+    defaultValues: { storeName: "retail", storeCode: "5678" },
   });
 
   const onSubmit: SubmitHandler<RetailerLoginCredentials> = (data) => {
@@ -83,5 +83,3 @@ export function RetailerLogin({ onLogin }: RetailerLoginProps) {
     </div>
   );
 }
-
-    
