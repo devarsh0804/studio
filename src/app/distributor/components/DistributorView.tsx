@@ -306,7 +306,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 h-12">
             <TabsTrigger value="purchase"><ShoppingCart className="mr-2"/>Available Crops</TabsTrigger>
             <TabsTrigger value="purchased-lots"><ShoppingBag className="mr-2"/>Purchased Lots</TabsTrigger>
         </TabsList>
