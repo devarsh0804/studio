@@ -61,7 +61,14 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
-  const assignForm = useForm<AssignFormValues>({ resolver: zodResolver(assignSchema) });
+  const assignForm = useForm<AssignFormValues>({ 
+    resolver: zodResolver(assignSchema),
+    defaultValues: {
+      retailerId: "",
+      vehicleNumber: "",
+      dispatchDate: "",
+    }
+  });
 
   const allLots = getAllLots();
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
