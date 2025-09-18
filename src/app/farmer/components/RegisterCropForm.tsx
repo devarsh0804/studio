@@ -199,7 +199,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                                     )}
                                     >
                                     {field.value ? (
-                                        format(field.value, "PPP")
+                                        format(field.value, "PP")
                                     ) : (
                                         <span>Pick a date</span>
                                     )}
