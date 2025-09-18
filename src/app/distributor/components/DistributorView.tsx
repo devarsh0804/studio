@@ -80,7 +80,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
   useEffect(() => {
     if (scannedLot) {
-      const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId && l.status !== 'Dispatched' && l.status !== 'Delivered');
+      const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId && l.status !== 'Dispatched' && l.status !== 'Delivered' && l.status !== 'Stocked' && l.paymentStatus !== 'Advance Paid');
       if (childLots.length > 0) {
         setSubLots(childLots);
       }
@@ -95,7 +95,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     setTimeout(() => {
       if (lot) {
         setScannedLot(lot);
-        const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId && l.status !== 'Dispatched' && l.status !== 'Delivered');
+        const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId && l.status !== 'Dispatched' && l.status !== 'Delivered' && l.status !== 'Stocked' && l.paymentStatus !== 'Advance Paid');
         setSubLots(childLots);
         subLotForm.reset({subLotCount: 2});
       } else {
@@ -166,15 +166,13 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   };
 
   const downloadQR = (lotId: string) => {
-    if (qrRef.current) {
-        const canvas = qrRef.current.querySelector("canvas");
-        if (canvas) {
-            const image = canvas.toDataURL("image/png");
-            const a = document.createElement("a");
-            a.href = image;
-            a.download = `${lotId}.png`;
-            a.click();
-        }
+    const canvas = document.getElementById(`qr-${lotId}`) as HTMLCanvasElement;
+    if (canvas) {
+        const image = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = image;
+        a.download = `${lotId}.png`;
+        a.click();
     }
   };
 
@@ -256,17 +254,27 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               {subLots.length > 0 && (
                 <div className="mt-6">
                   <h4 className="font-semibold mb-4">Generated Sub-lots:</h4>
-                   <div className="space-y-2">
+                   <div className="grid md:grid-cols-2 gap-4">
                     {subLots.map((lot) => (
-                      <Button 
-                        key={lot.lotId}
-                        variant="secondary"
-                        className="w-full justify-start"
-                        onClick={() => setLotToAssign(lot)}
-                      >
-                        <QrCode className="mr-2" />
-                        Assign <span className='font-mono mx-2'>{lot.lotId}</span> ({lot.weight} quintals)
-                      </Button>
+                      <Card key={lot.lotId} className="flex flex-col">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-base font-mono flex items-center gap-2"><QrCode className="text-muted-foreground"/> {lot.lotId}</CardTitle>
+                            <CardDescription>{lot.weight} quintals</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-1 flex flex-col items-center justify-center gap-4">
+                            <div className="p-2 bg-white rounded-lg">
+                                <QRCode value={lot.lotId} size={128} id={`qr-${lot.lotId}`} />
+                            </div>
+                            <div className="flex w-full gap-2 mt-2">
+                                <Button variant="secondary" className="w-full" onClick={() => downloadQR(lot.lotId)}>
+                                    <Download className="mr-2 h-4 w-4"/> Download
+                                </Button>
+                                <Button className="w-full" onClick={() => setLotToAssign(lot)}>
+                                    <PackageCheck className="mr-2 h-4 w-4"/> Assign
+                                </Button>
+                            </div>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 </div>
