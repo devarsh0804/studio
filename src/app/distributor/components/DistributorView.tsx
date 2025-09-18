@@ -266,9 +266,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                 <QRCode value={lot.lotId} size={128} id={`qr-${lot.lotId}`} />
                             </div>
                             <div className="flex w-full gap-2 mt-2">
-                                <Button variant="secondary" className="w-full" onClick={() => downloadQR(lot.lotId)}>
-                                    <Download className="mr-2 h-4 w-4"/> Download
-                                </Button>
                                 <Button className="w-full" onClick={() => setLotToAssign(lot)}>
                                     <PackageCheck className="mr-2 h-4 w-4"/> Assign
                                 </Button>
@@ -487,17 +484,31 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                             <p><span className="text-muted-foreground">Dispatch Date:</span> {lot.logisticsInfo?.dispatchDate}</p>
                             <p><span className="text-muted-foreground">Assigned To:</span> <span className="font-mono">{lot.owner}</span></p>
                           </div>
-                          <div>
-                              <p className="font-semibold">Status:</p>
-                              <Badge variant={lot.status === 'Delivered' ? 'default' : (lot.status === 'Dispatched' ? 'secondary' : 'outline')}>
-                                {lot.status}
-                              </Badge>
-                               <p className="font-semibold mt-2">Payment:</p>
+                          <div className='flex flex-col items-end gap-2'>
+                              <div>
+                                <p className="font-semibold text-right">Status:</p>
+                                <Badge variant={lot.status === 'Delivered' ? 'default' : (lot.status === 'Dispatched' ? 'secondary' : 'outline')}>
+                                    {lot.status}
+                                </Badge>
+                              </div>
+                              <div>
+                                <p className="font-semibold text-right">Payment:</p>
                                 <Badge variant={lot.paymentStatus === 'Fully Paid' ? 'default' : (lot.paymentStatus === 'Advance Paid' ? 'outline' : 'destructive')}>
                                   {lot.paymentStatus}
                                 </Badge>
+                              </div>
                           </div>
                         </div>
+                        {lot.status === 'Dispatched' && (
+                            <div className="mt-4 flex flex-col items-center gap-4">
+                                <div className="p-2 bg-white rounded-lg">
+                                    <QRCode value={lot.lotId} size={128} id={`qr-${lot.lotId}`} />
+                                </div>
+                                <Button variant="secondary" className="w-full" onClick={() => downloadQR(lot.lotId)}>
+                                    <Download className="mr-2 h-4 w-4"/> Download QR for Shipment
+                                </Button>
+                            </div>
+                        )}
                     </div>
                   </div>
                 ))
