@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Tractor, Truck, Store, RotateCcw } from 'lucide-react';
+import { Leaf, RotateCcw, Store, Tractor, Truck } from 'lucide-react';
 import { RoleCard } from '@/components/RoleCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -89,6 +89,9 @@ export default function Home() {
       </div>
 
       <div className="text-center mb-12">
+        <div className="flex justify-center items-center mb-4">
+            <Leaf className="w-16 h-16 text-primary" />
+        </div>
         <h1 className="font-headline text-5xl md:text-6xl font-bold text-primary">
           AgriChain Trace
         </h1>
