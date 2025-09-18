@@ -48,6 +48,7 @@ export function TransportView() {
     resolver: zodResolver(transportSchema),
     defaultValues: {
       vehicleNumber: "",
+      transportCondition: "Normal",
       warehouseEntryDateTime: "",
     }
   });
@@ -55,17 +56,24 @@ export function TransportView() {
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
     setError(null);
-    const lot = findLot(data.lotId);
+    setScannedLot(null); // Reset previous lot
+    
+    // Simulate network delay
     setTimeout(() => {
+      const lot = findLot(data.lotId);
       if (lot) {
         setScannedLot(lot);
-        transportForm.reset();
+        transportForm.reset({
+            vehicleNumber: "",
+            transportCondition: "Normal",
+            warehouseEntryDateTime: "",
+        });
       } else {
         setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
         setScannedLot(null);
       }
       setIsLoading(false);
-    }, 500); // Simulate network delay
+    }, 500); 
   };
 
   const handleFormSubmit: SubmitHandler<TransportFormValues> = async (data) => {

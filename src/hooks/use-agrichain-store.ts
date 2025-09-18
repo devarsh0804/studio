@@ -15,7 +15,7 @@ interface AgriChainState {
   addTransportEvent: (lotId: string, event: TransportEvent) => void;
   addRetailEvent: (lotId: string, event: RetailEvent) => void;
   addRetailPacks: (packs: RetailPack[]) => void;
-  findLot: (lotId: string, findExact?: boolean) => Lot | undefined;
+  findLot: (lotId: string) => Lot | undefined;
   findPack: (packId: string) => RetailPack | undefined;
   getLotHistory: (lotId: string) => LotHistory | null;
   getAllLots: () => Lot[];
@@ -61,7 +61,7 @@ export const useAgriChainStore = create<AgriChainState>()(
         addTransportEvent: (lotId, event) =>
           set((state) => {
             // Find the lot to associate the event with the entire history
-            const lot = get().findLot(lotId, true);
+            const lot = get().findLot(lotId);
             if (!lot) return state;
 
             // If it's a sub-lot, associate with the parent lot
@@ -94,21 +94,18 @@ export const useAgriChainStore = create<AgriChainState>()(
             };
           }),
 
-        findLot: (lotId, findExact = false) => {
+        findLot: (lotId) => {
            if (!lotId) return undefined;
            
            const lot = get().lots[lotId];
-           if (lot || findExact) return lot;
+           if (lot) return lot;
 
            if (lotId.startsWith('PACK-')) {
               const pack = get().retailPacks[lotId];
               // Return the specific sub-lot it came from, or the parent lot
               return pack ? get().lots[pack.parentLotId] : undefined;
            }
-
-           // For sub-lots, if not finding exact, it might be intended to find the parent.
-           // However, for most UI purposes, finding the exact lot is now preferred.
-           // This logic remains simple: just find by ID.
+           
            return get().lots[lotId];
         },
 
@@ -122,10 +119,10 @@ export const useAgriChainStore = create<AgriChainState>()(
           if (id.startsWith('PACK-')) {
             const pack = get().findPack(id);
             if(pack) {
-              lot = get().findLot(pack.parentLotId, true); // Find the exact lot
+              lot = get().findLot(pack.parentLotId); 
             }
           } else {
-            lot = get().findLot(id, true); // Find the exact lot
+            lot = get().findLot(id);
           }
           
           if (!lot) return null;
