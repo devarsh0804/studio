@@ -21,7 +21,6 @@ import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRup
 import QRCode from "qrcode.react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
 import { detectConflictAction } from "@/app/actions";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
 import { Badge } from "@/components/ui/badge";
@@ -113,8 +112,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         title: "Purchase Successful!",
         description: `You now own Lot ${lotToPay.lotId}.`,
       });
-
-      resetView();
       
       setLotToPay(null);
       setIsPaying(false);
@@ -277,120 +274,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 )}
                 </>
             )}
-            
-            <AlertDialog open={!!lotToBuy} onOpenChange={() => setLotToBuy(null)}>
-                <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Confirm Purchase</AlertDialogTitle>
-                    <AlertDialogDescription>
-                    Are you sure you want to purchase Lot {lotToBuy?.lotId} for a total of <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />{lotToBuy ? lotToBuy.price * lotToBuy.weight : 0}? This action will be recorded on the ledger.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirmPurchase}>Confirm Purchase</AlertDialogAction>
-                </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            <AlertDialog open={!!lotToPay} onOpenChange={(open) => !open && !isPaying && setLotToPay(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Finalize Payment</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Proceed to pay the farmer for Lot {lotToPay?.lotId}. Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />{lotToPay ? lotToPay.price * lotToPay.weight : 0}.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="py-4 text-center text-muted-foreground">
-                        (This is a simulated payment screen)
-                    </div>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isPaying} onClick={() => setLotToPay(null)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handlePayment} disabled={isPaying}>
-                            {isPaying ? <Loader2 className="animate-spin" /> : <CreditCard className="mr-2"/>}
-                            {isPaying ? 'Processing...' : 'Pay Now'}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            <Dialog open={!!lotForTransport} onOpenChange={(open) => !open && setLotForTransport(null)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center"><Truck className="mr-2"/> Add Transport for Sub-Lot</DialogTitle>
-                        <DialogDescription>
-                            Lot ID: <span className="font-mono text-primary">{lotForTransport?.lotId}</span>
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                        <div className="flex justify-center" ref={qrCodeRef}>
-                            <div className="p-2 bg-white rounded-md inline-block">
-                                <QRCode value={lotForTransport?.lotId || ''} size={128} level={"H"} />
-                            </div>
-                        </div>
-                        <Form {...transportForm}>
-                            <form onSubmit={transportForm.handleSubmit(handleTransportSubmit)} className="space-y-4">
-                                 <FormField control={transportForm.control} name="vehicleNumber" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Vehicle Number</FormLabel>
-                                        <FormControl><Input placeholder="e.g., OD-01-AB-1234" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )} />
-                                <FormField control={transportForm.control} name="transportCondition" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Transport Condition</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a condition" /></SelectTrigger></FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="Cold Storage">Cold Storage</SelectItem>
-                                                <SelectItem value="Normal">Normal</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )} />
-                                <FormField control={transportForm.control} name="warehouseEntryDateTime" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Warehouse Entry Date/Time</FormLabel>
-                                        <FormControl><Input type="datetime-local" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                <Alert>
-                                    <Sparkles className="h-4 w-4" />
-                                    <AlertTitle>AI-Powered Conflict Detection</AlertTitle>
-                                    <AlertDescription>Our AI will check for potential conflicts with existing lot data.</AlertDescription>
-                                </Alert>
-                                <div className="flex justify-between gap-2">
-                                    <Button type="button" variant="outline" onClick={downloadQR}><Download className="mr-2"/>Print QR</Button>
-                                    <Button type="submit" disabled={isSubmittingTransport}>
-                                        {isSubmittingTransport && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        Submit
-                                    </Button>
-                                </div>
-                            </form>
-                        </Form>
-                    </div>
-                </DialogContent>
-            </Dialog>
-            
-            <AlertDialog open={!!conflict} onOpenChange={() => setConflict(null)}>
-                <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center text-destructive"><XCircle className="mr-2" /> AI Conflict Detected!</AlertDialogTitle>
-                    <AlertDialogDescription className="text-left pt-4 space-y-2">
-                        <p className="font-bold">Details:</p>
-                        <p>{conflict?.conflictDetails}</p>
-                        {conflict?.resolutionOptions && <>
-                            <p className="font-bold pt-2">Suggested Resolution:</p>
-                            <p>{conflict.resolutionOptions}</p>
-                        </>}
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogAction onClick={() => setConflict(null)}>Acknowledge & Review</AlertDialogAction>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
   }
@@ -658,9 +541,5 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
   }
-
-    
-
-
 
     
