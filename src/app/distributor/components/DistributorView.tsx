@@ -14,11 +14,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Send } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -28,12 +27,6 @@ const subLotSchema = z.object({
 });
 type SubLotFormValues = z.infer<typeof subLotSchema>;
 
-const assignSchema = z.object({
-  retailerId: z.string().min(1, 'Retailer ID is required.'),
-  vehicleNumber: z.string().min(1, 'Vehicle number is required.'),
-  transportCondition: z.enum(['Cold Storage', 'Normal']),
-});
-type AssignFormValues = z.infer<typeof assignSchema>;
 
 interface DistributorViewProps {
   distributorId: string;
@@ -49,15 +42,12 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [isPaying, setIsPaying] = useState(false);
   const [subLots, setSubLots] = useState<Lot[]>([]);
   const [activeTab, setActiveTab] = useState('available-crops');
-  const [lotToAssign, setLotToAssign] = useState<Lot | null>(null);
-  const [finalQRInfo, setFinalQRInfo] = useState<Lot | null>(null);
 
   const { findLot, updateLot, getAllLots, addLots } = useAgriChainStore();
   const { toast } = useToast();
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
-  const assignForm = useForm<AssignFormValues>({ resolver: zodResolver(assignSchema), defaultValues: { transportCondition: 'Normal' } });
 
   const allLots = getAllLots();
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
@@ -145,64 +135,13 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     });
   };
 
-  const handleAssignSubmit: SubmitHandler<AssignFormValues> = (data) => {
-    if (!lotToAssign) return;
-
-    const updates: Partial<Lot> = {
-      owner: data.retailerId,
-      transportInfo: {
-        vehicleNumber: data.vehicleNumber,
-        transportCondition: data.transportCondition,
-        timestamp: new Date().toISOString(),
-      },
-    };
-    updateLot(lotToAssign.lotId, updates);
-    setFinalQRInfo({ ...lotToAssign, ...updates });
-    setLotToAssign(null);
-    assignForm.reset({ transportCondition: 'Normal' });
-  };
-
-
   const resetView = () => {
     setScannedLot(null);
     setError(null);
     setSubLots([]);
     scanForm.reset();
     subLotForm.reset({subLotCount: 2});
-    setFinalQRInfo(null);
   };
-
-  if(finalQRInfo) {
-    return (
-        <Card className="max-w-md mx-auto">
-            <CardHeader>
-                <CardTitle className='text-primary flex items-center'><QrCode className='mr-2'/> QR Code Ready for Shipping</CardTitle>
-                <CardDescription>
-                    Lot <span className='font-mono'>{finalQRInfo.lotId}</span> has been assigned to retailer <span className='font-mono'>{finalQRInfo.owner}</span>. Attach this QR code to the shipment.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4">
-                 <div className="p-4 bg-white rounded-lg inline-block">
-                    <QRCode
-                        value={finalQRInfo.lotId}
-                        size={256}
-                        level={"H"}
-                        includeMargin={true}
-                    />
-                </div>
-                <Button onClick={() => {
-                  setFinalQRInfo(null);
-                  setLotToAssign(null);
-                  // Re-fetch the sublots to reflect changes
-                  if (scannedLot) {
-                     const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId);
-                     setSubLots(childLots);
-                  }
-                }} className="w-full">Back to Lot Details</Button>
-            </CardContent>
-        </Card>
-    );
-  }
 
   if (scannedLot) {
     const isOwnedByDistributor = scannedLot.owner === distributorId;
@@ -264,9 +203,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                 <p className='text-xs text-muted-foreground'>Owner: {lot.owner}</p>
                             </div>
                         </div>
-                        <Button variant="secondary" onClick={() => setLotToAssign(lot)} disabled={lot.owner !== distributorId}>
-                            <Send className="mr-2"/> Assign & Ship
-                        </Button>
                       </Card>
                     ))}
                   </div>
@@ -375,7 +311,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                   <div key={lot.lotId} className="border p-4 rounded-lg">
                     <LotDetailsCard lot={lot} />
                     <div className="mt-4 flex justify-end">
-                      <Button variant="secondary" onClick={() => handleScan({ lotId: lot.lotId })}>
+                       <Button variant="secondary" onClick={() => handleScan({ lotId: lot.lotId })}>
                         <Spline className="mr-2 h-4 w-4" /> Manage Lot
                       </Button>
                     </div>
@@ -426,57 +362,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!lotToAssign} onOpenChange={(open) => !open && setLotToAssign(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Assign &amp; Ship Lot</AlertDialogTitle>
-            <AlertDialogDescription>
-              Enter logistic and retailer details for lot: <span className="font-mono text-primary">{lotToAssign?.lotId}</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <Form {...assignForm}>
-            <form onSubmit={assignForm.handleSubmit(handleAssignSubmit)} className="space-y-4 pt-4">
-               <FormField
-                control={assignForm.control}
-                name="retailerId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Retailer ID</FormLabel>
-                    <FormControl><Input placeholder="e.g., retail-store-01" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField control={assignForm.control} name="vehicleNumber" render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Vehicle Number</FormLabel>
-                    <FormControl><Input placeholder="e.g., OD-01-AB-1234" {...field} /></FormControl>
-                    <FormMessage />
-                </FormItem>
-                )} />
-              <FormField control={assignForm.control} name="transportCondition" render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Transport Condition</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Select a condition" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        <SelectItem value="Cold Storage">Cold Storage</SelectItem>
-                        <SelectItem value="Normal">Normal</SelectItem>
-                    </SelectContent>
-                    </Select>
-                    <FormMessage />
-                </FormItem>
-                )} />
-              <AlertDialogFooter className="pt-4">
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction type="submit">Submit &amp; Get QR</AlertDialogAction>
-              </AlertDialogFooter>
-            </form>
-          </Form>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
