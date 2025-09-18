@@ -123,7 +123,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     for (let i = 0; i < data.subLotCount; i++) {
         const newLot: Lot = {
             ...scannedLot,
-            lotId: `${scannedLot.lotId}-SUB-${String(i + 1).padStart(3, '0')}`,
+            lotId: `${scannedLot.lotId}-SUB-${String(Math.floor(Math.random() * 1000) + i).padStart(3, '0')}`,
             parentLotId: scannedLot.lotId,
             weight: newWeight,
             price: newPrice, // Adjust price proportionally
@@ -250,7 +250,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                             <div className="p-2 bg-white rounded-md">
                                                 <QRCode value={lot.lotId} size={80} level={"H"} />
                                             </div>
-                                            <p className="text-xs font-mono mt-1 break-all">{lot.lotId}</p>
+                                            <p className="text-xs font-mono mt-1 break-words w-full">{lot.lotId}</p>
                                             <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
                                         </Button>
                                     ))}
