@@ -13,9 +13,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { History, Loader2, LogOut, ScanLine, Search, Store, XCircle } from "lucide-react";
-import { format } from 'date-fns';
+import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle } from "lucide-react";
+import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
+import { Separator } from "@/components/ui/separator";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -109,18 +110,35 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     const events = [];
 
     const parentLot = lotHierarchy[0];
+    const gradingDate = parentLot.gradingDate ? new Date(parentLot.gradingDate) : null;
+
 
     // Farmer event (from parent lot)
     events.push({
         type: 'FARM',
         title: 'Harvested & Registered',
         timestamp: format(new Date(parentLot.harvestDate), 'PP'),
-        details: <>
-            <p><strong>Crop:</strong> {parentLot.cropName}</p>
-            <p><strong>Weight:</strong> {parentLot.weight} quintals</p>
-            <p><strong>Farmer:</strong> {parentLot.farmer}</p>
-            <p><strong>Original Lot ID:</strong> {parentLot.lotId}</p>
-        </>
+        details: (
+            <div className="space-y-2 text-sm">
+                <p><strong>Farmer:</strong> {parentLot.farmer}</p>
+                <p><strong>Location:</strong> {parentLot.location}</p>
+                <p><strong>Crop:</strong> {parentLot.cropName}</p>
+                <p><strong>Total Harvested Weight:</strong> {parentLot.weight} quintals</p>
+                <p><strong>Original Lot ID:</strong> {parentLot.lotId}</p>
+                <Separator className="my-3"/>
+                <h4 className="font-semibold">Digital Certificate</h4>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    <p className="flex items-center"><Award className="w-4 h-4 mr-2 text-primary"/><strong>Grade:</strong> <span className="ml-1 font-mono">{parentLot.quality}</span></p>
+                    <p className="flex items-center"><Droplets className="w-4 h-4 mr-2 text-primary"/><strong>Moisture:</strong> <span className="ml-1 font-mono">{parentLot.moisture}</span></p>
+                    <p className="flex items-center"><Microscope className="w-4 h-4 mr-2 text-primary"/><strong>Impurities:</strong> <span className="ml-1 font-mono">{parentLot.impurities}</span></p>
+                    <p className="flex items-center"><Ruler className="w-4 h-4 mr-2 text-primary"/><strong>Size:</strong> <span className="ml-1 font-mono">{parentLot.size}</span></p>
+                    <p className="flex items-center"><Palette className="w-4 h-4 mr-2 text-primary"/><strong>Color:</strong> <span className="ml-1 font-mono">{parentLot.color}</span></p>
+                </div>
+                <p className="text-xs text-muted-foreground pt-1">
+                    Graded on {gradingDate && isValid(gradingDate) ? format(gradingDate, 'PPp') : 'N/A'}
+                </p>
+            </div>
+        )
     });
 
     // Distributor events (from the hierarchy)
@@ -130,11 +148,16 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                 type: 'TRANSPORT',
                 title: 'Dispatched to Retailer',
                 timestamp: format(new Date(lot.logisticsInfo.dispatchDate), 'PP'),
-                details: <>
-                    <p><strong>Lot ID:</strong> {lot.lotId}</p>
-                    <p><strong>Vehicle:</strong> {lot.logisticsInfo.vehicleNumber}</p>
-                    <p><strong>Assigned To:</strong> {lot.owner}</p>
-                </>
+                details: (
+                     <div className="space-y-2 text-sm">
+                        <p><strong>Lot ID:</strong> {lot.lotId}</p>
+                        <p><strong>Assigned To:</strong> {lot.owner}</p>
+                        <p><strong>Vehicle:</strong> {lot.logisticsInfo.vehicleNumber}</p>
+                        <Separator className="my-3"/>
+                        <p><strong>Weight in this Lot:</strong> {lot.weight} quintals</p>
+                        <p className="flex items-center"><Award className="w-4 h-4 mr-2 text-primary"/><strong>Quality:</strong> <span className="ml-1 font-mono">{lot.quality}</span></p>
+                    </div>
+                )
             });
         }
     });
