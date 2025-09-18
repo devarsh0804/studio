@@ -17,7 +17,7 @@ import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, Cre
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 
@@ -518,10 +518,10 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Finalize Payment</DialogTitle>
-            <AlertDialogDescription>
+            <DialogDescription>
               Proceed to pay the farmer for Lot {lotToPay?.lotId}. <br /> Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
               <span className="font-bold">{lotToPay ? lotToPay.price * lotToPay.weight : 0}</span>
-            </AlertDialogDescription>
+            </DialogDescription>
           </DialogHeader>
           
           <Tabs defaultValue="upi" className="w-full pt-4">
