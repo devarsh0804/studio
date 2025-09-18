@@ -60,9 +60,12 @@ export const useAgriChainStore = create<AgriChainState>()(
 
         addTransportEvent: (lotId, event) =>
           set((state) => {
-            // Find the parent lot to associate the event with the entire history
+            // Find the lot to associate the event with the entire history
             const lot = get().findLot(lotId, true);
-            const parentId = lot?.parentLotId || lotId;
+            if (!lot) return state;
+
+            // If it's a sub-lot, associate with the parent lot
+            const parentId = lot.parentLotId || lotId;
 
             return {
               transportEvents: {
@@ -94,19 +97,18 @@ export const useAgriChainStore = create<AgriChainState>()(
         findLot: (lotId, findExact = false) => {
            if (!lotId) return undefined;
            
-           if(findExact){
-              return get().lots[lotId];
-           }
+           const lot = get().lots[lotId];
+           if (lot || findExact) return lot;
 
-           // Handle finding sub-lots or packs and returning the parent
            if (lotId.startsWith('PACK-')) {
               const pack = get().retailPacks[lotId];
+              // Return the specific sub-lot it came from, or the parent lot
               return pack ? get().lots[pack.parentLotId] : undefined;
            }
-            if (lotId.includes('-SUB-')) {
-                const parentId = lotId.split('-SUB-')[0];
-                return get().lots[parentId];
-            }
+
+           // For sub-lots, if not finding exact, it might be intended to find the parent.
+           // However, for most UI purposes, finding the exact lot is now preferred.
+           // This logic remains simple: just find by ID.
            return get().lots[lotId];
         },
 
@@ -120,24 +122,27 @@ export const useAgriChainStore = create<AgriChainState>()(
           if (id.startsWith('PACK-')) {
             const pack = get().findPack(id);
             if(pack) {
-              lot = get().findLot(pack.parentLotId);
+              lot = get().findLot(pack.parentLotId, true); // Find the exact lot
             }
           } else {
-            lot = get().findLot(id);
+            lot = get().findLot(id, true); // Find the exact lot
           }
           
           if (!lot) return null;
           
-          const transport = get().transportEvents[lot.lotId] || [];
-          const retail = get().retailEvents[lot.lotId] || [];
-          const parentLot = lot.parentLotId ? get().findLot(lot.parentLotId, true) : undefined;
-          const childLots = Object.values(get().lots).filter(l => l.parentLotId === lot.lotId);
+          // History is tracked on the top-level parent lot
+          const parentLotId = lot.parentLotId || lot.lotId;
+          const parentLot = get().lots[parentLotId];
+
+          const transport = get().transportEvents[parentLotId] || [];
+          const retail = get().retailEvents[parentLotId] || [];
+          const childLots = Object.values(get().lots).filter(l => l.parentLotId === parentLotId);
 
           return {
-            lot,
+            lot, // The specific lot we looked up (could be a sub-lot)
             transportEvents: transport,
             retailEvents: retail,
-            parentLot,
+            parentLot: parentLotId !== lot.lotId ? parentLot : undefined,
             childLots,
           };
         },
@@ -148,5 +153,3 @@ export const useAgriChainStore = create<AgriChainState>()(
     )
   )
 );
-
-    
