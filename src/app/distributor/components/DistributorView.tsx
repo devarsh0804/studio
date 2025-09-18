@@ -1,23 +1,29 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
-import type { Lot } from "@/lib/types";
+import type { Lot, TransportEvent } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { LotDetailsCard } from "@/components/LotDetailsCard";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline } from "lucide-react";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, Sparkles, Download } from "lucide-react";
 import QRCode from "qrcode.react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+import { detectConflictAction } from "@/app/actions";
+import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
+
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -27,6 +33,13 @@ const subLotSchema = z.object({
     subLotCount: z.coerce.number().int().min(2, "Must create at least 2 sub-lots.").max(100),
 });
 type SubLotFormValues = z.infer<typeof subLotSchema>;
+
+const transportSchema = z.object({
+  vehicleNumber: z.string().min(1, "Vehicle number is required"),
+  transportCondition: z.enum(["Cold Storage", "Normal"]),
+  warehouseEntryDateTime: z.string().min(1, "Warehouse entry date/time is required"),
+});
+type TransportFormValues = z.infer<typeof transportSchema>;
 
 
 interface DistributorViewProps {
@@ -38,16 +51,21 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [scannedLot, setScannedLot] = useState<Lot | null>(null);
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
+  const [lotForTransport, setLotForTransport] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
+  const [isSubmittingTransport, setIsSubmittingTransport] = useState(false);
   const [subLots, setSubLots] = useState<Lot[]>([]);
+  const [conflict, setConflict] = useState<DistributorUpdateConflictDetectionOutput | null>(null);
   
-  const { findLot, updateLot, getAllLots, addLots } = useAgriChainStore();
+  const { findLot, updateLot, getAllLots, addLots, addTransportEvent } = useAgriChainStore();
   const { toast } = useToast();
+  const qrCodeRef = useRef<HTMLDivElement>(null);
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema) });
+  const transportForm = useForm<TransportFormValues>({ resolver: zodResolver(transportSchema) });
   
   const allLots = getAllLots();
   const availableLots = allLots.filter(lot => lot.owner === lot.farmer && !lot.parentLotId);
@@ -126,6 +144,45 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         description: `${data.subLotCount} new lots have been created and are ready for retailers.`
     });
   }
+  
+  const handleTransportSubmit: SubmitHandler<TransportFormValues> = async (data) => {
+    if (!lotForTransport) return;
+
+    setIsSubmittingTransport(true);
+    setConflict(null);
+    const result = await detectConflictAction(lotForTransport, data);
+
+    if (result.conflictDetected) {
+      setConflict(result);
+    } else {
+      const newEvent: TransportEvent = {
+        ...data,
+        timestamp: new Date().toISOString(),
+      };
+      addTransportEvent(lotForTransport.lotId, newEvent);
+      toast({
+        title: "Success!",
+        description: `Transport details for Lot ID ${lotForTransport.lotId} have been added.`,
+      });
+      setLotForTransport(null);
+      transportForm.reset();
+    }
+    setIsSubmittingTransport(false);
+  }
+  
+  const downloadQR = () => {
+    if (qrCodeRef.current) {
+      const canvas = qrCodeRef.current.querySelector("canvas");
+      if (canvas && lotForTransport) {
+        const image = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = image;
+        a.download = `${lotForTransport.lotId}.png`;
+        a.click();
+      }
+    }
+  };
+
 
   const resetView = () => {
     setScannedLot(null);
@@ -186,29 +243,31 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                     <h4 className="font-semibold mb-4">Generated Sub-lot QRs:</h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-1">
                                         {subLots.map(lot => (
-                                            <div key={lot.lotId} className="text-center p-2 rounded-lg border">
-                                                <div className="p-2 bg-white rounded-md inline-block">
+                                            <Button
+                                                key={lot.lotId}
+                                                variant="outline"
+                                                className="h-auto flex-col p-2"
+                                                onClick={() => {
+                                                  transportForm.reset();
+                                                  setLotForTransport(lot);
+                                                }}
+                                            >
+                                                <div className="p-2 bg-white rounded-md">
                                                     <QRCode value={lot.lotId} size={80} level={"H"} />
                                                 </div>
                                                 <p className="text-xs font-mono mt-1 truncate">{lot.lotId}</p>
                                                 <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
-                                            </div>
+                                            </Button>
                                         ))}
                                     </div>
                                     <Alert className="mt-4">
-                                        <AlertDescription>The parent lot's weight has been set to 0. These new sub-lots are now available for retailers to scan and purchase.</AlertDescription>
+                                        <AlertDescription>Click a QR code to add transport details for that specific sub-lot. The parent lot's weight is now 0.</AlertDescription>
                                     </Alert>
-                                    <Button asChild className="mt-4 w-full">
-                                        <Link href="/distributor/transport">
-                                            <Truck className="mr-2" /> Add Transport Details for Sub-lots
-                                        </Link>
-                                    </Button>
                                 </div>
                             )}
                         </CardContent>
                     </Card>
                 )}
-
                 </>
             )}
             
@@ -245,6 +304,84 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                             {isPaying ? 'Processing...' : 'Pay Now'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <Dialog open={!!lotForTransport} onOpenChange={(open) => !open && setLotForTransport(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center"><Truck className="mr-2"/> Add Transport for Sub-Lot</DialogTitle>
+                        <DialogDescription>
+                            Lot ID: <span className="font-mono text-primary">{lotForTransport?.lotId}</span>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div className="flex justify-center" ref={qrCodeRef}>
+                            <div className="p-2 bg-white rounded-md inline-block">
+                                <QRCode value={lotForTransport?.lotId || ''} size={128} level={"H"} />
+                            </div>
+                        </div>
+                        <Form {...transportForm}>
+                            <form onSubmit={transportForm.handleSubmit(handleTransportSubmit)} className="space-y-4">
+                                 <FormField control={transportForm.control} name="vehicleNumber" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Vehicle Number</FormLabel>
+                                        <FormControl><Input placeholder="e.g., OD-01-AB-1234" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )} />
+                                <FormField control={transportForm.control} name="transportCondition" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Transport Condition</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a condition" /></SelectTrigger></FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="Cold Storage">Cold Storage</SelectItem>
+                                                <SelectItem value="Normal">Normal</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )} />
+                                <FormField control={transportForm.control} name="warehouseEntryDateTime" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Warehouse Entry Date/Time</FormLabel>
+                                        <FormControl><Input type="datetime-local" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                                <Alert>
+                                    <Sparkles className="h-4 w-4" />
+                                    <AlertTitle>AI-Powered Conflict Detection</AlertTitle>
+                                    <AlertDescription>Our AI will check for potential conflicts with existing lot data.</AlertDescription>
+                                </Alert>
+                                <div className="flex justify-between gap-2">
+                                    <Button type="button" variant="outline" onClick={downloadQR}><Download className="mr-2"/>Print QR</Button>
+                                    <Button type="submit" disabled={isSubmittingTransport}>
+                                        {isSubmittingTransport && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Submit
+                                    </Button>
+                                </div>
+                            </form>
+                        </Form>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            
+            <AlertDialog open={!!conflict} onOpenChange={() => setConflict(null)}>
+                <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center text-destructive"><XCircle className="mr-2" /> AI Conflict Detected!</AlertDialogTitle>
+                    <AlertDialogDescription className="text-left pt-4 space-y-2">
+                        <p className="font-bold">Details:</p>
+                        <p>{conflict?.conflictDetails}</p>
+                        {conflict?.resolutionOptions && <>
+                            <p className="font-bold pt-2">Suggested Resolution:</p>
+                            <p>{conflict.resolutionOptions}</p>
+                        </>}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogAction onClick={() => setConflict(null)}>Acknowledge & Review</AlertDialogAction>
                 </AlertDialogContent>
             </AlertDialog>
         </div>
@@ -364,20 +501,28 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                         <CardHeader>
                             <CardTitle>Your Created Sub-Lots</CardTitle>
                             <CardDescription>
-                                These are the sub-lots you have created for retailers.
+                                These are the sub-lots you have created for retailers. Click one to add transport details.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {createdSubLots.map((lot) => (
-                                <div key={lot.lotId} className="border p-4 rounded-lg space-y-2">
-                                    <div className="flex justify-center">
-                                      <QRCode value={lot.lotId} size={64} level={"H"} />
+                           {createdSubLots.map(lot => (
+                                <Button
+                                    key={lot.lotId}
+                                    variant="outline"
+                                    className="h-auto flex-col p-2"
+                                    onClick={() => {
+                                        transportForm.reset();
+                                        setLotForTransport(lot);
+                                    }}
+                                >
+                                    <div className="p-2 bg-white rounded-md">
+                                        <QRCode value={lot.lotId} size={64} level={"H"} />
                                     </div>
-                                    <p className="font-mono text-xs text-center">{lot.lotId}</p>
+                                    <p className="font-mono text-xs text-center mt-2">{lot.lotId}</p>
                                     <p className="text-xs text-center text-muted-foreground">
                                         {lot.weight} quintals from Lot {lot.parentLotId}
                                     </p>
-                                </div>
+                                </Button>
                             ))}
                         </CardContent>
                     </Card>
@@ -421,6 +566,86 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        
+        <Dialog open={!!lotForTransport} onOpenChange={(open) => !open && setLotForTransport(null)}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle className="flex items-center"><Truck className="mr-2"/> Add Transport for Sub-Lot</DialogTitle>
+                    <DialogDescription>
+                        Lot ID: <span className="font-mono text-primary">{lotForTransport?.lotId}</span>
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-4">
+                    <div className="flex justify-center" ref={qrCodeRef}>
+                        <div className="p-2 bg-white rounded-md inline-block">
+                            <QRCode value={lotForTransport?.lotId || ''} size={128} level={"H"} />
+                        </div>
+                    </div>
+                    <Form {...transportForm}>
+                        <form onSubmit={transportForm.handleSubmit(handleTransportSubmit)} className="space-y-4">
+                                <FormField control={transportForm.control} name="vehicleNumber" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Vehicle Number</FormLabel>
+                                    <FormControl><Input placeholder="e.g., OD-01-AB-1234" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )} />
+                            <FormField control={transportForm.control} name="transportCondition" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Transport Condition</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a condition" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Cold Storage">Cold Storage</SelectItem>
+                                            <SelectItem value="Normal">Normal</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )} />
+                            <FormField control={transportForm.control} name="warehouseEntryDateTime" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Warehouse Entry Date/Time</FormLabel>
+                                    <FormControl><Input type="datetime-local" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                            <Alert>
+                                <Sparkles className="h-4 w-4" />
+                                <AlertTitle>AI-Powered Conflict Detection</AlertTitle>
+                                <AlertDescription>Our AI will check for potential conflicts with existing lot data.</AlertDescription>
+                            </Alert>
+                            <div className="flex justify-between gap-2">
+                                <Button type="button" variant="outline" onClick={downloadQR}><Download className="mr-2"/>Print QR</Button>
+                                <Button type="submit" disabled={isSubmittingTransport}>
+                                    {isSubmittingTransport && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Submit
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </div>
+            </DialogContent>
+        </Dialog>
+
+        <AlertDialog open={!!conflict} onOpenChange={() => setConflict(null)}>
+            <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center text-destructive"><XCircle className="mr-2" /> AI Conflict Detected!</AlertDialogTitle>
+                <AlertDialogDescription className="text-left pt-4 space-y-2">
+                    <p className="font-bold">Details:</p>
+                    <p>{conflict?.conflictDetails}</p>
+                    {conflict?.resolutionOptions && <>
+                        <p className="font-bold pt-2">Suggested Resolution:</p>
+                        <p>{conflict.resolutionOptions}</p>
+                    </>}
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogAction onClick={() => setConflict(null)}>Acknowledge & Review</AlertDialogAction>
+            </AlertDialogContent>
+        </AlertDialog>
+    </div>
     );
   }
+
+    
