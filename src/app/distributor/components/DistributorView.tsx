@@ -59,7 +59,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [conflict, setConflict] = useState<DistributorUpdateConflictDetectionOutput | null>(null);
   const [printMode, setPrintMode] = useState(false);
   const [submittedTransportData, setSubmittedTransportData] = useState<TransportFormValues | null>(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("purchased-lots");
   
   const { findLot, updateLot, getAllLots, addLots, addTransportEvent } = useAgriChainStore();
   const { toast } = useToast();
@@ -123,7 +123,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
       
       setLotToPay(null);
       setIsPaying(false);
-      setActiveTab("dashboard");
+      setActiveTab("purchased-lots");
     }, 1500);
   }
   
@@ -272,11 +272,11 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="dashboard"><ShoppingBag className="mr-2"/>Dashboard</TabsTrigger>
+            <TabsTrigger value="purchased-lots"><ShoppingBag className="mr-2"/>Purchased Lots</TabsTrigger>
             <TabsTrigger value="purchase"><ShoppingCart className="mr-2"/>Purchase Lots</TabsTrigger>
             <TabsTrigger value="scan"><ScanLine className="mr-2"/>Scan Lot</TabsTrigger>
         </TabsList>
-        <TabsContent value="dashboard">
+        <TabsContent value="purchased-lots">
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center">
