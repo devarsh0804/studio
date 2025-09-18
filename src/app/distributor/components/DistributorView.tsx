@@ -311,7 +311,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
         <Separator />
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8">
             <Card>
                 <CardHeader>
                     <CardTitle>Available Lots for Purchase</CardTitle>
@@ -486,5 +486,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
   }
+
+    
 
     
