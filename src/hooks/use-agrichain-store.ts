@@ -24,7 +24,6 @@ export const useAgriChainStore = create<AgriChainState>()(
     persist(
       (set, get) => ({
         lots: {},
-        transportEvents: {}, // Kept for potential future use, but functionality removed
         retailEvents: {},
         retailPacks: {},
 
@@ -57,12 +56,19 @@ export const useAgriChainStore = create<AgriChainState>()(
             }),
 
         addRetailEvent: (lotId, event) =>
-          set((state) => ({
-            retailEvents: {
-              ...state.retailEvents,
-              [lotId]: [...(state.retailEvents[lotId] || []), event],
-            },
-          })),
+          set((state) => {
+            const lot = get().findLot(lotId);
+            if (!lot) return state;
+            
+            const parentLotId = lot.parentLotId || lot.lotId;
+
+            return {
+                retailEvents: {
+                ...state.retailEvents,
+                [parentLotId]: [...(state.retailEvents[parentLotId] || []), event],
+                },
+            };
+          }),
         
         addRetailPacks: (packs) => 
           set((state) => {
@@ -83,11 +89,10 @@ export const useAgriChainStore = create<AgriChainState>()(
 
            if (lotId.startsWith('PACK-')) {
               const pack = get().retailPacks[lotId];
-              // Return the specific sub-lot it came from, or the parent lot
               return pack ? get().lots[pack.parentLotId] : undefined;
            }
            
-           return get().lots[lotId];
+           return undefined;
         },
 
         findPack: (packId) => get().retailPacks[packId],
@@ -95,32 +100,35 @@ export const useAgriChainStore = create<AgriChainState>()(
         getAllLots: () => Object.values(get().lots).sort((a, b) => new Date(b.harvestDate).getTime() - new Date(a.harvestDate).getTime()),
 
         getLotHistory: (id) => {
-          let lot: Lot | undefined;
+          let currentLot: Lot | undefined;
           
           if (id.startsWith('PACK-')) {
             const pack = get().findPack(id);
             if(pack) {
-              lot = get().findLot(pack.parentLotId); 
+              currentLot = get().findLot(pack.parentLotId); 
             }
           } else {
-            lot = get().findLot(id);
+            currentLot = get().findLot(id);
           }
           
-          if (!lot) return null;
+          if (!currentLot) return null;
           
-          // History is tracked on the top-level parent lot
-          const parentLotId = lot.parentLotId || lot.lotId;
-          const parentLot = get().lots[parentLotId];
+          let lotHierarchy: Lot[] = [currentLot];
+          let tempLot = currentLot;
+          while (tempLot.parentLotId && get().lots[tempLot.parentLotId]) {
+            tempLot = get().lots[tempLot.parentLotId]!;
+            lotHierarchy.unshift(tempLot);
+          }
+          
+          const parentLot = lotHierarchy[0];
 
-          const transport = (get() as any).transportEvents[parentLotId] || [];
-          const retail = get().retailEvents[parentLotId] || [];
-          const childLots = Object.values(get().lots).filter(l => l.parentLotId === parentLotId);
+          const retail = get().retailEvents[parentLot.lotId] || [];
+          const childLots = Object.values(get().lots).filter(l => l.parentLotId === parentLot.lotId);
 
           return {
-            lot, // The specific lot we looked up (could be a sub-lot)
-            transportEvents: transport,
+            lot: currentLot, 
             retailEvents: retail,
-            parentLot: parentLotId !== lot.lotId ? parentLot : undefined,
+            parentLot: parentLot.lotId !== currentLot.lotId ? parentLot : undefined,
             childLots,
           };
         },
@@ -131,5 +139,3 @@ export const useAgriChainStore = create<AgriChainState>()(
     )
   )
 );
-
-    

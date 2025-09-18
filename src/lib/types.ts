@@ -41,7 +41,6 @@ export interface RetailPack {
 
 export interface LotHistory {
   lot: Lot;
-  transportEvents: any[]; // Removed TransportEvent type
   retailEvents: RetailEvent[];
   parentLot?: Lot;
   childLots?: Lot[];

@@ -42,7 +42,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [retailPacks, setRetailPacks] = useState<RetailPack[]>([]);
 
-  const { getLotHistory, addRetailEvent, addRetailPacks: savePacks, updateLot } = useAgriChainStore();
+  const { getLotHistory, addRetailEvent, addRetailPacks: savePacks, updateLot, findLot, getAllLots } = useAgriChainStore();
   const { toast } = useToast();
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
@@ -55,15 +55,17 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     const historyData = getLotHistory(data.lotId);
     setTimeout(() => {
       if (historyData) {
-        // If the lot was dispatched, update its status to Delivered
         if (historyData.lot.status === 'Dispatched') {
           updateLot(historyData.lot.lotId, { status: 'Delivered' });
            toast({
             title: "Lot Received!",
             description: `Lot ${historyData.lot.lotId} has been marked as 'Delivered'.`,
           });
+          const freshHistory = getLotHistory(data.lotId);
+          setHistory(freshHistory);
+        } else {
+            setHistory(historyData);
         }
-        setHistory({ ...historyData, lot: {...historyData.lot, status: 'Delivered'} });
       } else {
         setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
         setHistory(null);
@@ -82,7 +84,6 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
     toast({ title: "Success!", description: "Retailer details updated and lot marked as Stocked." });
     
-    // Refresh history
     const updatedHistory = getLotHistory(history.lot.lotId);
     if(updatedHistory) {
       setHistory(updatedHistory);
@@ -122,37 +123,59 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   
   const getTimelineEvents = () => {
     if (!history) return [];
+
+    let lotHierarchy: Lot[] = [];
+    let tempLot = history.lot;
+    
+    // Build hierarchy from current lot up to the parent
+    while (tempLot) {
+        lotHierarchy.unshift(tempLot);
+        tempLot = tempLot.parentLotId ? findLot(tempLot.parentLotId) as Lot : null as any;
+    }
+
     const events = [];
 
+    const parentLot = lotHierarchy[0];
+
+    // Farmer event (from parent lot)
     events.push({
-      type: 'FARM',
-      title: 'Harvested',
-      timestamp: format(new Date(history.lot.harvestDate), 'PP'),
-      details: <>
-        <p><strong>Crop:</strong> {history.lot.cropName}</p>
-        <p><strong>Weight:</strong> {history.lot.weight} quintals</p>
-        <p><strong>Farmer:</strong> {history.lot.farmer}</p>
-      </>
-    });
-
-    history.transportEvents.forEach(e => {
-      events.push({
-        type: 'TRANSPORT',
-        title: 'Transport & Storage',
-        timestamp: format(new Date(e.warehouseEntryDateTime), 'PPp'),
+        type: 'FARM',
+        title: 'Harvested & Registered',
+        timestamp: format(new Date(parentLot.harvestDate), 'PP'),
         details: <>
-          <p><strong>Vehicle:</strong> {e.vehicleNumber}</p>
-          <p><strong>Condition:</strong> {e.transportCondition}</p>
+            <p><strong>Crop:</strong> {parentLot.cropName}</p>
+            <p><strong>Weight:</strong> {parentLot.weight} quintals</p>
+            <p><strong>Farmer:</strong> {parentLot.farmer}</p>
+            <p><strong>Original Lot ID:</strong> {parentLot.lotId}</p>
         </>
-      });
     });
 
+    // Distributor events (from the hierarchy)
+    lotHierarchy.forEach(lot => {
+        if (lot.logisticsInfo) {
+            events.push({
+                type: 'TRANSPORT',
+                title: 'Dispatched to Retailer',
+                timestamp: format(new Date(lot.logisticsInfo.dispatchDate), 'PP'),
+                details: <>
+                    <p><strong>Lot ID:</strong> {lot.lotId}</p>
+                    <p><strong>Vehicle:</strong> {lot.logisticsInfo.vehicleNumber}</p>
+                    <p><strong>Assigned To:</strong> {lot.owner}</p>
+                </>
+            });
+        }
+    });
+
+    // Retail events (from history object)
     history.retailEvents.forEach(e => {
         events.push({
-          type: 'RETAIL',
-          title: 'Stocked at Retailer',
-          timestamp: format(new Date(e.shelfDate), 'PP'),
-          details: <p><strong>Store ID:</strong> {e.storeId}</p>
+            type: 'RETAIL',
+            title: 'Stocked at Retailer',
+            timestamp: format(new Date(e.shelfDate), 'PP'),
+            details: <>
+             <p><strong>Store ID:</strong> {e.storeId}</p>
+             <p><strong>Lot ID:</strong> {history.lot.lotId}</p>
+            </>
         });
     });
     
@@ -261,5 +284,3 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     </div>
   );
 }
-    
-    
