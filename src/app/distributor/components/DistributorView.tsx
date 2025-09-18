@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useRef } from "react";
@@ -7,7 +6,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
-import type { Lot, TransportEvent } from "@/lib/types";
+import type { Lot } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,13 +16,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, Sparkles, Download, CheckCircle, Clock } from "lucide-react";
+import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, Sparkles, Download } from "lucide-react";
 import QRCode from "qrcode.react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { detectConflictAction } from "@/app/actions";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
-import { Badge } from "@/components/ui/badge";
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
@@ -69,12 +67,8 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const transportForm = useForm<TransportFormValues>({ resolver: zodResolver(transportSchema), defaultValues: { vehicleNumber: '', transportCondition: 'Normal', warehouseEntryDateTime: '' } });
   
   const allLots = getAllLots();
-  const availableLots = allLots.filter(lot => lot.owner === lot.farmer && !lot.parentLotId);
-  const purchasedLots = allLots.filter(lot => lot.owner === distributorId && !lot.parentLotId && lot.weight > 0);
-  const createdSubLots = allLots.filter(lot => {
-    const parent = findLot(lot.parentLotId || '', true);
-    return parent && parent.owner === distributorId && (lot.status === 'In-Transit' || lot.status === 'Delivered');
-  });
+  const availableLots = allLots.filter(lot => lot.owner === lot.farmer);
+  const purchasedLots = allLots.filter(lot => lot.owner === distributorId && lot.weight > 0);
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -132,8 +126,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             parentLotId: scannedLot.lotId,
             weight: newWeight,
             price: newPrice, // Adjust price proportionally
-            owner: distributorId,
-            status: 'Registered',
+            owner: distributorId
         };
         newSubLots.push(newLot);
     }
@@ -158,12 +151,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     if (result.conflictDetected) {
       setConflict(result);
     } else {
-      const newEvent: TransportEvent = {
-        ...data,
-        timestamp: new Date().toISOString(),
-      };
-      addTransportEvent(lotForTransport.lotId, newEvent);
-      updateLot(lotForTransport.lotId, { status: 'In-Transit' });
+      addTransportEvent(lotForTransport.lotId, { ...data, timestamp: new Date().toISOString() });
       toast({
         title: "Success!",
         description: `Transport details for Lot ID ${lotForTransport.lotId} have been added.`,
@@ -367,7 +355,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                 <LotDetailsCard lot={lot} />
                                 <div className="mt-4 flex justify-end">
                                     <Button variant="secondary" onClick={() => handleScan({lotId: lot.lotId})}>
-                                        <Spline className="mr-2 h-4 w-4" /> Manage Lot
+                                        <Spline className="mr-2 h-4 w-4" /> Add Transport / Split
                                     </Button>
                                 </div>
                             </div>
@@ -379,49 +367,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                     )}
                 </CardContent>
             </Card>
-
-            {createdSubLots.length > 0 && (
-                <div className="md:col-span-2">
-                    <Separator />
-                    <Card className="mt-8">
-                        <CardHeader>
-                            <CardTitle>Your Created Sub-Lots</CardTitle>
-                            <CardDescription>
-                                These are the sub-lots you have created for retailers.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                           {createdSubLots.map(lot => (
-                                <div key={lot.lotId} className="border p-4 rounded-lg flex justify-between items-center">
-                                    <div>
-                                        <p className="font-mono text-sm font-semibold">{lot.lotId}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {lot.weight} quintals from Lot {lot.parentLotId}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        {lot.status === 'In-Transit' ? (
-                                            <Badge variant="secondary" className="text-blue-600 border-blue-600">
-                                                <Clock className="mr-1 h-3 w-3" />
-                                                In-Transit
-                                            </Badge>
-                                        ) : lot.status === 'Delivered' ? (
-                                            <Badge variant="secondary" className="text-green-600 border-green-600">
-                                                <CheckCircle className="mr-1 h-3 w-3" />
-                                                Delivered
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="outline">
-                                                Registered
-                                            </Badge>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
         </div>
 
 

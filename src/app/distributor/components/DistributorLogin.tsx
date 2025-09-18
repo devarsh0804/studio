@@ -22,7 +22,7 @@ interface DistributorLoginProps {
 export function DistributorLogin({ onLogin }: DistributorLoginProps) {
   const form = useForm<DistributorLoginCredentials>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { name: "distro", code: "1234" },
+    defaultValues: { name: "", code: "" },
   });
 
   const onSubmit: SubmitHandler<DistributorLoginCredentials> = (data) => {
@@ -83,3 +83,5 @@ export function DistributorLogin({ onLogin }: DistributorLoginProps) {
     </div>
   );
 }
+
+    

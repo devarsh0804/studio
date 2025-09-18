@@ -9,8 +9,7 @@ export function RegisteredLotsList() {
     const { getAllLots } = useAgriChainStore(
         (state) => ({ getAllLots: state.getAllLots })
     );
-    const allLots = getAllLots();
-    const registeredLots = allLots.filter(lot => !lot.parentLotId);
+    const registeredLots = getAllLots();
 
 
     if (registeredLots.length === 0) {
@@ -47,3 +46,5 @@ export function RegisteredLotsList() {
         </Card>
     );
 }
+
+    
