@@ -40,8 +40,11 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   const { getLotHistory, addRetailEvent, updateLot, findLot } = useAgriChainStore();
   const { toast } = useToast();
 
-  const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
-  const retailerForm = useForm<RetailerFormValues>({ resolver: zodResolver(retailerSchema) });
+  const scanForm = useForm<ScanFormValues>({ 
+    resolver: zodResolver(scanSchema),
+    defaultValues: { lotId: "" } 
+  });
+  const retailerForm = useForm<RetailerFormValues>({ resolver: zodResolver(retailerSchema), defaultValues: { shelfDate: "" } });
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -164,10 +167,14 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
     // Retail events (from history object)
     history.retailEvents.forEach(e => {
+        const shelfDate = new Date(e.shelfDate);
+        // Add a day to the date to fix the off-by-one issue
+        shelfDate.setDate(shelfDate.getDate() + 1);
+
         events.push({
             type: 'RETAIL',
             title: 'Stocked at Retailer',
-            timestamp: format(new Date(e.shelfDate), 'PP'),
+            timestamp: isValid(shelfDate) ? format(shelfDate, 'PP') : 'Invalid Date',
             details: <>
              <p><strong>Store ID:</strong> {e.storeId}</p>
              <p><strong>Lot ID:</strong> {history.lot.lotId}</p>
