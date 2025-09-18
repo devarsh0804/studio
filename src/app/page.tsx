@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Leaf, RotateCcw, Store, Tractor, Truck } from 'lucide-react';
+import { Leaf, RotateCcw, Store, Tractor, Truck, ScanLine } from 'lucide-react';
 import { RoleCard } from '@/components/RoleCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -32,13 +32,19 @@ export default function Home() {
       title: 'Distributor',
       icon: <Truck className="w-12 h-12" />,
       href: '/distributor',
-      description: 'Scan lots and update transportation and storage details.',
+      description: 'Purchase lots, create sub-lots, and manage dispatch logistics.',
     },
     {
       title: 'Retailer',
       icon: <Store className="w-12 h-12" />,
       href: '/retailer',
-      description: 'Manage inventory, create retail packs, and track product history.',
+      description: 'Manage inventory, confirm deliveries, and track product history.',
+    },
+    {
+      title: 'Consumer',
+      icon: <ScanLine className="w-12 h-12" />,
+      href: '/trace',
+      description: 'Scan a product QR code to view its full journey from farm to fork.',
     },
   ];
 
@@ -80,8 +86,8 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-grow w-full max-w-5xl mx-auto px-4 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <main className="flex-grow w-full max-w-7xl mx-auto px-4 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {roles.map((role) => (
             <RoleCard key={role.title} {...role} />
           ))}

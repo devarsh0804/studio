@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Tractor, Truck, Store } from "lucide-react";
+import { Tractor, Truck, Store, ScanLine } from "lucide-react";
 
 const links = [
     { name: "Farmer", href: "/farmer", icon: Tractor },
     { name: "Distributor", href: "/distributor", icon: Truck },
     { name: "Retailer", href: "/retailer", icon: Store },
+    { name: "Consumer", href: "/trace", icon: ScanLine },
 ];
 
 export function MainNav() {
