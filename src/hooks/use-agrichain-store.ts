@@ -6,7 +6,6 @@ import type { Lot, RetailEvent, RetailPack, LotHistory } from '@/lib/types';
 
 interface AgriChainState {
   lots: Record<string, Lot>;
-  transportEvents: Record<string, any[]>;
   retailEvents: Record<string, RetailEvent[]>;
   retailPacks: Record<string, RetailPack>;
   addLot: (lot: Lot) => void;
@@ -25,7 +24,7 @@ export const useAgriChainStore = create<AgriChainState>()(
     persist(
       (set, get) => ({
         lots: {},
-        transportEvents: {},
+        transportEvents: {}, // Kept for potential future use, but functionality removed
         retailEvents: {},
         retailPacks: {},
 
@@ -113,7 +112,7 @@ export const useAgriChainStore = create<AgriChainState>()(
           const parentLotId = lot.parentLotId || lot.lotId;
           const parentLot = get().lots[parentLotId];
 
-          const transport = get().transportEvents[parentLotId] || [];
+          const transport = (get() as any).transportEvents[parentLotId] || [];
           const retail = get().retailEvents[parentLotId] || [];
           const childLots = Object.values(get().lots).filter(l => l.parentLotId === parentLotId);
 
@@ -132,3 +131,5 @@ export const useAgriChainStore = create<AgriChainState>()(
     )
   )
 );
+
+    

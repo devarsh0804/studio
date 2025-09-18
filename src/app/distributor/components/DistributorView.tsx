@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer, User } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,6 +29,11 @@ const subLotSchema = z.object({
 });
 type SubLotFormValues = z.infer<typeof subLotSchema>;
 
+const assignSchema = z.object({
+  retailerId: z.string().min(1, "Retailer ID is required."),
+});
+type AssignFormValues = z.infer<typeof assignSchema>;
+
 
 interface DistributorViewProps {
   distributorId: string;
@@ -39,7 +44,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [scannedLot, setScannedLot] = useState<Lot | null>(null);
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
-  const [lotToPrint, setLotToPrint] = useState<Lot | null>(null);
+  const [lotToAssign, setLotToAssign] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
@@ -53,6 +58,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
+  const assignForm = useForm<AssignFormValues>({ resolver: zodResolver(assignSchema) });
 
   const allLots = getAllLots();
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
@@ -140,6 +146,22 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     });
   };
 
+  const handleAssignSubmit: SubmitHandler<AssignFormValues> = (data) => {
+    if (!lotToAssign) return;
+
+    updateLot(lotToAssign.lotId, { owner: data.retailerId });
+    
+    toast({
+      title: 'Lot Assigned!',
+      description: `Lot ${lotToAssign.lotId} has been assigned to ${data.retailerId}.`,
+    });
+
+    handlePrint();
+    assignForm.reset();
+    setLotToAssign(null);
+  };
+
+
   const handlePrint = () => {
     const printContent = qrRef.current;
     if (printContent) {
@@ -214,13 +236,13 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               {subLots.length > 0 && (
                 <div className="mt-6">
                   <h4 className="font-semibold mb-4">Generated Sub-lots:</h4>
-                  <div className="space-y-2">
+                   <div className="space-y-2">
                     {subLots.map((lot) => (
                       <Button 
                         key={lot.lotId}
                         variant="secondary"
                         className="w-full justify-start"
-                        onClick={() => setLotToPrint(lot)}
+                        onClick={() => setLotToAssign(lot)}
                       >
                         <QrCode className="mr-2" />
                         Show QR for <span className='font-mono mx-2'>{lot.lotId}</span> ({lot.weight} quintals)
@@ -232,25 +254,46 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             </CardContent>
           </Card>
         )}
-         <Dialog open={!!lotToPrint} onOpenChange={() => setLotToPrint(null)}>
+         <Dialog open={!!lotToAssign} onOpenChange={() => setLotToAssign(null)}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>QR Code for Lot {lotToPrint?.lotId}</DialogTitle>
+                    <DialogTitle>Assign & Print QR for Lot {lotToAssign?.lotId}</DialogTitle>
                 </DialogHeader>
-                {lotToPrint && (
+                {lotToAssign && (
                     <div className="flex flex-col items-center gap-4 py-4" >
                         <div ref={qrRef} className="p-4 bg-white rounded-lg inline-block">
                            <div className="text-center">
-                             <QRCode value={lotToPrint.lotId} size={256} level={"H"} includeMargin={true} />
-                             <p className="font-mono text-lg font-bold text-black mt-2">{lotToPrint.lotId}</p>
+                             <QRCode value={lotToAssign.lotId} size={256} level={"H"} includeMargin={true} />
+                             <p className="font-mono text-lg font-bold text-black mt-2">{lotToAssign.lotId}</p>
                            </div>
                         </div>
+
+                         <Form {...assignForm}>
+                          <form onSubmit={assignForm.handleSubmit(handleAssignSubmit)} className="w-full space-y-4 pt-4 border-t">
+                             <FormField
+                              control={assignForm.control}
+                              name="retailerId"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Retailer ID / Code</FormLabel>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                      <Input placeholder="e.g., retail-store-01" {...field} className="pl-10" />
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <DialogFooter className="!mt-4">
+                                <Button variant="outline" type="button" onClick={() => setLotToAssign(null)}>Cancel</Button>
+                                <Button type="submit"><Printer className="mr-2"/> Assign & Print</Button>
+                            </DialogFooter>
+                          </form>
+                        </Form>
                     </div>
                 )}
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setLotToPrint(null)}>Done</Button>
-                    <Button onClick={handlePrint}><Printer className="mr-2"/> Print</Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
       </div>
@@ -407,5 +450,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
+
+    
 
     
