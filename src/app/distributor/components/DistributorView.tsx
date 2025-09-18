@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -183,11 +184,11 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     subLotForm.reset();
   }
 
-  const isOwnedByFarmer = scannedLot && scannedLot.owner === scannedLot.farmer;
-  const isOwnedByDistributor = scannedLot && scannedLot.owner === distributorId;
-  const canBeSplit = isOwnedByDistributor && scannedLot.weight > 0;
-
   if (scannedLot) {
+    const isOwnedByFarmer = scannedLot.owner === scannedLot.farmer;
+    const isOwnedByDistributor = scannedLot.owner === distributorId;
+    const canBeSplit = isOwnedByDistributor && scannedLot.weight > 0;
+
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex justify-end">
@@ -208,7 +209,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 </CardContent>
                 </Card>
             )}
-
+            
             {isOwnedByDistributor && canBeSplit && (
                 <Card>
                     <CardHeader>
@@ -235,7 +236,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                         <Button
                                             key={lot.lotId}
                                             variant="outline"
-                                            className="h-auto flex-col p-2"
+                                            className="h-auto flex-col p-2 cursor-pointer"
                                             onClick={() => {
                                               transportForm.reset();
                                               setLotForTransport(lot);
@@ -305,7 +306,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </Card>
 
         <Separator />
-
+        
         <div className="grid grid-cols-1 gap-8">
             <Card>
                 <CardHeader>
@@ -475,9 +476,10 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                     </>}
                 </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogAction onClick={() => setConflict(null)}>Acknowledge & Review</AlertDialogAction>
+            <AlertDialogAction onClick={() => setConflict(null)}>Acknowledge &amp; Review</AlertDialogAction>
             </AlertDialogContent>
         </AlertDialog>
     </div>
     );
-}
+
+    
