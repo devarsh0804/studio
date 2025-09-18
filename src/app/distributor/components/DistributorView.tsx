@@ -233,7 +233,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                             {subLots.length > 0 && (
                                 <div className="mt-6">
                                     <h4 className="font-semibold mb-4">Generated Sub-lot QRs:</h4>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-1">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-80 overflow-y-auto p-1">
                                         {subLots.map(lot => (
                                             <Button
                                                 key={lot.lotId}
@@ -487,5 +487,4 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     );
   }
 
-    
     
