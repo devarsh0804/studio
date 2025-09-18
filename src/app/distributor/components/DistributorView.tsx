@@ -16,7 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, Sparkles, Download, Printer } from "lucide-react";
+import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, Sparkles, Printer } from "lucide-react";
 import QRCode from "qrcode.react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
@@ -249,7 +249,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                             <div className="p-2 bg-white rounded-md">
                                                 <QRCode value={lot.lotId} size={80} level={"H"} />
                                             </div>
-                                            <p className="text-xs font-mono break-all w-full">{lot.lotId}</p>
+                                            <p className="text-xs font-mono break-all">{lot.lotId}</p>
                                             <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
                                             <Button
                                                 variant="secondary"
@@ -320,7 +320,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
         <Separator />
         
-        <div className="grid grid-cols-1 gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <Card>
                 <CardHeader>
                     <CardTitle>Available Lots for Purchase</CardTitle>
@@ -508,6 +508,8 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
 }
+
+    
 
     
 
