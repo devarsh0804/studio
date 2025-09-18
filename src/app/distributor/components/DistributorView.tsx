@@ -14,11 +14,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer, User } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer, User, CalendarIcon, Truck, Calendar } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -31,6 +34,8 @@ type SubLotFormValues = z.infer<typeof subLotSchema>;
 
 const assignSchema = z.object({
   retailerId: z.string().min(1, "Retailer ID is required."),
+  vehicleNumber: z.string().min(1, "Vehicle number is required."),
+  dispatchDate: z.date({ required_error: "A dispatch date is required." }),
 });
 type AssignFormValues = z.infer<typeof assignSchema>;
 
@@ -149,7 +154,13 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const handleAssignSubmit: SubmitHandler<AssignFormValues> = (data) => {
     if (!lotToAssign) return;
 
-    updateLot(lotToAssign.lotId, { owner: data.retailerId });
+    updateLot(lotToAssign.lotId, { 
+      owner: data.retailerId,
+      logisticsInfo: {
+        vehicleNumber: data.vehicleNumber,
+        dispatchDate: format(data.dispatchDate, 'yyyy-MM-dd'),
+      }
+    });
     
     toast({
       title: 'Lot Assigned!',
@@ -270,21 +281,77 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
                          <Form {...assignForm}>
                           <form onSubmit={assignForm.handleSubmit(handleAssignSubmit)} className="w-full space-y-4 pt-4 border-t">
-                             <FormField
-                              control={assignForm.control}
-                              name="retailerId"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Retailer ID / Code</FormLabel>
-                                  <FormControl>
-                                    <div className="relative">
-                                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                      <Input placeholder="e.g., retail-store-01" {...field} className="pl-10" />
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <FormField
+                                  control={assignForm.control}
+                                  name="retailerId"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Retailer ID / Code</FormLabel>
+                                      <FormControl>
+                                        <div className="relative">
+                                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                          <Input placeholder="e.g., retail-store-01" {...field} className="pl-10" />
+                                        </div>
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={assignForm.control}
+                                  name="vehicleNumber"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Vehicle Number</FormLabel>
+                                      <FormControl>
+                                        <div className="relative">
+                                          <Truck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                          <Input placeholder="e.g., MH-12-AB-3456" {...field} className="pl-10" />
+                                        </div>
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                            </div>
+                            <FormField
+                                control={assignForm.control}
+                                name="dispatchDate"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-col">
+                                    <FormLabel>Dispatch Date</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-full pl-3 text-left font-normal",
+                                                !field.value && "text-muted-foreground"
+                                            )}
+                                            >
+                                            {field.value ? (
+                                                format(field.value, "PP")
+                                            ) : (
+                                                <span>Pick a date</span>
+                                            )}
+                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value}
+                                            onSelect={field.onChange}
+                                            initialFocus
+                                        />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
                             />
                             <DialogFooter className="!mt-4">
                                 <Button variant="outline" type="button" onClick={() => setLotToAssign(null)}>Cancel</Button>
@@ -450,7 +517,5 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
-
-    
 
     

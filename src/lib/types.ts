@@ -9,6 +9,10 @@ export interface Lot {
   owner?: string; // e.g., 'farmer', 'distributor-1', etc.
   location?: string;
   parentLotId?: string; // To link sub-lots to their origin
+  logisticsInfo?: {
+    vehicleNumber: string;
+    dispatchDate: string;
+  };
 
   // Digital Certificate Fields
   quality: string; // The final grade: Premium, Standard, Basic
@@ -42,3 +46,5 @@ export interface LotHistory {
   parentLot?: Lot;
   childLots?: Lot[];
 }
+
+    
