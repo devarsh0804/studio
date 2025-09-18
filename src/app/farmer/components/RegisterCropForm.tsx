@@ -16,17 +16,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat, MapPin, Sparkles, Loader2, BadgeIndianRupee, FileCheck2 } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, MapPin, Sparkles, Loader2, BadgeIndianRupee, FileCheck2, Scan, Droplets, Microscope, Ruler, Palette, Award, ChevronsRight, RotateCcw } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import type { Lot } from "@/lib/types";
 import { placeHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-import { gradeCropAction } from "@/app/actions";
-import { useState } from "react";
+import { gradeCropAction, type GradeCropOutput } from "@/app/actions";
+import { useState, useEffect } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 
 const formSchema = z.object({
   farmerName: z.string().min(2, { message: "Farmer name must be at least 2 characters." }),
@@ -41,9 +42,13 @@ interface RegisterCropFormProps {
   onRegister: (lot: Lot) => void;
 }
 
+type FormStep = "form" | "grading" | "certificate" | "registering";
+
 export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
   const { toast } = useToast();
-  const [isGrading, setIsGrading] = useState(false);
+  const [step, setStep] = useState<FormStep>("form");
+  const [gradingResult, setGradingResult] = useState<GradeCropOutput | null>(null);
+  const [progress, setProgress] = useState(0);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,8 +61,41 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
 
   const cropImage = placeHolderImages.find(p => p.id === 'crop1');
   const farmerImage = placeHolderImages.find(p => p.id === 'farmer1');
+  
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (step === "grading") {
+      setProgress(0);
+      const startTime = Date.now();
+      const duration = 30000; // 30 seconds
+      
+      const interval = setInterval(() => {
+        const elapsedTime = Date.now() - startTime;
+        const newProgress = Math.min((elapsedTime / duration) * 100, 100);
+        setProgress(newProgress);
+        if (newProgress >= 100) {
+            clearInterval(interval);
+        }
+      }, 100);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+      return () => clearInterval(interval);
+    }
+    return () => clearTimeout(timer);
+  }, [step]);
+
+
+  async function handleStartGrading() {
+    // Trigger validation
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast({
+        variant: "destructive",
+        title: "Incomplete Form",
+        description: "Please fill out all the required fields before starting the grading process.",
+      });
+      return;
+    }
+
     if (!cropImage) {
       toast({
         variant: "destructive",
@@ -67,18 +105,53 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       return;
     }
     
-    setIsGrading(true);
+    setStep("grading");
     toast({
-      title: "AI Grading in Progress...",
-      description: "Analyzing crop quality. This may take a moment.",
+      title: "Automated Grading Initiated...",
+      description: "Analyzing crop with simulated IoT sensors. This will take about 30 seconds.",
     });
 
-    const gradingResult = await gradeCropAction({
-      ...values,
-      photoDataUri: cropImage.imageUrl, // In a real app, this would be an uploaded image data URI
-    });
-    
-    setIsGrading(false);
+    try {
+        const values = form.getValues();
+        const result = await gradeCropAction({
+          ...values,
+          photoDataUri: cropImage.imageUrl, 
+        });
+        
+        // Ensure the 30s animation completes
+        setTimeout(() => {
+            setGradingResult(result);
+            setStep("certificate");
+            toast({
+              title: "Grading Complete!",
+              description: `A digital certificate has been generated with a grade of '${result.grade}'.`,
+            });
+        }, 30000);
+
+    } catch (error) {
+        console.error("Error during grading:", error);
+        toast({
+            variant: "destructive",
+            title: "Grading Failed",
+            description: "An unexpected error occurred during the AI grading process. Please try again."
+        });
+        setStep("form");
+    }
+  }
+
+  function handleRegister() {
+    setStep("registering");
+    const values = form.getValues();
+
+    if (!gradingResult) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Grading results are missing. Cannot register lot.",
+      });
+      setStep("certificate");
+      return;
+    }
 
     const formattedDate = format(values.harvestDate, "yyyy-MM-dd");
     const lotId = `LOT-${format(new Date(), "yyyyMMdd")}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
@@ -101,27 +174,138 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       color: gradingResult.color,
     };
 
-    onRegister(newLot);
-    toast({
-      title: "Grading Complete & Lot Registered!",
-      description: `A digital certificate for Lot ID ${lotId} has been generated with a grade of '${gradingResult.grade}'.`,
-    })
-    form.reset();
+    setTimeout(() => {
+        onRegister(newLot);
+        toast({
+          title: "Lot Registered Successfully!",
+          description: `The QR code for Lot ID ${lotId} is now ready.`,
+        });
+        // Do not reset form here, let the parent component handle the view change.
+    }, 500); // simulate network delay
+  }
+
+  const resetProcess = () => {
+    setStep("form");
+    setGradingResult(null);
+    setProgress(0);
+    // Don't reset form fields, user might want to edit
+  }
+
+  if (step === "grading") {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><Scan className="mr-2"/> IoT Grading in Progress</CardTitle>
+          <CardDescription>Our AI is analyzing your crop using simulated real-time sensor data.</CardDescription>
+        </CardHeader>
+        <CardContent className="text-center space-y-6 py-12">
+            <div className="relative w-32 h-32 mx-auto">
+                <div className="absolute inset-0 border-4 border-dashed border-primary/50 rounded-full animate-spin"></div>
+                <div className="absolute inset-2 flex items-center justify-center bg-primary/10 rounded-full">
+                    <Wheat className="w-16 h-16 text-primary" />
+                </div>
+            </div>
+            <p className="text-lg font-semibold text-primary">Analyzing... Please wait.</p>
+            <Progress value={progress} className="w-full max-w-sm mx-auto" />
+            <p className="text-sm text-muted-foreground">This simulates a 30-second hardware analysis process.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (step === "certificate" && gradingResult) {
+    const values = form.getValues();
+    const gradingDate = new Date();
+    return (
+        <Card>
+            <CardHeader>
+                 <CardTitle className="flex items-center justify-between">
+                    <span className="flex items-center"><FileCheck2 className="mr-2 text-primary"/> Digital Quality Certificate</span>
+                    <Button variant="outline" size="sm" onClick={resetProcess}><RotateCcw className="mr-2"/> Start Over</Button>
+                </CardTitle>
+                <CardDescription>This certificate has been generated by our AI grading system. Review the details and proceed to register.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                    <div className="space-y-3">
+                        <div className="flex"><p className="w-28 text-muted-foreground">Farmer</p><p className="font-medium">{values.farmerName}</p></div>
+                        <div className="flex"><p className="w-28 text-muted-foreground">Crop</p><p className="font-medium">{values.cropName}</p></div>
+                        <div className="flex"><p className="w-28 text-muted-foreground">Weight</p><p className="font-medium">{values.weight} quintals</p></div>
+                    </div>
+                     <div className="space-y-3">
+                        <div className="flex"><p className="w-28 text-muted-foreground">Location</p><p className="font-medium">{values.location}</p></div>
+                        <div className="flex"><p className="w-28 text-muted-foreground">Harvest Date</p><p className="font-medium">{format(values.harvestDate, 'PP')}</p></div>
+                        <div className="flex"><p className="w-28 text-muted-foreground">Price Set</p><p className="font-medium"><BadgeIndianRupee className="w-4 h-4 inline-block -mt-1"/> {values.price} / quintal</p></div>
+                    </div>
+                </div>
+                 <div className="pt-4 border-t">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-start">
+                            <Award className="w-4 h-4 mr-2 mt-0.5 text-muted-foreground" />
+                            <div>
+                                <p className="text-muted-foreground">Final Grade</p>
+                                <p className="font-bold text-base text-primary">{gradingResult.grade}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <Droplets className="w-4 h-4 mr-2 mt-0.5 text-muted-foreground" />
+                            <div>
+                                <p className="text-muted-foreground">Moisture</p>
+                                <p className="font-medium">{gradingResult.moisture || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <Microscope className="w-4 h-4 mr-2 mt-0.5 text-muted-foreground" />
+                            <div>
+                                <p className="text-muted-foreground">Impurities</p>
+                                <p className="font-medium">{gradingResult.impurities || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <Ruler className="w-4 h-4 mr-2 mt-0.5 text-muted-foreground" />
+                            <div>
+                                <p className="text-muted-foreground">Size</p>
+                                <p className="font-medium">{gradingResult.size || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <Palette className="w-4 h-4 mr-2 mt-0.5 text-muted-foreground" />
+                            <div>
+                                <p className="text-muted-foreground">Color</p>
+                                <p className="font-medium">{gradingResult.color || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <Calendar className="w-4 h-4 mr-2 mt-0.5 text-muted-foreground" />
+                            <div>
+                                <p className="text-muted-foreground">Grading Date</p>
+                                <p className="font-medium">{gradingDate && isValid(gradingDate) ? format(gradingDate, 'PPp') : 'N/A'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <Button size="lg" className="w-full" onClick={handleRegister} disabled={step === "registering"}>
+                     {step === "registering" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ChevronsRight className="mr-2"/>}
+                    {step === "registering" ? "Registering..." : "Register Lot & Generate QR"}
+                </Button>
+            </CardContent>
+        </Card>
+    );
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center">
-            <FileCheck2 className="mr-2"/> Register & Grade New Lot
+            <FileCheck2 className="mr-2"/> Register New Lot
         </CardTitle>
         <CardDescription>
-            Fill in the details below to start the automated AI-powered grading process and register your lot on the ledger.
+            Fill in the details below to start the automated AI-powered grading process.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(handleStartGrading)} className="space-y-8">
             <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-8">
                     <FormField
@@ -279,13 +463,13 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                 <Sparkles className="h-4 w-4" />
                 <AlertTitle>Automated Quality Grading</AlertTitle>
                 <AlertDescription>
-                    Upon submission, an AI will analyze the crop photo and details to generate a digital quality certificate and register the lot.
+                    Upon submission, an AI will analyze the crop photo and details to generate a digital quality certificate.
                 </AlertDescription>
             </Alert>
             
-            <Button type="submit" size="lg" className="w-full" disabled={isGrading}>
-                {isGrading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isGrading ? 'Grading & Registering...' : 'Grade and Register Lot'}
+            <Button type="submit" size="lg" className="w-full" disabled={step === "grading"}>
+                {step === "grading" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Start Grading
             </Button>
           </form>
         </Form>

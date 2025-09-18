@@ -51,18 +51,8 @@ export async function gradeCropAction(
         photoDataUri: formData.photoDataUri,
     };
 
-    try {
-        const result = await gradeCrop(input);
-        return result;
-    } catch (error) {
-        console.error("Error in grading flow:", error);
-        // Return a default error-state grade
-        return {
-            grade: 'Basic',
-            moisture: 'N/A',
-            impurities: 'N/A',
-            size: 'N/A',
-            color: 'N/A',
-        };
-    }
+    // No try-catch here, let the error propagate to the client component
+    // so it can be handled there (e.g. show a toast notification).
+    const result = await gradeCrop(input);
+    return result;
 }
