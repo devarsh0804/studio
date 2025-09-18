@@ -9,7 +9,9 @@ export function RegisteredLotsList() {
     const { getAllLots } = useAgriChainStore(
         (state) => ({ getAllLots: state.getAllLots })
     );
-    const registeredLots = getAllLots();
+    const allLots = getAllLots();
+    const registeredLots = allLots.filter(lot => !lot.parentLotId);
+
 
     if (registeredLots.length === 0) {
         return (
