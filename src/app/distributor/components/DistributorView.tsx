@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,17 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, Sparkles, Printer } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
-import { detectConflictAction } from '@/app/actions';
-import type { DistributorUpdateConflictDetectionOutput } from '@/ai/flows/distributor-update-conflict-detection';
-import { format } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -31,12 +26,6 @@ const subLotSchema = z.object({
 });
 type SubLotFormValues = z.infer<typeof subLotSchema>;
 
-const transportSchema = z.object({
-  vehicleNumber: z.string().min(1, 'Vehicle number is required'),
-  transportCondition: z.enum(['Cold Storage', 'Normal']),
-  warehouseEntryDateTime: z.string().min(1, 'Warehouse entry date/time is required'),
-});
-type TransportFormValues = z.infer<typeof transportSchema>;
 
 interface DistributorViewProps {
   distributorId: string;
@@ -47,24 +36,17 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [scannedLot, setScannedLot] = useState<Lot | null>(null);
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
-  const [lotForTransport, setLotForTransport] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
-  const [isSubmittingTransport, setIsSubmittingTransport] = useState(false);
   const [subLots, setSubLots] = useState<Lot[]>([]);
-  const [conflict, setConflict] = useState<DistributorUpdateConflictDetectionOutput | null>(null);
-  const [printMode, setPrintMode] = useState(false);
-  const [submittedTransportData, setSubmittedTransportData] = useState<TransportFormValues | null>(null);
-  const [activeTab, setActiveTab] = useState('purchase');
+  const [activeTab, setActiveTab] = useState('available-crops');
 
-  const { findLot, updateLot, getAllLots, addLots, addTransportEvent } = useAgriChainStore();
+  const { findLot, updateLot, getAllLots, addLots } = useAgriChainStore();
   const { toast } = useToast();
-  const qrCodeRef = useRef<HTMLDivElement>(null);
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema) });
-  const transportForm = useForm<TransportFormValues>({ resolver: zodResolver(transportSchema), defaultValues: { vehicleNumber: '', transportCondition: 'Normal', warehouseEntryDateTime: '' } });
 
   const allLots = getAllLots();
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
@@ -153,41 +135,12 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     });
   };
 
-  const handleTransportSubmit: SubmitHandler<TransportFormValues> = async (data) => {
-    if (!lotForTransport) return;
-
-    setIsSubmittingTransport(true);
-    setConflict(null);
-    const result = await detectConflictAction(lotForTransport, data);
-
-    if (result.conflictDetected) {
-      setConflict(result);
-    } else {
-      addTransportEvent(lotForTransport.lotId, { ...data, timestamp: new Date().toISOString() });
-      toast({
-        title: 'Success!',
-        description: `Transport details for Lot ID ${lotForTransport.lotId} have been saved.`,
-      });
-      setSubmittedTransportData(data);
-      setPrintMode(true);
-    }
-    setIsSubmittingTransport(false);
-  };
-
-  const resetTransportDialog = () => {
-    setLotForTransport(null);
-    setPrintMode(false);
-    setSubmittedTransportData(null);
-    transportForm.reset();
-  };
-
   const resetView = () => {
     setScannedLot(null);
     setError(null);
     setSubLots([]);
     scanForm.reset();
     subLotForm.reset();
-    resetTransportDialog();
   };
 
   if (scannedLot) {
@@ -210,7 +163,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <CardTitle className="flex items-center">
                 <Spline className="mr-2" /> Create or View Sub-lots
               </CardTitle>
-              <CardDescription>{canBeSplit ? 'Split this lot into smaller quantities for different retailers. The total weight will be divided equally.' : 'This lot has already been split, or it is a sub-lot itself. You can add transport details to the existing sub-lots below.'}</CardDescription>
+              <CardDescription>{canBeSplit ? 'Split this lot into smaller quantities for different retailers. The total weight will be divided equally.' : 'This lot has already been split, or it is a sub-lot itself.'}</CardDescription>
             </CardHeader>
             <CardContent>
               {canBeSplit && (
@@ -305,7 +258,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 h-12">
-          <TabsTrigger value="purchase">
+          <TabsTrigger value="available-crops">
             <ShoppingCart className="mr-2" />
             Available Crops
           </TabsTrigger>
@@ -314,7 +267,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             Purchased Lots
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="purchase">
+        <TabsContent value="available-crops">
           <Card>
             <CardHeader>
               <CardTitle>Available Crops for Purchase</CardTitle>
@@ -401,131 +354,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               {isPaying ? <Loader2 className="animate-spin" /> : <><CreditCard className="mr-2" />Pay Now</>}
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog open={!!lotForTransport} onOpenChange={(open) => !open && resetTransportDialog()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <Truck className="mr-2" /> {printMode ? 'Print Transport Details' : 'Add Transport for Sub-Lot'}
-            </DialogTitle>
-            <DialogDescription>
-              Lot ID: <span className="font-mono text-primary">{lotForTransport?.lotId}</span>
-            </DialogDescription>
-          </DialogHeader>
-
-          {printMode && submittedTransportData ? (
-            <div className="py-4 space-y-4" ref={qrCodeRef}>
-              <div className="flex justify-center">
-                <div className="p-2 bg-white rounded-md inline-block">
-                  <QRCode value={lotForTransport?.lotId || ''} size={128} level={'H'} />
-                </div>
-              </div>
-              <div className="space-y-1 text-sm">
-                <p>
-                  <strong>Vehicle No:</strong> {submittedTransportData.vehicleNumber}
-                </p>
-                <p>
-                  <strong>Condition:</strong> {submittedTransportData.transportCondition}
-                </p>
-                <p>
-                  <strong>Warehouse Entry:</strong> {format(new Date(submittedTransportData.warehouseEntryDateTime), 'PPp')}
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground text-center pt-2">This slip should be printed and attached to the lot.</p>
-            </div>
-          ) : (
-            <div className="py-4 space-y-4">
-              <Form {...transportForm}>
-                <form onSubmit={transportForm.handleSubmit(handleTransportSubmit)} className="space-y-4">
-                  <FormField
-                    control={transportForm.control}
-                    name="vehicleNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Vehicle Number</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., OD-01-AB-1234" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={transportForm.control}
-                    name="transportCondition"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Transport Condition</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a condition" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Cold Storage">Cold Storage</SelectItem>
-                            <SelectItem value="Normal">Normal</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={transportForm.control}
-                    name="warehouseEntryDateTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Warehouse Entry Date/Time</FormLabel>
-                        <FormControl>
-                          <Input type="datetime-local" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Alert>
-                    <Sparkles className="h-4 w-4" />
-                    <AlertTitle>AI-Powered Conflict Detection</AlertTitle>
-                    <AlertDescription>Our AI will check for potential conflicts with existing lot data.</AlertDescription>
-                  </Alert>
-                  <Button type="submit" className="w-full" disabled={isSubmittingTransport}>
-                    {isSubmittingTransport && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    <Printer className="mr-2 h-4 w-4" />
-                    Save &amp; Print
-                  </Button>
-                </form>
-              </Form>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={resetTransportDialog}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={!!conflict} onOpenChange={() => setConflict(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center text-destructive">
-              <XCircle className="mr-2" /> AI Conflict Detected!
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-left pt-4 space-y-2">
-              <p className="font-bold">Details:</p>
-              <p>{conflict?.conflictDetails}</p>
-              {conflict?.resolutionOptions && (
-                <>
-                  <p className="font-bold pt-2">Suggested Resolution:</p>
-                  <p>{conflict.resolutionOptions}</p>
-                </>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogAction onClick={() => setConflict(null)}>Acknowledge &amp; Review</AlertDialogAction>
         </AlertDialogContent>
       </AlertDialog>
     </div>
