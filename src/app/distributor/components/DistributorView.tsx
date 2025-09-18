@@ -193,7 +193,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   }
 
   if (scannedLot) {
-    const isOwnedByFarmer = scannedLot.owner === scannedLot.farmer;
     const isOwnedByDistributor = scannedLot.owner === distributorId;
     const canBeSplit = isOwnedByDistributor && scannedLot.weight > 0;
 
@@ -203,20 +202,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 <Button variant="outline" onClick={resetView}>Scan Another Lot</Button>
             </div>
             <LotDetailsCard lot={scannedLot} />
-
-            {isOwnedByFarmer && (
-                <Card>
-                <CardHeader>
-                    <CardTitle>Purchase Lot</CardTitle>
-                    <CardDescription>To proceed, you must first purchase this lot from the farmer.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Button size="lg" className="w-full" onClick={() => setLotToBuy(scannedLot)}>
-                        <ShoppingCart className="mr-2" /> Buy Lot for <BadgeIndianRupee className="w-5 h-5 mx-1" />{scannedLot.price * scannedLot.weight}
-                    </Button>
-                </CardContent>
-                </Card>
-            )}
             
             {isOwnedByDistributor && (
                 <Card>
@@ -256,7 +241,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                                 size="sm"
                                                 className="w-full mt-1"
                                                 onClick={() => {
-                                                    resetTransportDialog();
                                                     setLotForTransport(lot);
                                                 }}
                                             >
@@ -283,71 +267,41 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
         </div>
-        <Card className="max-w-xl mx-auto">
-            <CardHeader>
-            <CardTitle className="flex items-center"><ScanLine className="mr-2" /> Scan Lot QR Code</CardTitle>
-            <CardDescription>Enter the Lot ID to fetch its details. In a real app, you could use a camera to scan.</CardDescription>
-            </CardHeader>
-            <CardContent>
-            <Form {...scanForm}>
-                <form onSubmit={scanForm.handleSubmit(handleScan)} className="flex gap-2">
-                <FormField
-                    control={scanForm.control}
-                    name="lotId"
-                    render={({ field }) => (
-                    <FormItem className="flex-1">
-                        <FormControl>
-                        <Input placeholder="e.g., LOT-20240101-001" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <Button type="submit" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="animate-spin" /> : <Search />}
-                </Button>
-                </form>
-            </Form>
-            {error && (
-                <Alert variant="destructive" className="mt-4">
-                <XCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-                </Alert>
-            )}
-            </CardContent>
-        </Card>
-
-        <Separator />
-        
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <Card>
-                <CardHeader>
-                    <CardTitle>Available Lots for Purchase</CardTitle>
-                    <CardDescription>
-                        Browse lots currently available directly from farmers.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    {availableLots.length > 0 ? (
-                        availableLots.map((lot) => (
-                            <div key={lot.lotId} className="border p-4 rounded-lg">
-                                <LotDetailsCard lot={lot} />
-                                <div className="mt-4 flex justify-end">
-                                    <Button onClick={() => setLotToBuy(lot)}>
-                                        <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />{lot.price * lot.weight}
-                                    </Button>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-muted-foreground text-center py-4">
-                            There are no lots currently available for purchase.
-                        </p>
-                    )}
-                </CardContent>
+            <CardHeader>
+                <CardTitle className="flex items-center"><ScanLine className="mr-2" /> Scan Lot QR Code</CardTitle>
+                <CardDescription>Enter the Lot ID to fetch its details. In a real app, you could use a camera to scan.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Form {...scanForm}>
+                    <form onSubmit={scanForm.handleSubmit(handleScan)} className="flex gap-2">
+                    <FormField
+                        control={scanForm.control}
+                        name="lotId"
+                        render={({ field }) => (
+                        <FormItem className="flex-1">
+                            <FormControl>
+                            <Input placeholder="e.g., LOT-20240101-001" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <Button type="submit" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="animate-spin" /> : <Search />}
+                    </Button>
+                    </form>
+                </Form>
+                {error && (
+                    <Alert variant="destructive" className="mt-4">
+                    <XCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
+            </CardContent>
             </Card>
-            
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center">
@@ -377,6 +331,35 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 </CardContent>
             </Card>
         </div>
+        
+        <Separator />
+        
+        <Card>
+            <CardHeader>
+                <CardTitle>Available Lots for Purchase</CardTitle>
+                <CardDescription>
+                    Browse lots currently available directly from farmers.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+                {availableLots.length > 0 ? (
+                    availableLots.map((lot) => (
+                        <div key={lot.lotId} className="border p-4 rounded-lg">
+                            <LotDetailsCard lot={lot} />
+                            <div className="mt-4 flex justify-end">
+                                <Button onClick={() => setLotToBuy(lot)}>
+                                    <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />{lot.price * lot.weight}
+                                </Button>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-muted-foreground text-center py-4">
+                        There are no lots currently available for purchase.
+                    </p>
+                )}
+            </CardContent>
+        </Card>
 
 
         <AlertDialog open={!!lotToBuy} onOpenChange={() => setLotToBuy(null)}>
@@ -477,7 +460,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                 <Button type="submit" className="w-full" disabled={isSubmittingTransport}>
                                     {isSubmittingTransport && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     <Printer className="mr-2 h-4 w-4" />
-                                    Save & Print
+                                    Save &amp; Print
                                 </Button>
                             </form>
                         </Form>
@@ -508,9 +491,5 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
 }
-
-    
-
-    
 
     
