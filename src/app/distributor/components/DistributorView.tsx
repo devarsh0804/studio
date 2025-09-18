@@ -81,7 +81,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         setScannedLot(lot);
         const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId);
         setSubLots(childLots);
-        subLotForm.reset();
+        subLotForm.reset({subLotCount: 2});
       } else {
         setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
         setScannedLot(null);
@@ -158,7 +158,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     updateLot(lotToAssign.lotId, updates);
     setFinalQRInfo({ ...lotToAssign, ...updates });
     setLotToAssign(null);
-    assignForm.reset();
+    assignForm.reset({ transportCondition: 'Normal' });
   };
 
 
@@ -167,7 +167,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     setError(null);
     setSubLots([]);
     scanForm.reset();
-    subLotForm.reset();
+    subLotForm.reset({subLotCount: 2});
     setFinalQRInfo(null);
   };
 
@@ -189,7 +189,15 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                         includeMargin={true}
                     />
                 </div>
-                <Button onClick={() => setFinalQRInfo(null)} className="w-full">Back to Lot Details</Button>
+                <Button onClick={() => {
+                  setFinalQRInfo(null);
+                  setLotToAssign(null);
+                  // Re-fetch the sublots to reflect changes
+                  if (scannedLot) {
+                     const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId);
+                     setSubLots(childLots);
+                  }
+                }} className="w-full">Back to Lot Details</Button>
             </CardContent>
         </Card>
     );
@@ -245,11 +253,17 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {subLots.map((lot) => (
                       <Card key={lot.lotId} className="flex items-center justify-between p-4">
-                        <div>
-                            <p className="font-mono text-sm">{lot.lotId}</p>
-                            <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
+                          <div className="flex items-center gap-4">
+                            <div className="p-1 bg-white rounded-md">
+                                <QRCode value={lot.lotId} size={48} level={"H"} />
+                            </div>
+                            <div>
+                                <p className="font-mono text-sm">{lot.lotId}</p>
+                                <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
+                                <p className='text-xs text-muted-foreground'>Owner: {lot.owner}</p>
+                            </div>
                         </div>
-                        <Button variant="secondary" onClick={() => setLotToAssign(lot)}>
+                        <Button variant="secondary" onClick={() => setLotToAssign(lot)} disabled={lot.owner !== distributorId}>
                             <Send className="mr-2"/> Assign & Ship
                         </Button>
                       </Card>
@@ -414,7 +428,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
       <AlertDialog open={!!lotToAssign} onOpenChange={(open) => !open && setLotToAssign(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Assign & Ship Lot</AlertDialogTitle>
+            <AlertDialogTitle>Assign &amp; Ship Lot</AlertDialogTitle>
             <AlertDialogDescription>
               Enter logistic and retailer details for lot: <span className="font-mono text-primary">{lotToAssign?.lotId}</span>
             </AlertDialogDescription>
@@ -456,7 +470,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 )} />
               <AlertDialogFooter className="pt-4">
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction type="submit">Submit & Get QR</AlertDialogAction>
+                  <AlertDialogAction type="submit">Submit &amp; Get QR</AlertDialogAction>
               </AlertDialogFooter>
             </form>
           </Form>
