@@ -55,7 +55,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const { toast } = useToast();
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
-  const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema) });
+  const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
   const assignForm = useForm<AssignFormValues>({ resolver: zodResolver(assignSchema), defaultValues: { transportCondition: 'Normal' } });
 
   const allLots = getAllLots();
@@ -411,7 +411,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!lotToAssign} onOpenChange={() => setLotToAssign(null)}>
+      <AlertDialog open={!!lotToAssign} onOpenChange={(open) => !open && setLotToAssign(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Assign & Ship Lot</AlertDialogTitle>
