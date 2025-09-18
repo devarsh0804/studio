@@ -12,11 +12,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Send } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -26,6 +27,12 @@ const subLotSchema = z.object({
 });
 type SubLotFormValues = z.infer<typeof subLotSchema>;
 
+const assignSchema = z.object({
+  retailerId: z.string().min(1, 'Retailer ID is required.'),
+  vehicleNumber: z.string().min(1, 'Vehicle number is required.'),
+  transportCondition: z.enum(['Cold Storage', 'Normal']),
+});
+type AssignFormValues = z.infer<typeof assignSchema>;
 
 interface DistributorViewProps {
   distributorId: string;
@@ -41,12 +48,15 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [isPaying, setIsPaying] = useState(false);
   const [subLots, setSubLots] = useState<Lot[]>([]);
   const [activeTab, setActiveTab] = useState('available-crops');
+  const [lotToAssign, setLotToAssign] = useState<Lot | null>(null);
+  const [finalQRInfo, setFinalQRInfo] = useState<Lot | null>(null);
 
   const { findLot, updateLot, getAllLots, addLots } = useAgriChainStore();
   const { toast } = useToast();
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema) });
+  const assignForm = useForm<AssignFormValues>({ resolver: zodResolver(assignSchema) });
 
   const allLots = getAllLots();
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
@@ -91,7 +101,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
     setIsPaying(true);
 
-    // Simulate payment processing
     setTimeout(() => {
       updateLot(lotToPay.lotId, { owner: distributorId });
 
@@ -119,14 +128,14 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         lotId: `${scannedLot.lotId}-SUB-${String(Math.floor(Math.random() * 1000) + i).padStart(3, '0')}`,
         parentLotId: scannedLot.lotId,
         weight: newWeight,
-        price: newPrice, // Adjust price proportionally
+        price: newPrice,
         owner: distributorId,
       };
       newSubLots.push(newLot);
     }
 
     addLots(newSubLots);
-    updateLot(scannedLot.lotId, { weight: 0 }); // Mark original lot as fully distributed
+    updateLot(scannedLot.lotId, { weight: 0 }); 
     setSubLots(newSubLots);
 
     toast({
@@ -135,13 +144,56 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     });
   };
 
+  const handleAssignSubmit: SubmitHandler<AssignFormValues> = (data) => {
+    if (!lotToAssign) return;
+
+    const updates: Partial<Lot> = {
+      owner: data.retailerId,
+      transportInfo: {
+        vehicleNumber: data.vehicleNumber,
+        transportCondition: data.transportCondition,
+        timestamp: new Date().toISOString(),
+      },
+    };
+    updateLot(lotToAssign.lotId, updates);
+    setFinalQRInfo({ ...lotToAssign, ...updates });
+    setLotToAssign(null);
+    assignForm.reset();
+  };
+
+
   const resetView = () => {
     setScannedLot(null);
     setError(null);
     setSubLots([]);
     scanForm.reset();
     subLotForm.reset();
+    setFinalQRInfo(null);
   };
+
+  if(finalQRInfo) {
+    return (
+        <Card className="max-w-md mx-auto">
+            <CardHeader>
+                <CardTitle className='text-primary flex items-center'><QrCode className='mr-2'/> QR Code Ready for Shipping</CardTitle>
+                <CardDescription>
+                    Lot <span className='font-mono'>{finalQRInfo.lotId}</span> has been assigned to retailer <span className='font-mono'>{finalQRInfo.owner}</span>. Attach this QR code to the shipment.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
+                 <div className="p-4 bg-white rounded-lg inline-block">
+                    <QRCode
+                        value={finalQRInfo.lotId}
+                        size={256}
+                        level={"H"}
+                        includeMargin={true}
+                    />
+                </div>
+                <Button onClick={() => setFinalQRInfo(null)} className="w-full">Back to Lot Details</Button>
+            </CardContent>
+        </Card>
+    );
+  }
 
   if (scannedLot) {
     const isOwnedByDistributor = scannedLot.owner === distributorId;
@@ -161,7 +213,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Spline className="mr-2" /> Create or View Sub-lots
+                <Spline className="mr-2" /> Create or Manage Sub-lots
               </CardTitle>
               <CardDescription>{canBeSplit ? 'Split this lot into smaller quantities for different retailers. The total weight will be divided equally.' : 'This lot has already been split, or it is a sub-lot itself.'}</CardDescription>
             </CardHeader>
@@ -189,16 +241,18 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               )}
               {subLots.length > 0 && (
                 <div className="mt-6">
-                  <h4 className="font-semibold mb-4">Generated Sub-lot QRs:</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-80 overflow-y-auto p-1">
+                  <h4 className="font-semibold mb-4">Generated Sub-lots:</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {subLots.map((lot) => (
-                      <div key={lot.lotId} className="border rounded-lg p-2 flex flex-col items-center gap-2 text-center">
-                        <div className="p-2 bg-white rounded-md">
-                          <QRCode value={lot.lotId} size={80} level={'H'} />
+                      <Card key={lot.lotId} className="flex items-center justify-between p-4">
+                        <div>
+                            <p className="font-mono text-sm">{lot.lotId}</p>
+                            <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
                         </div>
-                        <p className="text-xs font-mono break-all">{lot.lotId}</p>
-                        <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
-                      </div>
+                        <Button variant="secondary" onClick={() => setLotToAssign(lot)}>
+                            <Send className="mr-2"/> Assign & Ship
+                        </Button>
+                      </Card>
                     ))}
                   </div>
                 </div>
@@ -313,7 +367,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                   </div>
                 ))
               ) : (
-                <p className="text-muted-foreground text-center py-4">You have not purchased any lots yet. Go to the &quot;Available Crops&quot; tab to buy one.</p>
+                <p className="text-muted-foreground text-center py-4">You have not purchased any lots yet. Go to the "Available Crops" tab to buy one.</p>
               )}
             </CardContent>
           </Card>
@@ -354,6 +408,58 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               {isPaying ? <Loader2 className="animate-spin" /> : <><CreditCard className="mr-2" />Pay Now</>}
             </AlertDialogAction>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!lotToAssign} onOpenChange={() => setLotToAssign(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Assign & Ship Lot</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter logistic and retailer details for lot: <span className="font-mono text-primary">{lotToAssign?.lotId}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Form {...assignForm}>
+            <form onSubmit={assignForm.handleSubmit(handleAssignSubmit)} className="space-y-4 pt-4">
+               <FormField
+                control={assignForm.control}
+                name="retailerId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Retailer ID</FormLabel>
+                    <FormControl><Input placeholder="e.g., retail-store-01" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={assignForm.control} name="vehicleNumber" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Vehicle Number</FormLabel>
+                    <FormControl><Input placeholder="e.g., OD-01-AB-1234" {...field} /></FormControl>
+                    <FormMessage />
+                </FormItem>
+                )} />
+              <FormField control={assignForm.control} name="transportCondition" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Transport Condition</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || 'Normal'}>
+                    <FormControl>
+                        <SelectTrigger><SelectValue placeholder="Select a condition" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        <SelectItem value="Cold Storage">Cold Storage</SelectItem>
+                        <SelectItem value="Normal">Normal</SelectItem>
+                    </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+                )} />
+              <AlertDialogFooter className="pt-4">
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction type="submit">Submit & Get QR</AlertDialogAction>
+              </AlertDialogFooter>
+            </form>
+          </Form>
         </AlertDialogContent>
       </AlertDialog>
     </div>

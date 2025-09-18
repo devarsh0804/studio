@@ -18,6 +18,13 @@ export interface Lot {
   size?: string;
   color?: string;
   status?: 'Registered' | 'Purchased' | 'Split' | 'Transported' | 'Stocked';
+  
+  // Logistic details, can be on parent or sub-lot
+  transportInfo?: {
+    vehicleNumber: string;
+    transportCondition: string;
+    timestamp: string;
+  }
 }
 
 export interface GradedLot extends Omit<Lot, 'price' | 'owner'> {}
