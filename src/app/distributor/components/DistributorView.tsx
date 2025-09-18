@@ -67,7 +67,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   
   const allLots = getAllLots();
   const availableLots = allLots.filter(lot => lot.owner === lot.farmer);
-  const purchasedLots = allLots.filter(lot => lot.owner === distributorId);
+  const purchasedLots = allLots.filter(lot => lot.owner === distributorId && !lot.parentLotId);
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -209,7 +209,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 </Card>
             )}
 
-            {isOwnedByDistributor && (
+            {isOwnedByDistributor && canBeSplit && (
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center"><Spline className="mr-2"/> Create Sub-lots for Retailers</CardTitle>
@@ -489,3 +489,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     
 
 
+
+
+    
