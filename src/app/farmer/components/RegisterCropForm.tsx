@@ -85,11 +85,11 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       photoUrl: cropImage.imageUrl,
       quality: values.quality,
       gradingDate: new Date().toISOString(),
-      // Manual grading, so these fields are not set
-      moisture: undefined,
-      impurities: undefined,
-      size: undefined,
-      color: undefined,
+      // Generate random data for the certificate
+      moisture: `${(Math.random() * (18 - 10) + 10).toFixed(1)}%`,
+      impurities: `${(Math.random() * (2 - 0.1) + 0.1).toFixed(1)}%`,
+      size: ['Uniform Medium', 'Large', 'Small'][Math.floor(Math.random() * 3)],
+      color: ['Golden Brown', 'Light Yellow', 'Pale White'][Math.floor(Math.random() * 3)],
     };
 
     setTimeout(() => {
@@ -275,34 +275,36 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
             </div>
             
             <div className="space-y-6 pt-6 border-t">
-              <FormField
-                  control={form.control}
-                  name="quality"
-                  render={({ field }) => (
-                      <FormItem>
-                          <FormLabel>Quality Grade</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                  <SelectTrigger>
-                                      <SelectValue placeholder="Select a quality grade for the crop" />
-                                  </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                  <SelectItem value="Premium">Premium</SelectItem>
-                                  <SelectItem value="Standard">Standard</SelectItem>
-                                  <SelectItem value="Basic">Basic</SelectItem>
-                              </SelectContent>
-                          </Select>
-                          <FormDescription>
-                              Select the quality grade determined by the manual inspection.
-                          </FormDescription>
-                          <FormMessage />
-                      </FormItem>
-                  )}
-              />
-              <div className="flex flex-col">
+              <div className="space-y-2">
+                <FormField
+                    control={form.control}
+                    name="quality"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Quality Grade</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a quality grade for the crop" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Premium">Premium</SelectItem>
+                                    <SelectItem value="Standard">Standard</SelectItem>
+                                    <SelectItem value="Basic">Basic</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormDescription>
+                                Select the quality grade determined by the manual inspection.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+              </div>
+              <div className="space-y-2">
                 <FormLabel>Quality Certificate</FormLabel>
-                <Button type="button" variant="secondary" className="mt-2">
+                <Button type="button" variant="secondary" className="w-full">
                     <Upload className="mr-2" /> Upload Certificate
                 </Button>
               </div>
