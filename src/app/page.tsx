@@ -16,13 +16,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { placeHolderImages } from '@/lib/placeholder-images';
-import Image from 'next/image';
 
 
 export default function Home() {
   const { toast } = useToast();
-  const heroImage = placeHolderImages.find(p => p.id === 'hero');
 
   const roles = [
     {
@@ -69,10 +66,32 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-       <div className="absolute top-4 right-4 z-20">
+      <header className="py-12">
+        <div className="container mx-auto text-center">
+            <div className="flex justify-center items-center mb-4 bg-primary/10 p-4 rounded-full w-24 h-24 mx-auto">
+                <Leaf className="w-12 h-12 text-primary" />
+            </div>
+          <h1 className="font-headline text-5xl md:text-6xl font-bold">
+            AgriChain Trace
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Bringing transparency to the agricultural supply chain, from farm to fork.
+          </p>
+        </div>
+      </header>
+
+      <main className="flex-grow w-full max-w-5xl mx-auto px-4 pb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {roles.map((role) => (
+            <RoleCard key={role.title} {...role} />
+          ))}
+        </div>
+      </main>
+
+      <div className="absolute top-4 right-4 z-20">
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="sm" className="bg-white/80 hover:bg-white text-destructive shadow-lg">
+            <Button variant="outline" size="sm">
               <RotateCcw className="mr-2 h-4 w-4" /> Reset Data
             </Button>
           </AlertDialogTrigger>
@@ -90,41 +109,6 @@ export default function Home() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-
-      <section className="relative w-full h-[60vh] flex items-center justify-center text-center text-white">
-        {heroImage && (
-             <Image 
-                src={heroImage.imageUrl} 
-                alt={heroImage.description}
-                fill
-                className="object-cover"
-                data-ai-hint={heroImage.imageHint}
-                priority
-             />
-        )}
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 p-4 max-w-4xl">
-            <div className="flex justify-center items-center mb-4 bg-white/10 p-4 rounded-full w-24 h-24 mx-auto backdrop-blur-sm">
-                <Leaf className="w-12 h-12 text-white" />
-            </div>
-            <h1 className="font-headline text-5xl md:text-7xl font-bold">
-            AgriChain Trace
-            </h1>
-            <p className="mt-4 text-lg md:text-xl text-white/90">
-            Bringing transparency to the agricultural supply chain, from farm to fork.
-            </p>
-        </div>
-      </section>
-
-      <section className="flex-grow w-full max-w-5xl mx-auto p-8">
-        <h2 className="text-3xl font-headline font-bold text-center mb-2">Select Your Role</h2>
-        <p className="text-center text-muted-foreground mb-12">Choose your role in the supply chain to get started.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {roles.map((role) => (
-            <RoleCard key={role.title} {...role} />
-            ))}
-        </div>
-      </section>
     </div>
   );
 }
