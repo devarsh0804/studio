@@ -55,28 +55,38 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
     setError(null);
+    setHistory(null);
     const historyData = getLotHistory(data.lotId);
+
     setTimeout(() => {
+      setIsLoading(false);
       if (historyData) {
-        if (historyData.lot.status === 'Dispatched') {
+        // If the lot is dispatched to this retailer, trigger delivery & payment flow
+        if (historyData.lot.status === 'Dispatched' && historyData.lot.owner === retailerId) {
           updateLot(historyData.lot.lotId, { status: 'Delivered' });
-           toast({
+          toast({
             title: "Lot Received!",
             description: `Lot ${historyData.lot.lotId} has been marked as 'Delivered'.`,
           });
-          const freshHistory = getLotHistory(data.lotId);
-          setHistory(freshHistory);
-          if (freshHistory?.lot.paymentStatus !== 'Paid') {
-            setLotToPay(freshHistory!.lot); // Trigger payment
+          
+          const freshLot = findLot(data.lotId);
+          if (freshLot?.paymentStatus !== 'Paid') {
+            setLotToPay(freshLot!); // Trigger payment dialog first
+          } else {
+            // If already paid for some reason, just show history
+            setHistory(getLotHistory(data.lotId));
           }
+        } else if(historyData.lot.owner !== retailerId) {
+            setError(`This lot is not assigned to your store (${retailerId}). Current owner: ${historyData.lot.owner}`);
+            setHistory(null);
         } else {
+            // Otherwise, just show the history
             setHistory(historyData);
         }
       } else {
         setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
         setHistory(null);
       }
-      setIsLoading(false);
     }, 500);
   };
   
@@ -113,8 +123,11 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
       });
 
       setTimeout(() => {
+        const paidLotId = lotToPay.lotId;
         setLotToPay(null);
         setPaymentStatus('idle'); 
+        // Now show the history for the lot that was just paid for
+        setHistory(getLotHistory(paidLotId));
       }, 1000);
     }, 1500);
   };
@@ -361,3 +374,5 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     </div>
   );
 }
+
+    
