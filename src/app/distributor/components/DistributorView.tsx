@@ -210,57 +210,53 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 </Card>
             )}
 
-            {isOwnedByDistributor && (
-                <>
-                {canBeSplit && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center"><Spline className="mr-2"/> Create Sub-lots for Retailers</CardTitle>
-                            <CardDescription>Split this lot into smaller quantities for different retailers. The total weight will be divided equally.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Form {...subLotForm}>
-                                <form onSubmit={subLotForm.handleSubmit(handleSubLotSubmit)} className="flex gap-2">
-                                    <FormField control={subLotForm.control} name="subLotCount" render={({field}) => (
-                                        <FormItem className="flex-1">
-                                            <FormControl><Input type="number" placeholder={`Split ${scannedLot.weight} quintal lot into...`} {...field}/></FormControl>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}/>
-                                    <Button type="submit"><PackagePlus className="h-4 w-4"/></Button>
-                                </form>
-                            </Form>
-                            {subLots.length > 0 && (
-                                <div className="mt-6">
-                                    <h4 className="font-semibold mb-4">Generated Sub-lot QRs:</h4>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-80 overflow-y-auto p-1">
-                                        {subLots.map(lot => (
-                                            <Button
-                                                key={lot.lotId}
-                                                variant="outline"
-                                                className="h-auto flex-col p-2"
-                                                onClick={() => {
-                                                  transportForm.reset();
-                                                  setLotForTransport(lot);
-                                                }}
-                                            >
-                                                <div className="p-2 bg-white rounded-md">
-                                                    <QRCode value={lot.lotId} size={80} level={"H"} />
-                                                </div>
-                                                <p className="text-xs font-mono mt-1 truncate">{lot.lotId}</p>
-                                                <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
-                                            </Button>
-                                        ))}
-                                    </div>
-                                    <Alert className="mt-4">
-                                        <AlertDescription>Click a QR code to add transport details for that specific sub-lot. The parent lot's weight is now 0.</AlertDescription>
-                                    </Alert>
+            {canBeSplit && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center"><Spline className="mr-2"/> Create Sub-lots for Retailers</CardTitle>
+                        <CardDescription>Split this lot into smaller quantities for different retailers. The total weight will be divided equally.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...subLotForm}>
+                            <form onSubmit={subLotForm.handleSubmit(handleSubLotSubmit)} className="flex gap-2">
+                                <FormField control={subLotForm.control} name="subLotCount" render={({field}) => (
+                                    <FormItem className="flex-1">
+                                        <FormControl><Input type="number" placeholder={`Split ${scannedLot.weight} quintal lot into...`} {...field}/></FormControl>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}/>
+                                <Button type="submit"><PackagePlus className="h-4 w-4"/></Button>
+                            </form>
+                        </Form>
+                        {subLots.length > 0 && (
+                            <div className="mt-6">
+                                <h4 className="font-semibold mb-4">Generated Sub-lot QRs:</h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-80 overflow-y-auto p-1">
+                                    {subLots.map(lot => (
+                                        <Button
+                                            key={lot.lotId}
+                                            variant="outline"
+                                            className="h-auto flex-col p-2"
+                                            onClick={() => {
+                                              transportForm.reset();
+                                              setLotForTransport(lot);
+                                            }}
+                                        >
+                                            <div className="p-2 bg-white rounded-md">
+                                                <QRCode value={lot.lotId} size={80} level={"H"} />
+                                            </div>
+                                            <p className="text-xs font-mono mt-1 truncate">{lot.lotId}</p>
+                                            <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
+                                        </Button>
+                                    ))}
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-                </>
+                                <Alert className="mt-4">
+                                    <AlertDescription>Click a QR code to add transport details for that specific sub-lot. The parent lot's weight is now 0.</AlertDescription>
+                                </Alert>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             )}
         </div>
     );
