@@ -68,7 +68,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   
   const allLots = getAllLots();
   const availableLots = allLots.filter(lot => lot.owner === lot.farmer);
-  const purchasedLots = allLots.filter(lot => lot.owner === distributorId);
+  const purchasedLots = allLots.filter(lot => lot.owner === distributorId && !lot.parentLotId);
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -311,7 +311,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
         <Separator />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8">
             <Card>
                 <CardHeader>
                     <CardTitle>Available Lots for Purchase</CardTitle>
@@ -486,5 +486,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
   }
+
+    
 
     
