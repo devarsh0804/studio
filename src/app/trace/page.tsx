@@ -162,7 +162,7 @@ export default function TracePage() {
                     <CardHeader>
                     <CardTitle className="flex items-center"><History className="mr-2"/> Full Lot History</CardTitle>
                     <CardDescription>This is the complete journey of the product from farm to store, verified by AgriChain Trace.</CardDescription>
-                    </Header>
+                    </CardHeader>
                     <CardContent>
                         <Timeline events={getTimelineEvents()} />
                     </CardContent>
