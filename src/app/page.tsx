@@ -16,10 +16,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { placeHolderImages } from '@/lib/placeholder-images';
+import Image from 'next/image';
 
 
 export default function Home() {
   const { toast } = useToast();
+  const heroImage = placeHolderImages.find(p => p.id === 'hero');
 
   const roles = [
     {
@@ -65,11 +68,11 @@ export default function Home() {
 
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
-      <div className="absolute top-4 right-4">
+    <div className="flex flex-col min-h-screen">
+       <div className="absolute top-4 right-4 z-20">
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="sm">
+            <Button variant="destructive" size="sm" className="bg-white/80 hover:bg-white text-destructive shadow-lg">
               <RotateCcw className="mr-2 h-4 w-4" /> Reset Data
             </Button>
           </AlertDialogTrigger>
@@ -88,23 +91,40 @@ export default function Home() {
         </AlertDialog>
       </div>
 
-      <div className="text-center mb-12">
-        <div className="flex justify-center items-center mb-4">
-            <Leaf className="w-16 h-16 text-primary" />
+      <section className="relative w-full h-[60vh] flex items-center justify-center text-center text-white">
+        {heroImage && (
+             <Image 
+                src={heroImage.imageUrl} 
+                alt={heroImage.description}
+                fill
+                className="object-cover"
+                data-ai-hint={heroImage.imageHint}
+                priority
+             />
+        )}
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative z-10 p-4 max-w-4xl">
+            <div className="flex justify-center items-center mb-4 bg-white/10 p-4 rounded-full w-24 h-24 mx-auto backdrop-blur-sm">
+                <Leaf className="w-12 h-12 text-white" />
+            </div>
+            <h1 className="font-headline text-5xl md:text-7xl font-bold">
+            AgriChain Trace
+            </h1>
+            <p className="mt-4 text-lg md:text-xl text-white/90">
+            Bringing transparency to the agricultural supply chain, from farm to fork.
+            </p>
         </div>
-        <h1 className="font-headline text-5xl md:text-6xl font-bold text-primary">
-          AgriChain Trace
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Bringing transparency to the agricultural supply chain, from farm to fork. Select your role to get started.
-        </p>
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
-        {roles.map((role) => (
-          <RoleCard key={role.title} {...role} />
-        ))}
-      </div>
+      <section className="flex-grow w-full max-w-5xl mx-auto p-8">
+        <h2 className="text-3xl font-headline font-bold text-center mb-2">Select Your Role</h2>
+        <p className="text-center text-muted-foreground mb-12">Choose your role in the supply chain to get started.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {roles.map((role) => (
+            <RoleCard key={role.title} {...role} />
+            ))}
+        </div>
+      </section>
     </div>
   );
 }
