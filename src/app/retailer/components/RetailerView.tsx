@@ -13,11 +13,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle } from "lucide-react";
+import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket } from "lucide-react";
 import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
 import { Separator } from "@/components/ui/separator";
 import { LotDetailsCard } from "@/components/LotDetailsCard";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import QRCode from "qrcode.react";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -34,6 +37,8 @@ interface RetailerViewProps {
 
 export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   const [history, setHistory] = useState<LotHistory | null>(null);
+  const [lotToPay, setLotToPay] = useState<Lot | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +66,9 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
           });
           const freshHistory = getLotHistory(data.lotId);
           setHistory(freshHistory);
+          if (freshHistory?.lot.paymentStatus !== 'Paid') {
+            setLotToPay(freshHistory!.lot); // Trigger payment
+          }
         } else {
             setHistory(historyData);
         }
@@ -89,6 +97,26 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
     setIsSubmitting(false);
     retailerForm.reset();
+  };
+
+  const handlePayment = () => {
+    if (!lotToPay) return;
+
+    setPaymentStatus('processing');
+
+    setTimeout(() => {
+      updateLot(lotToPay.lotId, { paymentStatus: 'Paid' });
+      setPaymentStatus('success');
+      toast({
+        title: 'Payment Successful!',
+        description: `Payment for Lot ${lotToPay.lotId} has been sent.`,
+      });
+
+      setTimeout(() => {
+        setLotToPay(null);
+        setPaymentStatus('idle'); 
+      }, 1000);
+    }, 1500);
   };
   
 
@@ -241,6 +269,54 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
             </CardContent>
         </Card>
 
+         <Dialog open={!!lotToPay} onOpenChange={(open) => !open && paymentStatus !== 'processing' && setLotToPay(null)}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Finalize Payment to Distributor</DialogTitle>
+                <DialogDescription>
+                  Proceed to pay for Lot {lotToPay?.lotId}. <br /> Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
+                  <span className="font-bold">{lotToPay ? lotToPay.price * lotToPay.weight : 0}</span>
+                </DialogDescription>
+              </DialogHeader>
+              <Tabs defaultValue="upi" className="w-full pt-4">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="upi"><QrCode className="mr-2"/> UPI</TabsTrigger>
+                    <TabsTrigger value="bank"><Landmark className="mr-2"/> Bank Transfer</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="upi">
+                    <Card>
+                      <CardHeader><CardTitle>Pay with UPI</CardTitle><CardDescription>Scan the QR code with your UPI app.</CardDescription></CardHeader>
+                      <CardContent className="flex flex-col items-center justify-center space-y-4">
+                        <div className="p-4 bg-white rounded-lg">
+                           <QRCode value={`upi://pay?pa=distro@agrichain&pn=Distributor&am=${lotToPay ? lotToPay.price * lotToPay.weight : 0}&cu=INR&tn=Lot%20${lotToPay?.lotId}`} size={180} />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Or pay to UPI ID: <span className="font-mono">distro@agrichain</span></p>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  <TabsContent value="bank">
+                    <Card>
+                      <CardHeader><CardTitle>Bank Transfer Details</CardTitle><CardDescription>Use these details to make a bank transfer.</CardDescription></CardHeader>
+                      <CardContent className="space-y-2 text-sm">
+                        <div className="flex justify-between"><span className="text-muted-foreground">Beneficiary:</span> <span className="font-medium">AgriChain Distributors</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Account No:</span> <span className="font-mono">9876543210</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">IFSC Code:</span> <span className="font-mono">AGDI0005678</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Bank:</span> <span className="font-medium">AgriChain Bank</span></div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              <DialogFooter className="!mt-6">
+                 <Button variant="outline" disabled={paymentStatus === 'processing'} onClick={() => setLotToPay(null)}>Cancel</Button>
+                <Button onClick={handlePayment} disabled={paymentStatus === 'processing' || paymentStatus === 'success'} className="w-40">
+                  {paymentStatus === 'processing' && <Loader2 className="animate-spin" />}
+                  {paymentStatus === 'idle' && <><CreditCard className="mr-2" />Confirm Payment</>}
+                  {paymentStatus === 'success' && <><Rocket className="mr-2 animate-bounce" />Payment Sent!</>}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
       </div>
     );
   }
@@ -274,14 +350,14 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                       <FormField control={retailerForm.control} name="shelfDate" render={({field}) => (
                           <FormItem><FormLabel>Shelf Date</FormLabel><FormControl><Input type="date" {...field} disabled={isStocked}/></FormControl><FormMessage/></FormItem>
                       )}/>
-                      <Button type="submit" disabled={isSubmitting || isStocked} className="w-full">{isSubmitting && <Loader2 className="animate-spin mr-2"/>} {isStocked ? 'Lot Stocked' : 'Add to Ledger'}</Button>
+                      <Button type="submit" disabled={isSubmitting || isStocked || history.lot.paymentStatus !== 'Paid'} className="w-full">
+                        {isSubmitting && <Loader2 className="animate-spin mr-2"/>} 
+                        {isStocked ? 'Lot Stocked' : (history.lot.paymentStatus !== 'Paid' ? 'Payment Pending' : 'Add to Ledger')}
+                      </Button>
                   </form>
               </Form>
           </CardContent>
       </Card>
-
     </div>
   );
 }
-
-    

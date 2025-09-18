@@ -23,6 +23,7 @@ export interface Lot {
   size?: string;
   color?: string;
   status?: 'Registered' | 'Purchased' | 'Split' | 'Dispatched' | 'Stocked' | 'Delivered';
+  paymentStatus?: 'Paid' | 'Unpaid';
 }
 
 export interface GradedLot extends Omit<Lot, 'price' | 'owner'> {}
