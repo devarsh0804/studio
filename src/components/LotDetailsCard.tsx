@@ -3,7 +3,7 @@ import type { Lot } from "@/lib/types";
 import Image from "next/image";
 import { placeHolderImages } from "@/lib/placeholder-images";
 import { Box, Calendar, Wheat, Weight, BadgeIndianRupee, Award, User, Milestone, MapPin, Droplets, Microscope, Ruler, Palette, FileText } from "lucide-react";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 
 interface LotDetailsCardProps {
   lot: Lot;
@@ -11,6 +11,7 @@ interface LotDetailsCardProps {
 
 export function LotDetailsCard({ lot }: LotDetailsCardProps) {
   const cropImage = placeHolderImages.find(p => p.id === 'crop1');
+  const gradingDate = lot.gradingDate ? new Date(lot.gradingDate) : null;
 
   return (
     <Card>
@@ -117,7 +118,7 @@ export function LotDetailsCard({ lot }: LotDetailsCardProps) {
                     <Calendar className="w-4 h-4 mr-2 mt-0.5 text-muted-foreground" />
                     <div>
                         <p className="text-muted-foreground">Grading Date</p>
-                        <p className="font-medium">{format(new Date(lot.gradingDate), 'PPp')}</p>
+                        <p className="font-medium">{gradingDate && isValid(gradingDate) ? format(gradingDate, 'PPp') : 'N/A'}</p>
                     </div>
                 </div>
              </div>
