@@ -13,13 +13,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer, User, Truck, PackageCheck, Download } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -74,13 +74,13 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
   const purchasedLots = allLots.filter((lot) => lot.owner === distributorId && !lot.parentLotId);
   const dispatchedLots = allLots.filter(
-    (lot) => lot.logisticsInfo && (lot.parentLotId && findLot(lot.parentLotId)?.owner === distributorId || lot.owner !== distributorId && lot.status === 'Dispatched')
+    (lot) => lot.logisticsInfo && (lot.parentLotId && findLot(lot.parentLotId)?.owner === distributorId || lot.owner !== distributorId && (lot.status === 'Dispatched' || lot.status === 'Delivered'))
   );
 
 
   useEffect(() => {
     if (scannedLot) {
-      const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId && l.status !== 'Dispatched');
+      const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId && l.status !== 'Dispatched' && l.status !== 'Delivered');
       if (childLots.length > 0) {
         setSubLots(childLots);
       }
@@ -95,7 +95,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     setTimeout(() => {
       if (lot) {
         setScannedLot(lot);
-        const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId && l.status !== 'Dispatched');
+        const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId && l.status !== 'Dispatched' && l.status !== 'Delivered');
         setSubLots(childLots);
         subLotForm.reset({subLotCount: 2});
       } else {
@@ -274,7 +274,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
          <Dialog open={!!lotToAssign} onOpenChange={() => setLotToAssign(null)}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Assign & Print QR for Lot {lotToAssign?.lotId}</DialogTitle>
+                    <DialogTitle>Assign &amp; Download QR for Lot {lotToAssign?.lotId}</DialogTitle>
                 </DialogHeader>
                 {lotToAssign && (
                     <div className="flex flex-col items-center gap-4 py-4" >
@@ -336,7 +336,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                             />
                             <DialogFooter className="!mt-4">
                                 <Button variant="outline" type="button" onClick={() => setLotToAssign(null)}>Cancel</Button>
-                                <Button type="submit"><Download className="mr-2"/> Assign & Download</Button>
+                                <Button type="submit"><Download className="mr-2"/> Assign &amp; Download</Button>
                             </DialogFooter>
                           </form>
                         </Form>
@@ -466,7 +466,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <CardTitle className="flex items-center">
                 <PackageCheck className="mr-2" /> Your Dispatched Lots
               </CardTitle>
-              <CardDescription>These lots have been assigned to retailers and are in transit.</CardDescription>
+              <CardDescription>These lots have been assigned to retailers and are in transit or have been delivered.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
               {dispatchedLots.length > 0 ? (
@@ -474,10 +474,20 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                   <div key={lot.lotId} className="border p-4 rounded-lg">
                     <LotDetailsCard lot={lot} />
                      <div className="mt-4 border-t pt-4 text-sm">
-                        <p className="font-semibold">Logistics Details:</p>
-                        <p><span className="text-muted-foreground">Vehicle:</span> {lot.logisticsInfo?.vehicleNumber}</p>
-                        <p><span className="text-muted-foreground">Dispatch Date:</span> {lot.logisticsInfo?.dispatchDate}</p>
-                        <p><span className="text-muted-foreground">Assigned To:</span> <span className="font-mono">{lot.owner}</span></p>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-semibold">Logistics Details:</p>
+                            <p><span className="text-muted-foreground">Vehicle:</span> {lot.logisticsInfo?.vehicleNumber}</p>
+                            <p><span className="text-muted-foreground">Dispatch Date:</span> {lot.logisticsInfo?.dispatchDate}</p>
+                            <p><span className="text-muted-foreground">Assigned To:</span> <span className="font-mono">{lot.owner}</span></p>
+                          </div>
+                          <div>
+                              <p className="font-semibold">Status:</p>
+                              <Badge variant={lot.status === 'Delivered' ? 'default' : 'secondary'}>
+                                {lot.status}
+                              </Badge>
+                          </div>
+                        </div>
                     </div>
                   </div>
                 ))

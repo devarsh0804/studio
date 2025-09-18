@@ -42,7 +42,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [retailPacks, setRetailPacks] = useState<RetailPack[]>([]);
 
-  const { getLotHistory, addRetailEvent, addRetailPacks: savePacks } = useAgriChainStore();
+  const { getLotHistory, addRetailEvent, addRetailPacks: savePacks, updateLot } = useAgriChainStore();
   const { toast } = useToast();
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
@@ -55,7 +55,15 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     const historyData = getLotHistory(data.lotId);
     setTimeout(() => {
       if (historyData) {
-        setHistory(historyData);
+        // If the lot was dispatched, update its status to Delivered
+        if (historyData.lot.status === 'Dispatched') {
+          updateLot(historyData.lot.lotId, { status: 'Delivered' });
+           toast({
+            title: "Lot Received!",
+            description: `Lot ${historyData.lot.lotId} has been marked as 'Delivered'.`,
+          });
+        }
+        setHistory({ ...historyData, lot: {...historyData.lot, status: 'Delivered'} });
       } else {
         setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
         setHistory(null);
@@ -70,11 +78,15 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     
     const newEvent: RetailEvent = { ...data, storeId: retailerId, timestamp: new Date().toISOString() };
     addRetailEvent(history.lot.lotId, newEvent);
-    toast({ title: "Success!", description: "Retailer details updated." });
+    updateLot(history.lot.lotId, { status: 'Stocked' });
+
+    toast({ title: "Success!", description: "Retailer details updated and lot marked as Stocked." });
     
     // Refresh history
     const updatedHistory = getLotHistory(history.lot.lotId);
-    setHistory(updatedHistory);
+    if(updatedHistory) {
+      setHistory(updatedHistory);
+    }
 
     setIsSubmitting(false);
     retailerForm.reset();

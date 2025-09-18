@@ -21,7 +21,7 @@ export interface Lot {
   impurities?: string;
   size?: string;
   color?: string;
-  status?: 'Registered' | 'Purchased' | 'Split' | 'Dispatched' | 'Stocked';
+  status?: 'Registered' | 'Purchased' | 'Split' | 'Dispatched' | 'Stocked' | 'Delivered';
 }
 
 export interface GradedLot extends Omit<Lot, 'price' | 'owner'> {}
