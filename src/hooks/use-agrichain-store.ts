@@ -1,20 +1,18 @@
+
 'use client';
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { Lot, RetailEvent, RetailPack, LotHistory } from '@/lib/types';
+import type { Lot, RetailEvent, LotHistory } from '@/lib/types';
 
 interface AgriChainState {
   lots: Record<string, Lot>;
   retailEvents: Record<string, RetailEvent[]>;
-  retailPacks: Record<string, RetailPack>;
   addLot: (lot: Lot) => void;
   addLots: (lots: Lot[]) => void;
   updateLot: (lotId: string, updates: Partial<Lot>) => void;
   addRetailEvent: (lotId: string, event: RetailEvent) => void;
-  addRetailPacks: (packs: RetailPack[]) => void;
   findLot: (lotId: string) => Lot | undefined;
-  findPack: (packId: string) => RetailPack | undefined;
   getLotHistory: (lotId: string) => LotHistory | null;
   getAllLots: () => Lot[];
 }
@@ -25,7 +23,6 @@ export const useAgriChainStore = create<AgriChainState>()(
       (set, get) => ({
         lots: {},
         retailEvents: {},
-        retailPacks: {},
 
         addLot: (lot) =>
           set((state) => ({
@@ -69,47 +66,16 @@ export const useAgriChainStore = create<AgriChainState>()(
                 },
             };
           }),
-        
-        addRetailPacks: (packs) => 
-          set((state) => {
-            const newPacks = packs.reduce((acc, pack) => {
-              acc[pack.packId] = pack;
-              return acc;
-            }, {} as Record<string, RetailPack>);
-            return {
-              retailPacks: { ...state.retailPacks, ...newPacks }
-            };
-          }),
 
         findLot: (lotId) => {
            if (!lotId) return undefined;
-           
-           const lot = get().lots[lotId];
-           if (lot) return lot;
-
-           if (lotId.startsWith('PACK-')) {
-              const pack = get().retailPacks[lotId];
-              return pack ? get().lots[pack.parentLotId] : undefined;
-           }
-           
-           return undefined;
+           return get().lots[lotId];
         },
-
-        findPack: (packId) => get().retailPacks[packId],
         
         getAllLots: () => Object.values(get().lots).sort((a, b) => new Date(b.harvestDate).getTime() - new Date(a.harvestDate).getTime()),
 
         getLotHistory: (id) => {
-          let currentLot: Lot | undefined;
-          
-          if (id.startsWith('PACK-')) {
-            const pack = get().findPack(id);
-            if(pack) {
-              currentLot = get().findLot(pack.parentLotId); 
-            }
-          } else {
-            currentLot = get().findLot(id);
-          }
+          const currentLot = get().findLot(id);
           
           if (!currentLot) return null;
           

@@ -1,3 +1,4 @@
+
 export interface Lot {
   lotId: string;
   farmer: string;

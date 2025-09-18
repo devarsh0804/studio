@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -5,7 +6,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
-import type { Lot, TransportEvent } from "@/lib/types";
+import type { Lot } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,6 @@ import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle } from "lucide-react";
-import { detectConflictAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
 
@@ -37,7 +37,7 @@ export function TransportView() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [conflict, setConflict] = useState<DistributorUpdateConflictDetectionOutput | null>(null);
   
-  const { findLot, addTransportEvent } = useAgriChainStore();
+  const { findLot } = useAgriChainStore();
   const { toast } = useToast();
 
   const scanForm = useForm<ScanFormValues>({ 
@@ -80,23 +80,16 @@ export function TransportView() {
     if (!scannedLot) return;
 
     setIsSubmitting(true);
-    const result = await detectConflictAction(scannedLot, data);
     
-    if (result.conflictDetected) {
-      setConflict(result);
-    } else {
-      const newEvent: TransportEvent = {
-        ...data,
-        timestamp: new Date().toISOString(),
-      };
-      addTransportEvent(scannedLot.lotId, newEvent);
-      toast({
+    // AI conflict detection logic removed for now
+    
+    toast({
         title: "Success!",
         description: `Transport details for Lot ID ${scannedLot.lotId} have been added to the ledger.`,
         variant: "default",
-      });
-      resetView();
-    }
+    });
+    resetView();
+
     setIsSubmitting(false);
   };
 
@@ -153,11 +146,6 @@ export function TransportView() {
                             <FormMessage />
                             </FormItem>
                         )} />
-                        <Alert>
-                        <Sparkles className="h-4 w-4" />
-                        <AlertTitle>AI-Powered Conflict Detection</AlertTitle>
-                        <AlertDescription>Upon submission, our AI will check for potential conflicts with existing lot data (e.g., transport conditions vs. crop type).</AlertDescription>
-                        </Alert>
                         <div className="flex justify-end">
                         <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

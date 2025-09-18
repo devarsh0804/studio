@@ -20,6 +20,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -193,7 +198,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     // Refresh sublots list and close dialog
     setSubLots(prev => prev.filter(lot => lot.lotId !== lotToAssign.lotId));
     downloadQR(lotToAssign.lotId);
-    assignForm.reset();
+    assignForm.reset({ retailerId: '', vehicleNumber: '', dispatchDate: '' });
     setLotToAssign(null);
   };
 
@@ -287,7 +292,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
                          <Form {...assignForm}>
                           <form onSubmit={assignForm.handleSubmit(handleAssignSubmit)} className="w-full space-y-4 pt-4 border-t">
-                            <div className="grid md:grid-cols-2 gap-4">
+                            
                                 <FormField
                                   control={assignForm.control}
                                   name="retailerId"
@@ -320,7 +325,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                     </FormItem>
                                   )}
                                 />
-                            </div>
                              <FormField
                               control={assignForm.control}
                               name="dispatchDate"
