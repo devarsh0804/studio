@@ -68,13 +68,13 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <header className="py-12">
         <div className="container mx-auto text-center">
-            <div className="flex justify-center items-center mb-4 bg-primary/10 p-4 rounded-full w-24 h-24 mx-auto">
+            <div className="flex justify-center items-center mb-4 bg-primary/10 p-4 rounded-full w-24 h-24 mx-auto animate-in fade-in duration-500">
                 <Leaf className="w-12 h-12 text-primary" />
             </div>
-          <h1 className="font-headline text-5xl md:text-6xl font-bold">
+          <h1 className="font-headline text-5xl md:text-6xl font-bold animate-in fade-in slide-in-from-top-4 duration-700">
             AgriChain Trace
           </h1>
-          <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-in fade-in slide-in-from-top-6 duration-900">
             Bringing transparency to the agricultural supply chain, from farm to fork.
           </p>
         </div>
