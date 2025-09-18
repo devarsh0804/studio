@@ -328,7 +328,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
                                     <FormLabel>Dispatch Date</FormLabel>
-                                    <Popover>
+                                    <Popover modal={false}>
                                         <PopoverTrigger asChild>
                                         <FormControl>
                                             <Button
@@ -555,3 +555,5 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
+
+    
