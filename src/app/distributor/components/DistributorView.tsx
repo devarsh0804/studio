@@ -59,7 +59,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [conflict, setConflict] = useState<DistributorUpdateConflictDetectionOutput | null>(null);
   const [printMode, setPrintMode] = useState(false);
   const [submittedTransportData, setSubmittedTransportData] = useState<TransportFormValues | null>(null);
-  const [activeTab, setActiveTab] = useState("purchased-lots");
+  const [activeTab, setActiveTab] = useState("purchase");
   
   const { findLot, updateLot, getAllLots, addLots, addTransportEvent } = useAgriChainStore();
   const { toast } = useToast();
@@ -199,7 +199,8 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold font-headline">Lot Details</h1>
                 <Button variant="outline" onClick={resetView}>Back to Dashboard</Button>
             </div>
             <LotDetailsCard lot={scannedLot} />
@@ -306,39 +307,9 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="purchased-lots"><ShoppingBag className="mr-2"/>Purchased Lots</TabsTrigger>
             <TabsTrigger value="purchase"><ShoppingCart className="mr-2"/>Available Crops</TabsTrigger>
+            <TabsTrigger value="purchased-lots"><ShoppingBag className="mr-2"/>Purchased Lots</TabsTrigger>
         </TabsList>
-        <TabsContent value="purchased-lots">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center">
-                        <ShoppingBag className="mr-2" /> Your Purchased Lots
-                    </CardTitle>
-                    <CardDescription>
-                        These are lots you own. Select a lot to add details or split it into sub-lots.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    {purchasedLots.length > 0 ? (
-                        purchasedLots.map((lot) => (
-                            <div key={lot.lotId} className="border p-4 rounded-lg">
-                                <LotDetailsCard lot={lot} />
-                                <div className="mt-4 flex justify-end">
-                                    <Button variant="secondary" onClick={() => handleScan({lotId: lot.lotId})}>
-                                        <Spline className="mr-2 h-4 w-4" /> Manage Lot
-                                    </Button>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-muted-foreground text-center py-4">
-                            You have not purchased any lots yet. Go to the &quot;Available Crops&quot; tab to buy one.
-                        </p>
-                    )}
-                </CardContent>
-            </Card>
-        </TabsContent>
         <TabsContent value="purchase">
              <Card>
                 <CardHeader>
@@ -362,6 +333,36 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                     ) : (
                         <p className="text-muted-foreground text-center py-4">
                             There are no lots currently available for purchase.
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="purchased-lots">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center">
+                        <ShoppingBag className="mr-2" /> Your Purchased Lots
+                    </CardTitle>
+                    <CardDescription>
+                        These are lots you own. Select a lot to add details or split it into sub-lots.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {purchasedLots.length > 0 ? (
+                        purchasedLots.map((lot) => (
+                            <div key={lot.lotId} className="border p-4 rounded-lg">
+                                <LotDetailsCard lot={lot} />
+                                <div className="mt-4 flex justify-end">
+                                    <Button variant="secondary" onClick={() => scanForm.handleSubmit(handleScan)({ lotId: lot.lotId })}>
+                                        <Spline className="mr-2 h-4 w-4" /> Manage Lot
+                                    </Button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center py-4">
+                            You have not purchased any lots yet. Go to the &quot;Available Crops&quot; tab to buy one.
                         </p>
                     )}
                 </CardContent>
@@ -497,5 +498,3 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
 }
-
-    
