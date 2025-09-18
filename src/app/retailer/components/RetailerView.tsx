@@ -5,7 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
-import type { LotHistory, RetailEvent, RetailPack } from "@/lib/types";
+import type { Lot, LotHistory, RetailEvent, RetailPack } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,12 +37,13 @@ interface RetailerViewProps {
 
 export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   const [history, setHistory] = useState<LotHistory | null>(null);
+  const [scannedLot, setScannedLot] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [retailPacks, setRetailPacks] = useState<RetailPack[]>([]);
 
-  const { getLotHistory, addRetailEvent, addRetailPacks: savePacks } = useAgriChainStore();
+  const { getLotHistory, addRetailEvent, addRetailPacks: savePacks, updateLot, findLot } = useAgriChainStore();
   const { toast } = useToast();
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
@@ -52,43 +53,58 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
     setError(null);
+    
+    // The history is based on the original parent lot.
     const historyData = getLotHistory(data.lotId);
+    
+    // The scanned lot is the actual sub-lot.
+    const actualLot = findLot(data.lotId, true);
+
     setTimeout(() => {
-      if (historyData) {
+      if (historyData && actualLot) {
         setHistory(historyData);
+        setScannedLot(actualLot);
       } else {
         setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
         setHistory(null);
+        setScannedLot(null);
       }
       setIsLoading(false);
     }, 500);
   };
   
   const handleRetailerSubmit: SubmitHandler<RetailerFormValues> = (data) => {
-    if (!history) return;
+    if (!history || !scannedLot) return;
     setIsSubmitting(true);
+    
+    // The event is logged against the parent lot for the full timeline
     const newEvent: RetailEvent = { ...data, storeId: retailerId, timestamp: new Date().toISOString() };
     addRetailEvent(history.lot.lotId, newEvent);
+
+    // The sub-lot itself is marked as Delivered
+    updateLot(scannedLot.lotId, { status: 'Delivered' });
+
     toast({ title: "Success!", description: "Retailer details updated." });
     
     // Refresh history
     const updatedHistory = getLotHistory(history.lot.lotId);
     setHistory(updatedHistory);
+
     setIsSubmitting(false);
     retailerForm.reset();
   };
   
   const handlePackSubmit: SubmitHandler<PackFormValues> = (data) => {
-    if (!history) return;
-    const { lot } = history;
-    const lotWeightInKg = lot.weight * 100; // Convert quintals to kg
+    if (!scannedLot) return;
+
+    const lotWeightInKg = scannedLot.weight * 100; // Convert quintals to kg
     const packs: RetailPack[] = [];
     const packWeight = Number((lotWeightInKg / data.packCount).toFixed(2));
 
     for (let i = 0; i < data.packCount; i++) {
         packs.push({
-            packId: `PACK-${lot.lotId}-${String(i + 1).padStart(3, '0')}`,
-            parentLotId: lot.lotId,
+            packId: `PACK-${scannedLot.lotId}-${String(i + 1).padStart(3, '0')}`,
+            parentLotId: scannedLot.lotId,
             weight: packWeight,
         });
     }
@@ -110,14 +126,17 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     if (!history) return [];
     const events = [];
 
+    // The timeline is for the original parent lot.
+    const parentLot = history.parentLot || history.lot;
+
     events.push({
       type: 'FARM',
       title: 'Harvested',
-      timestamp: format(new Date(history.lot.harvestDate), 'PP'),
+      timestamp: format(new Date(parentLot.harvestDate), 'PP'),
       details: <>
-        <p><strong>Crop:</strong> {history.lot.cropName}</p>
-        <p><strong>Weight:</strong> {history.lot.weight} quintals</p>
-        <p><strong>Farmer:</strong> {history.lot.farmer}</p>
+        <p><strong>Crop:</strong> {parentLot.cropName}</p>
+        <p><strong>Weight:</strong> {parentLot.weight} quintals</p>
+        <p><strong>Farmer:</strong> {parentLot.farmer}</p>
       </>
     });
 
@@ -145,7 +164,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     return events;
   }
 
-  if (!history) {
+  if (!history || !scannedLot) {
     return (
       <div className="space-y-8">
         <div className="flex justify-end">
@@ -162,7 +181,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
             <Form {...scanForm}>
                 <form onSubmit={scanForm.handleSubmit(handleScan)} className="flex gap-2">
                 <FormField control={scanForm.control} name="lotId" render={({ field }) => (
-                    <FormItem className="flex-1"><FormControl><Input placeholder="e.g., LOT-20240101-001" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem className="flex-1"><FormControl><Input placeholder="e.g., LOT-20240101-001-SUB-001" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                 <Button type="submit" disabled={isLoading}>{isLoading ? <Loader2 className="animate-spin" /> : <Search />}</Button>
                 </form>
@@ -182,19 +201,28 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><History className="mr-2"/> Lot History: <span className="font-mono ml-2 text-primary">{history.lot.lotId}</span></CardTitle>
+          <CardTitle className="flex items-center"><History className="mr-2"/> Full Lot History: <span className="font-mono ml-2 text-primary">{history.lot.lotId}</span></CardTitle>
+          <CardDescription>This is the complete journey of the parent lot from farm to store.</CardDescription>
         </CardHeader>
         <CardContent>
             <Timeline events={getTimelineEvents()} />
         </CardContent>
       </Card>
+      
+      <Alert>
+        <AlertTitle>You have scanned Sub-Lot: <span className="font-mono">{scannedLot.lotId}</span></AlertTitle>
+        <AlertDescription>
+          The actions below will apply to this specific sub-lot. Its status is currently: <strong>{scannedLot.status}</strong>
+        </AlertDescription>
+      </Alert>
+
 
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center"><Store className="mr-2"/> Add Retailer Info</CardTitle>
+                <CardTitle className="flex items-center"><Store className="mr-2"/> Add to Shelf</CardTitle>
                 <CardDescription>
-                    Your store ID is <span className="font-bold font-mono">{retailerId}</span>. Add the date this lot was placed on the shelf.
+                    Your store ID is <span className="font-bold font-mono">{retailerId}</span>. Add the date this lot was placed on the shelf. This will mark it as 'Delivered'.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -203,8 +231,9 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                         <FormField control={retailerForm.control} name="shelfDate" render={({field}) => (
                             <FormItem><FormLabel>Shelf Date</FormLabel><FormControl><Input type="date" {...field}/></FormControl><FormMessage/></FormItem>
                         )}/>
-                        <Button type="submit" disabled={isSubmitting} className="w-full">
-                            {isSubmitting && <Loader2 className="animate-spin mr-2"/>} Update Information
+                        <Button type="submit" disabled={isSubmitting || scannedLot.status === 'Delivered'} className="w-full">
+                            {isSubmitting && <Loader2 className="animate-spin mr-2"/>} 
+                            {scannedLot.status === 'Delivered' ? 'Lot Delivered' : 'Confirm Delivery'}
                         </Button>
                     </form>
                 </Form>
@@ -214,13 +243,13 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center"><PackagePlus className="mr-2"/> Create Retail Packs</CardTitle>
-                <CardDescription>Split the main lot into smaller retail packs with unique QR codes.</CardDescription>
+                <CardDescription>Split the sub-lot into smaller retail packs with unique QR codes.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...packForm}>
                     <form onSubmit={packForm.handleSubmit(handlePackSubmit)} className="flex gap-2">
                         <FormField control={packForm.control} name="packCount" render={({field}) => (
-                            <FormItem className="flex-1"><FormControl><Input type="number" placeholder={`Split ${history.lot.weight * 100}kg lot into...`} {...field}/></FormControl><FormMessage/></FormItem>
+                            <FormItem className="flex-1"><FormControl><Input type="number" placeholder={`Split ${scannedLot.weight * 100}kg lot into...`} {...field}/></FormControl><FormMessage/></FormItem>
                         )}/>
                         <Button type="submit"><ShoppingBag className="h-4 w-4"/></Button>
                     </form>
@@ -248,3 +277,5 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     </div>
   );
 }
+
+    

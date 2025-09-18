@@ -16,13 +16,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, Sparkles, Download } from "lucide-react";
+import { Loader2, ScanLine, Search, Truck, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, Sparkles, Download, CheckCircle, Clock } from "lucide-react";
 import QRCode from "qrcode.react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { detectConflictAction } from "@/app/actions";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
+import { Badge } from "@/components/ui/badge";
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
@@ -131,6 +132,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             weight: newWeight,
             price: newPrice, // Adjust price proportionally
             owner: distributorId,
+            status: 'Registered',
         };
         newSubLots.push(newLot);
     }
@@ -160,6 +162,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         timestamp: new Date().toISOString(),
       };
       addTransportEvent(lotForTransport.lotId, newEvent);
+      updateLot(lotForTransport.lotId, { status: 'In-Transit' });
       toast({
         title: "Success!",
         description: `Transport details for Lot ID ${lotForTransport.lotId} have been added.`,
@@ -504,25 +507,40 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                 These are the sub-lots you have created for retailers. Click one to add transport details.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <CardContent className="space-y-4">
                            {createdSubLots.map(lot => (
-                                <Button
-                                    key={lot.lotId}
-                                    variant="outline"
-                                    className="h-auto flex-col p-2"
-                                    onClick={() => {
-                                        transportForm.reset();
-                                        setLotForTransport(lot);
-                                    }}
-                                >
-                                    <div className="p-2 bg-white rounded-md">
-                                        <QRCode value={lot.lotId} size={64} level={"H"} />
+                                <div key={lot.lotId} className="border p-4 rounded-lg flex justify-between items-center">
+                                    <div>
+                                        <p className="font-mono text-sm font-semibold">{lot.lotId}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {lot.weight} quintals from Lot {lot.parentLotId}
+                                        </p>
                                     </div>
-                                    <p className="font-mono text-xs text-center mt-2">{lot.lotId}</p>
-                                    <p className="text-xs text-center text-muted-foreground">
-                                        {lot.weight} quintals from Lot {lot.parentLotId}
-                                    </p>
-                                </Button>
+                                    <div className="flex items-center gap-4">
+                                        {lot.status === 'In-Transit' ? (
+                                            <Badge variant="secondary" className="text-blue-600 border-blue-600">
+                                                <Clock className="mr-1 h-3 w-3" />
+                                                In-Transit
+                                            </Badge>
+                                        ) : lot.status === 'Delivered' ? (
+                                            <Badge variant="secondary" className="text-green-600 border-green-600">
+                                                <CheckCircle className="mr-1 h-3 w-3" />
+                                                Delivered
+                                            </Badge>
+                                        ) : (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    transportForm.reset();
+                                                    setLotForTransport(lot);
+                                                }}
+                                            >
+                                                <Truck className="mr-2"/> Add Transport
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
                             ))}
                         </CardContent>
                     </Card>

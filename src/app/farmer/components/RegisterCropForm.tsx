@@ -85,6 +85,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       photoUrl: cropImage.imageUrl,
       quality: values.quality,
       gradingDate: new Date().toISOString(),
+      status: 'Registered',
       // Generate random data for the certificate
       moisture: `${(Math.random() * (18 - 10) + 10).toFixed(1)}%`,
       impurities: `${(Math.random() * (2 - 0.1) + 0.1).toFixed(1)}%`,
@@ -275,7 +276,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
             </div>
             
             <div className="space-y-6 pt-6 border-t">
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <FormField
                     control={form.control}
                     name="quality"
@@ -301,12 +302,12 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         </FormItem>
                     )}
                 />
-              </div>
-              <div className="space-y-2">
-                <FormLabel>Quality Certificate</FormLabel>
-                <Button type="button" variant="secondary" className="w-full">
-                    <Upload className="mr-2" /> Upload Certificate
-                </Button>
+                <FormItem>
+                    <FormLabel>Quality Certificate</FormLabel>
+                    <Button type="button" variant="secondary" className="w-full">
+                        <Upload className="mr-2" /> Upload Certificate
+                    </Button>
+                </FormItem>
               </div>
               
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>

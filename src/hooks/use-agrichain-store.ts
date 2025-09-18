@@ -15,7 +15,7 @@ interface AgriChainState {
   addTransportEvent: (lotId: string, event: TransportEvent) => void;
   addRetailEvent: (lotId: string, event: RetailEvent) => void;
   addRetailPacks: (packs: RetailPack[]) => void;
-  findLot: (lotId: string) => Lot | undefined;
+  findLot: (lotId: string, findExact?: boolean) => Lot | undefined;
   findPack: (packId: string) => RetailPack | undefined;
   getLotHistory: (lotId: string) => LotHistory | null;
   getAllLots: () => Lot[];
@@ -59,12 +59,18 @@ export const useAgriChainStore = create<AgriChainState>()(
             }),
 
         addTransportEvent: (lotId, event) =>
-          set((state) => ({
-            transportEvents: {
-              ...state.transportEvents,
-              [lotId]: [...(state.transportEvents[lotId] || []), event],
-            },
-          })),
+          set((state) => {
+            // Find the parent lot to associate the event with the entire history
+            const lot = get().findLot(lotId, true);
+            const parentId = lot?.parentLotId || lotId;
+
+            return {
+              transportEvents: {
+                ...state.transportEvents,
+                [parentId]: [...(state.transportEvents[parentId] || []), event],
+              },
+            }
+          }),
 
         addRetailEvent: (lotId, event) =>
           set((state) => ({
@@ -85,8 +91,13 @@ export const useAgriChainStore = create<AgriChainState>()(
             };
           }),
 
-        findLot: (lotId) => {
+        findLot: (lotId, findExact = false) => {
            if (!lotId) return undefined;
+           
+           if(findExact){
+              return get().lots[lotId];
+           }
+
            // Handle finding sub-lots or packs and returning the parent
            if (lotId.startsWith('PACK-')) {
               const pack = get().retailPacks[lotId];

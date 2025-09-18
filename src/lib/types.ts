@@ -9,6 +9,7 @@ export interface Lot {
   owner?: string; // e.g., 'farmer', 'distributor-1', etc.
   location?: string;
   parentLotId?: string; // To link sub-lots to their origin
+  status?: 'Registered' | 'In-Transit' | 'Delivered'; // New status field
 
   // Digital Certificate Fields
   quality: string; // The final grade: Premium, Standard, Basic
