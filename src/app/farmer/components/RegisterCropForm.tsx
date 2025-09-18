@@ -50,8 +50,8 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
     defaultValues: {
       farmerName: "Ramesh Kumar",
       cropName: "Wheat",
-      location: "APMC, Punjab",
-      weight: 5,
+      location: "Bhubaneswar, Odisha",
+      weight: 10,
       price: 2000,
       harvestDate: new Date(),
       quality: "Premium",
