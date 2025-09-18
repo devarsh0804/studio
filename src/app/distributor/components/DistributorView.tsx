@@ -181,6 +181,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     setScannedLot(null);
     setError(null);
     setSubLots([]);
+    setLotForTransport(null);
     scanForm.reset();
     subLotForm.reset();
   }
@@ -487,7 +488,3 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
 }
-
-    
-
-    
