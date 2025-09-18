@@ -480,17 +480,4 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </AlertDialog>
     </div>
     );
-  }
-
-    
-
-    
-
-    
-
-
-
-
-    
-
-    
+}
