@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
   farmerName: "Ramesh",
-  farmerId: "FARM123",
+  farmerId: "123456789012",
   farmerCode: "7890"
 };
 

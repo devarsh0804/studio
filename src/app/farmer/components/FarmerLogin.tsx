@@ -11,7 +11,7 @@ import { KeyRound, LogIn, User, CircleUserRound } from "lucide-react";
 
 const loginSchema = z.object({
   farmerName: z.string().min(1, "Farmer name is required"),
-  farmerId: z.string().min(1, "Farmer ID is required"),
+  farmerId: z.string().regex(/^\d{12}$/, "Farmer ID must be a 12-digit number."),
   farmerCode: z.string().min(1, "Code is required"),
 });
 export type FarmerLoginCredentials = z.infer<typeof loginSchema>;
@@ -23,7 +23,7 @@ interface FarmerLoginProps {
 export function FarmerLogin({ onLogin }: FarmerLoginProps) {
   const form = useForm<FarmerLoginCredentials>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { farmerName: "Ramesh", farmerId: "FARM123", farmerCode: "7890" },
+    defaultValues: { farmerName: "Ramesh", farmerId: "123456789012", farmerCode: "7890" },
   });
 
   const onSubmit: SubmitHandler<FarmerLoginCredentials> = (data) => {
@@ -67,7 +67,7 @@ export function FarmerLogin({ onLogin }: FarmerLoginProps) {
                     <FormControl>
                       <div className="relative">
                         <CircleUserRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="e.g., FARM123" {...field} className="pl-10" />
+                        <Input placeholder="e.g., 123456789012" {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
