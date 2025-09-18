@@ -17,6 +17,7 @@ import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, 
 import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
 import { Separator } from "@/components/ui/separator";
+import { LotDetailsCard } from "@/components/LotDetailsCard";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -37,7 +38,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { getLotHistory, addRetailEvent, updateLot, findLot } = useAgriChainStore();
+  const { getLotHistory, addRetailEvent, updateLot, findLot, getAllLots } = useAgriChainStore();
   const { toast } = useToast();
 
   const scanForm = useForm<ScanFormValues>({ 
@@ -189,6 +190,8 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
 
   if (!history) {
+    const retailerLots = getAllLots().filter(lot => lot.owner === retailerId);
+
     return (
       <div className="space-y-8">
         <div className="flex justify-end">
@@ -213,6 +216,31 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
             {error && <Alert variant="destructive" className="mt-4"><XCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
             </CardContent>
         </Card>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle>Your Inventory</CardTitle>
+                <CardDescription>These are the lots that have been assigned to your store, <span className="font-bold">{retailerId}</span>.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 max-h-[60vh] overflow-y-auto">
+                {retailerLots.length > 0 ? (
+                    retailerLots.map((lot, index) => (
+                        <div key={lot.lotId}>
+                             {index > 0 && <Separator className="my-6" />}
+                             <LotDetailsCard lot={lot} />
+                             <div className="mt-4 flex justify-end">
+                                <Button onClick={() => handleScan({ lotId: lot.lotId })}>
+                                    <History className="mr-2 h-4 w-4" /> View Full History
+                                </Button>
+                             </div>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-muted-foreground text-center py-8">No lots have been assigned to you yet.</p>
+                )}
+            </CardContent>
+        </Card>
+
       </div>
     );
   }
@@ -220,7 +248,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   return (
     <div className="space-y-8">
         <div className="flex justify-end">
-            <Button variant="outline" onClick={resetView}>Scan Another Lot</Button>
+            <Button variant="outline" onClick={resetView}>Back to Dashboard</Button>
         </div>
 
       <Card>
@@ -255,3 +283,5 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     </div>
   );
 }
+
+    
