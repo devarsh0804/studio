@@ -56,7 +56,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema) });
-  const assignForm = useForm<AssignFormValues>({ resolver: zodResolver(assignSchema) });
+  const assignForm = useForm<AssignFormValues>({ resolver: zodResolver(assignSchema), defaultValues: { transportCondition: 'Normal' } });
 
   const allLots = getAllLots();
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
@@ -442,7 +442,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <FormField control={assignForm.control} name="transportCondition" render={({ field }) => (
                 <FormItem>
                     <FormLabel>Transport Condition</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value || 'Normal'}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                         <SelectTrigger><SelectValue placeholder="Select a condition" /></SelectTrigger>
                     </FormControl>
