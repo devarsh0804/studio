@@ -352,7 +352,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                             mode="single"
                                             selected={field.value}
                                             onSelect={field.onChange}
-                                            initialFocus
                                         />
                                         </PopoverContent>
                                     </Popover>
@@ -556,4 +555,5 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   );
 }
 
+    
     
