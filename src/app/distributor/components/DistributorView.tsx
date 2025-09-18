@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -77,8 +77,9 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     setTimeout(() => {
       if (lot) {
         setScannedLot(lot);
+        const childLots = getAllLots().filter(l => l.parentLotId === lot.lotId);
+        setSubLots(childLots);
         subLotForm.reset();
-        setSubLots([]);
       } else {
         setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
         setScannedLot(null);
@@ -210,24 +211,28 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 </Card>
             )}
             
-            {isOwnedByDistributor && canBeSplit && (
+            {isOwnedByDistributor && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center"><Spline className="mr-2"/> Create Sub-lots for Retailers</CardTitle>
-                        <CardDescription>Split this lot into smaller quantities for different retailers. The total weight will be divided equally.</CardDescription>
+                        <CardTitle className="flex items-center"><Spline className="mr-2"/> Create or View Sub-lots</CardTitle>
+                        <CardDescription>
+                          {canBeSplit ? "Split this lot into smaller quantities for different retailers. The total weight will be divided equally." : "This lot has already been split. You can add transport details to the existing sub-lots below."}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Form {...subLotForm}>
-                            <form onSubmit={subLotForm.handleSubmit(handleSubLotSubmit)} className="flex gap-2">
-                                <FormField control={subLotForm.control} name="subLotCount" render={({field}) => (
-                                    <FormItem className="flex-1">
-                                        <FormControl><Input type="number" placeholder={`Split ${scannedLot.weight} quintal lot into...`} {...field}/></FormControl>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}/>
-                                <Button type="submit"><PackagePlus className="h-4 w-4"/></Button>
-                            </form>
-                        </Form>
+                        {canBeSplit && (
+                          <Form {...subLotForm}>
+                              <form onSubmit={subLotForm.handleSubmit(handleSubLotSubmit)} className="flex gap-2">
+                                  <FormField control={subLotForm.control} name="subLotCount" render={({field}) => (
+                                      <FormItem className="flex-1">
+                                          <FormControl><Input type="number" placeholder={`Split ${scannedLot.weight} quintal lot into...`} {...field}/></FormControl>
+                                          <FormMessage/>
+                                      </FormItem>
+                                  )}/>
+                                  <Button type="submit"><PackagePlus className="h-4 w-4"/></Button>
+                              </form>
+                          </Form>
+                        )}
                         {subLots.length > 0 && (
                             <div className="mt-6">
                                 <h4 className="font-semibold mb-4">Generated Sub-lot QRs:</h4>
@@ -245,13 +250,13 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                             <div className="p-2 bg-white rounded-md">
                                                 <QRCode value={lot.lotId} size={80} level={"H"} />
                                             </div>
-                                            <p className="text-xs font-mono mt-1 truncate">{lot.lotId}</p>
+                                            <p className="text-xs font-mono mt-1 break-all">{lot.lotId}</p>
                                             <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
                                         </Button>
                                     ))}
                                 </div>
                                 <Alert className="mt-4">
-                                    <AlertDescription>Click a QR code to add transport details for that specific sub-lot. The parent lot's weight is now 0.</AlertDescription>
+                                    <AlertDescription>Click a QR code to add transport details for that specific sub-lot.</AlertDescription>
                                 </Alert>
                             </div>
                         )}
@@ -481,5 +486,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </AlertDialog>
     </div>
     );
+}
 
     
