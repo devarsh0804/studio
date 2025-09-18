@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Award } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight, PoundSterling } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,6 @@ import { placeHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   farmerName: z.string().min(2, { message: "Farmer name must be at least 2 characters." }),
@@ -116,8 +115,8 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-8">
+            <div className="grid md:grid-cols-2 gap-8 items-start">
+                <div className="space-y-6">
                     <FormField
                       control={form.control}
                       name="farmerName"
@@ -156,9 +155,12 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Crop Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., Wheat, Rice" {...field} />
-                        </FormControl>
+                          <FormControl>
+                            <div className="relative">
+                                <Wheat className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="e.g., Wheat, Rice" {...field} className="pl-10"/>
+                            </div>
+                          </FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -169,9 +171,12 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                       name="weight"
                       render={({ field }) => (
                           <FormItem>
-                          <FormLabel>Weight (in quintals)</FormLabel>
+                          <FormLabel>Weight (quintals)</FormLabel>
                           <FormControl>
-                              <Input type="number" placeholder="e.g., 5" {...field} />
+                              <div className="relative">
+                                <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input type="number" placeholder="e.g., 5" {...field} className="pl-10"/>
+                              </div>
                           </FormControl>
                           <FormMessage />
                           </FormItem>
@@ -181,7 +186,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         control={form.control}
                         name="harvestDate"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col">
+                            <FormItem className="flex flex-col justify-end">
                             <FormLabel>Harvest Date</FormLabel>
                             <Popover>
                                 <PopoverTrigger asChild>
@@ -236,7 +241,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                       )}
                     />
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <div className="space-y-2">
                         <FormLabel>Farmer Photo</FormLabel>
                         <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
@@ -268,34 +273,39 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                     </div>
                 </div>
             </div>
-
-             <FormField
-                control={form.control}
-                name="quality"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Manual Quality Grade</FormLabel>
-                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a quality grade for the crop" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="Premium">Premium</SelectItem>
-                                <SelectItem value="Standard">Standard</SelectItem>
-                                <SelectItem value="Basic">Basic</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
             
-            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Register Lot & Generate QR
-            </Button>
+            <div className="space-y-6 pt-6 border-t">
+              <FormField
+                  control={form.control}
+                  name="quality"
+                  render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Manual Quality Grade</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Select a quality grade for the crop" />
+                                  </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  <SelectItem value="Premium">Premium</SelectItem>
+                                  <SelectItem value="Standard">Standard</SelectItem>
+                                  <SelectItem value="Basic">Basic</SelectItem>
+                              </SelectContent>
+                          </Select>
+                           <FormDescription>
+                              Select the quality grade determined by the manual inspection.
+                           </FormDescription>
+                          <FormMessage />
+                      </FormItem>
+                  )}
+              />
+              
+              <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Register Lot & Generate QR
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
