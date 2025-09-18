@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -50,7 +50,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [lotToAssign, setLotToAssign] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
   const [subLots, setSubLots] = useState<Lot[]>([]);
   const [activeTab, setActiveTab] = useState('available-crops');
 
@@ -116,17 +116,21 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const handlePayment = () => {
     if (!lotToPay) return;
 
-    setIsPaying(true);
+    setPaymentStatus('processing');
 
     setTimeout(() => {
+      setPaymentStatus('success');
       toast({
         title: 'Purchase Successful!',
         description: `You now own Lot ${lotToPay.lotId}.`,
       });
 
-      setLotToPay(null);
-      setIsPaying(false);
-      setActiveTab('purchased-lots');
+      // Wait a moment on the success state, then close
+      setTimeout(() => {
+        setLotToPay(null);
+        setPaymentStatus('idle'); // Reset for next time
+        setActiveTab('purchased-lots');
+      }, 1000);
     }, 1500);
   };
 
@@ -191,7 +195,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     });
     
     // Refresh sublots list and close dialog
-    setSubLots(prev => prev.filter(lot => lot.lotId !== lotToAssign.lotId));
+    setSubLots(prev => prev.filter(lot => lot.lotId !== lotToAssign!.lotId));
     downloadQR(lotToAssign.lotId);
     assignForm.reset({ retailerId: '', vehicleNumber: '', dispatchDate: '' });
     setLotToAssign(null);
@@ -514,7 +518,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={!!lotToPay} onOpenChange={(open) => !open && !isPaying && setLotToPay(null)}>
+      <Dialog open={!!lotToPay} onOpenChange={(open) => !open && paymentStatus !== 'processing' && setLotToPay(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Finalize Payment</DialogTitle>
@@ -560,11 +564,13 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             </Tabs>
 
           <DialogFooter className="!mt-6">
-             <Button variant="outline" disabled={isPaying} onClick={() => setLotToPay(null)}>
+             <Button variant="outline" disabled={paymentStatus === 'processing'} onClick={() => setLotToPay(null)}>
               Cancel
             </Button>
-            <Button onClick={handlePayment} disabled={isPaying}>
-              {isPaying ? <Loader2 className="animate-spin" /> : <><CreditCard className="mr-2" />Confirm Payment</>}
+            <Button onClick={handlePayment} disabled={paymentStatus === 'processing' || paymentStatus === 'success'} className="w-40">
+              {paymentStatus === 'processing' && <Loader2 className="animate-spin" />}
+              {paymentStatus === 'idle' && <><CreditCard className="mr-2" />Confirm Payment</>}
+              {paymentStatus === 'success' && <><CheckCircle className="mr-2" />Payment Successful!</>}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -573,5 +579,3 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
-
-    
