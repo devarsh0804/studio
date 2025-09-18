@@ -22,8 +22,8 @@ export interface Lot {
   impurities?: string;
   size?: string;
   color?: string;
-  status?: 'Registered' | 'Purchased' | 'Split' | 'Dispatched' | 'Stocked' | 'Delivered';
-  paymentStatus?: 'Paid' | 'Unpaid';
+  status?: 'Registered' | 'Purchased' | 'Split' | 'Awaiting Advance Payment' | 'Dispatched' | 'Stocked' | 'Delivered';
+  paymentStatus?: 'Unpaid' | 'Advance Paid' | 'Fully Paid';
 }
 
 export interface GradedLot extends Omit<Lot, 'price' | 'owner'> {}

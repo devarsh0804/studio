@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -48,6 +48,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
   const [lotToAssign, setLotToAssign] = useState<Lot | null>(null);
+  const [lotAwaitingAdvance, setLotAwaitingAdvance] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
@@ -150,6 +151,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         price: newPrice,
         owner: distributorId,
         status: 'Split',
+        paymentStatus: 'Unpaid',
       };
       newSubLots.push(newLot);
     }
@@ -186,20 +188,36 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         vehicleNumber: data.vehicleNumber,
         dispatchDate: data.dispatchDate,
       },
-      status: 'Dispatched'
+      status: 'Awaiting Advance Payment'
     });
     
     toast({
       title: 'Lot Assigned!',
-      description: `Lot ${lotToAssign.lotId} has been assigned to ${data.retailerId}.`,
+      description: `Lot ${lotToAssign.lotId} has been assigned to ${data.retailerId}. Awaiting 30% advance.`,
     });
     
-    // Refresh sublots list and close dialog
+    setLotAwaitingAdvance(findLot(lotToAssign.lotId));
     setSubLots(prev => prev.filter(lot => lot.lotId !== lotToAssign!.lotId));
-    downloadQR(lotToAssign.lotId);
     assignForm.reset({ retailerId: '', vehicleNumber: '', dispatchDate: '' });
     setLotToAssign(null);
   };
+  
+  const handleConfirmAdvance = () => {
+    if (!lotAwaitingAdvance) return;
+
+    updateLot(lotAwaitingAdvance.lotId, { 
+      status: 'Dispatched',
+      paymentStatus: 'Advance Paid',
+    });
+
+    toast({
+        title: "Advance Received & Dispatched!",
+        description: `Lot ${lotAwaitingAdvance.lotId} is now on its way to the retailer.`,
+    });
+
+    downloadQR(lotAwaitingAdvance.lotId);
+    setLotAwaitingAdvance(null);
+};
 
 
   const resetView = () => {
@@ -266,7 +284,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                         onClick={() => setLotToAssign(lot)}
                       >
                         <QrCode className="mr-2" />
-                        Show QR for <span className='font-mono mx-2'>{lot.lotId}</span> ({lot.weight} quintals)
+                        Assign <span className='font-mono mx-2'>{lot.lotId}</span> ({lot.weight} quintals)
                       </Button>
                     ))}
                   </div>
@@ -278,19 +296,15 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
          <Dialog open={!!lotToAssign} onOpenChange={() => setLotToAssign(null)}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Assign &amp; Download QR for Lot {lotToAssign?.lotId}</DialogTitle>
+                    <DialogTitle>Assign Lot {lotToAssign?.lotId} to Retailer</DialogTitle>
+                    <DialogDescription>
+                        Fill in the dispatch details. After assigning, you will need to confirm the 30% advance payment from the retailer to dispatch the lot.
+                    </DialogDescription>
                 </DialogHeader>
                 {lotToAssign && (
                     <div className="flex flex-col items-center gap-4 py-4" >
-                        <div ref={qrRef} className="p-4 bg-white rounded-lg inline-block">
-                           <div className="text-center">
-                             <QRCode value={lotToAssign.lotId} size={256} level={"H"} includeMargin={true} />
-                             <p className="font-mono text-lg font-bold text-black mt-2">{lotToAssign.lotId}</p>
-                           </div>
-                        </div>
-
                          <Form {...assignForm}>
-                          <form onSubmit={assignForm.handleSubmit(handleAssignSubmit)} className="w-full space-y-4 pt-4 border-t">
+                          <form onSubmit={assignForm.handleSubmit(handleAssignSubmit)} className="w-full space-y-4">
                             
                                 <FormField
                                   control={assignForm.control}
@@ -339,7 +353,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                             />
                             <DialogFooter className="!mt-4">
                                 <Button variant="outline" type="button" onClick={() => setLotToAssign(null)}>Cancel</Button>
-                                <Button type="submit"><Download className="mr-2"/> Assign &amp; Download</Button>
+                                <Button type="submit"><PackageCheck className="mr-2"/> Assign Lot</Button>
                             </DialogFooter>
                           </form>
                         </Form>
@@ -347,6 +361,28 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 )}
             </DialogContent>
         </Dialog>
+
+        <AlertDialog open={!!lotAwaitingAdvance} onOpenChange={() => setLotAwaitingAdvance(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Advance & Dispatch</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Please confirm that you have received the 30% advance payment for Lot <span className="font-mono">{lotAwaitingAdvance?.lotId}</span> from the retailer.
+                        Total value: <BadgeIndianRupee className="w-4 h-4 inline-block" /> {lotAwaitingAdvance ? lotAwaitingAdvance.price * lotAwaitingAdvance.weight : 0}.
+                        <br/>
+                        Advance amount (30%): <BadgeIndianRupee className="w-4 h-4 inline-block" /> <span className="font-bold">{lotAwaitingAdvance ? (lotAwaitingAdvance.price * lotAwaitingAdvance.weight * 0.3).toFixed(2) : 0}</span>.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <div ref={qrRef} className="hidden">
+                        {lotAwaitingAdvance && <QRCode value={lotAwaitingAdvance.lotId} size={256} />}
+                    </div>
+                    <AlertDialogCancel>Waiting for Payment</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmAdvance}><Download className="mr-2" /> Confirm Advance & Download QR</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
       </div>
     );
   }
@@ -489,6 +525,10 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                               <Badge variant={lot.status === 'Delivered' ? 'default' : 'secondary'}>
                                 {lot.status}
                               </Badge>
+                               <p className="font-semibold mt-2">Payment:</p>
+                                <Badge variant={lot.paymentStatus === 'Fully Paid' ? 'default' : (lot.paymentStatus === 'Advance Paid' ? 'outline' : 'destructive')}>
+                                  {lot.paymentStatus}
+                                </Badge>
                           </div>
                         </div>
                     </div>

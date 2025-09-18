@@ -56,37 +56,40 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     setIsLoading(true);
     setError(null);
     setHistory(null);
-    const historyData = getLotHistory(data.lotId);
+    const scannedLot = findLot(data.lotId);
 
     setTimeout(() => {
-      setIsLoading(false);
-      if (historyData) {
-        // If the lot is dispatched to this retailer, trigger delivery & payment flow
-        if (historyData.lot.status === 'Dispatched' && historyData.lot.owner === retailerId) {
-          updateLot(historyData.lot.lotId, { status: 'Delivered' });
-          toast({
-            title: "Lot Received!",
-            description: `Lot ${historyData.lot.lotId} has been marked as 'Delivered'.`,
-          });
-          
-          const freshLot = findLot(data.lotId);
-          if (freshLot?.paymentStatus !== 'Paid') {
-            setLotToPay(freshLot!); // Trigger payment dialog first
-          } else {
-            // If already paid for some reason, just show history
-            setHistory(getLotHistory(data.lotId));
-          }
-        } else if(historyData.lot.owner !== retailerId) {
-            setError(`This lot is not assigned to your store (${retailerId}). Current owner: ${historyData.lot.owner}`);
-            setHistory(null);
+        setIsLoading(false);
+        if (scannedLot) {
+            if (scannedLot.owner !== retailerId) {
+                setError(`This lot is not assigned to your store (${retailerId}). Current owner: ${scannedLot.owner}`);
+                setHistory(null);
+                return;
+            }
+
+            // If the lot is dispatched to this retailer, trigger delivery & payment flow
+            if (scannedLot.status === 'Dispatched') {
+                updateLot(scannedLot.lotId, { status: 'Delivered' });
+                toast({
+                    title: "Lot Received!",
+                    description: `Lot ${scannedLot.lotId} has been marked as 'Delivered'. Please complete the payment.`,
+                });
+                
+                const freshLot = findLot(data.lotId)!;
+                setLotToPay(freshLot); // Trigger payment dialog first
+            } else if (scannedLot.status === 'Awaiting Advance Payment') {
+                 setError(`This lot is awaiting advance payment confirmation from the distributor.`);
+                 setHistory(null);
+            }
+            else {
+                // Otherwise, just show the history
+                setHistory(getLotHistory(data.lotId));
+            }
+
         } else {
-            // Otherwise, just show the history
-            setHistory(historyData);
+            setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
+            setHistory(null);
         }
-      } else {
-        setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
-        setHistory(null);
-      }
     }, 500);
   };
   
@@ -115,7 +118,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     setPaymentStatus('processing');
 
     setTimeout(() => {
-      updateLot(lotToPay.lotId, { paymentStatus: 'Paid' });
+      updateLot(lotToPay.lotId, { paymentStatus: 'Fully Paid' });
       setPaymentStatus('success');
       toast({
         title: 'Payment Successful!',
@@ -189,9 +192,10 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     // Distributor events (from the hierarchy)
     lotHierarchy.forEach(lot => {
         if (lot.logisticsInfo) {
+             const title = lot.paymentStatus === 'Advance Paid' ? 'Dispatched after Advance' : 'Dispatched to Retailer';
             events.push({
                 type: 'TRANSPORT',
-                title: 'Dispatched to Retailer',
+                title: title,
                 timestamp: format(new Date(lot.logisticsInfo.dispatchDate), 'PP'),
                 details: (
                      <div className="space-y-2 text-sm">
@@ -287,8 +291,11 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
               <DialogHeader>
                 <DialogTitle>Finalize Payment to Distributor</DialogTitle>
                 <DialogDescription>
-                  Proceed to pay for Lot {lotToPay?.lotId}. <br /> Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
-                  <span className="font-bold">{lotToPay ? lotToPay.price * lotToPay.weight : 0}</span>
+                  This lot requires payment of the remaining 70% balance. <br/>
+                  Total value: <BadgeIndianRupee className="w-3 h-3 inline-block" /> {lotToPay ? (lotToPay.price * lotToPay.weight).toFixed(2) : 0}.
+                  <br /> 
+                  Balance amount (70%): <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
+                  <span className="font-bold">{lotToPay ? (lotToPay.price * lotToPay.weight * 0.7).toFixed(2) : 0}</span>
                 </DialogDescription>
               </DialogHeader>
               <Tabs defaultValue="upi" className="w-full pt-4">
@@ -301,7 +308,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                       <CardHeader><CardTitle>Pay with UPI</CardTitle><CardDescription>Scan the QR code with your UPI app.</CardDescription></CardHeader>
                       <CardContent className="flex flex-col items-center justify-center space-y-4">
                         <div className="p-4 bg-white rounded-lg">
-                           <QRCode value={`upi://pay?pa=distro@agrichain&pn=Distributor&am=${lotToPay ? lotToPay.price * lotToPay.weight : 0}&cu=INR&tn=Lot%20${lotToPay?.lotId}`} size={180} />
+                           <QRCode value={`upi://pay?pa=distro@agrichain&pn=Distributor&am=${lotToPay ? (lotToPay.price * lotToPay.weight * 0.7).toFixed(2) : 0}&cu=INR&tn=Lot%20${lotToPay?.lotId}`} size={180} />
                         </div>
                         <p className="text-sm text-muted-foreground">Or pay to UPI ID: <span className="font-mono">distro@agrichain</span></p>
                       </CardContent>
@@ -320,7 +327,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                   </TabsContent>
                 </Tabs>
               <DialogFooter className="!mt-6">
-                 <Button variant="outline" disabled={paymentStatus === 'processing'} onClick={() => setLotToPay(null)}>Cancel</Button>
+                 <Button variant="outline" disabled={paymentStatus === 'processing'} onClick={() => { setLotToPay(null); resetView(); }}>Cancel</Button>
                 <Button onClick={handlePayment} disabled={paymentStatus === 'processing' || paymentStatus === 'success'} className="w-40">
                   {paymentStatus === 'processing' && <Loader2 className="animate-spin" />}
                   {paymentStatus === 'idle' && <><CreditCard className="mr-2" />Confirm Payment</>}
@@ -363,9 +370,9 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                       <FormField control={retailerForm.control} name="shelfDate" render={({field}) => (
                           <FormItem><FormLabel>Shelf Date</FormLabel><FormControl><Input type="date" {...field} disabled={isStocked}/></FormControl><FormMessage/></FormItem>
                       )}/>
-                      <Button type="submit" disabled={isSubmitting || isStocked || history.lot.paymentStatus !== 'Paid'} className="w-full">
+                      <Button type="submit" disabled={isSubmitting || isStocked || history.lot.paymentStatus !== 'Fully Paid'} className="w-full">
                         {isSubmitting && <Loader2 className="animate-spin mr-2"/>} 
-                        {isStocked ? 'Lot Stocked' : (history.lot.paymentStatus !== 'Paid' ? 'Payment Pending' : 'Add to Ledger')}
+                        {isStocked ? 'Lot Stocked' : (history.lot.paymentStatus !== 'Fully Paid' ? 'Payment Pending' : 'Add to Ledger')}
                       </Button>
                   </form>
               </Form>
@@ -374,5 +381,3 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     </div>
   );
 }
-
-    
