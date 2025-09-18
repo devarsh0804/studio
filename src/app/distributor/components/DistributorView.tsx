@@ -94,7 +94,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         setSubLots(childLots);
         subLotForm.reset();
       } else {
-        setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
+        setError(`Lot ID "${data.lot.lotId}" not found. Please check the ID and try again.`);
         setScannedLot(null);
       }
       setIsLoading(false);
@@ -270,7 +270,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             </Button>
         </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="dashboard"><ShoppingBag className="mr-2"/>Dashboard</TabsTrigger>
             <TabsTrigger value="purchase"><ShoppingCart className="mr-2"/>Purchase Lots</TabsTrigger>
@@ -499,4 +499,4 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </AlertDialog>
     </div>
     );
-}
+    
