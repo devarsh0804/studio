@@ -242,7 +242,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                                 size="sm"
                                                 className="w-full mt-1"
                                                 onClick={() => {
-                                                    resetTransportDialog();
                                                     setLotForTransport(lot);
                                                 }}
                                             >
@@ -273,7 +272,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="purchased-lots"><ShoppingBag className="mr-2"/>Purchased Lots</TabsTrigger>
-            <TabsTrigger value="purchase"><ShoppingCart className="mr-2"/>Purchase Lots</TabsTrigger>
+            <TabsTrigger value="purchase"><ShoppingCart className="mr-2"/>Available Crops</TabsTrigger>
             <TabsTrigger value="scan"><ScanLine className="mr-2"/>Scan Lot</TabsTrigger>
         </TabsList>
         <TabsContent value="purchased-lots">
@@ -309,9 +308,9 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         <TabsContent value="purchase">
              <Card>
                 <CardHeader>
-                    <CardTitle>Available Lots for Purchase</CardTitle>
+                    <CardTitle>Available Crops</CardTitle>
                     <CardDescription>
-                        Browse lots currently available directly from farmers.
+                        Browse crops currently available directly from farmers.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
@@ -500,3 +499,5 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
 }
+
+    
