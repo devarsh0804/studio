@@ -11,10 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer, User, CalendarIcon, Truck, Calendar } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer, User, CalendarIcon, Truck, Calendar, PackageCheck } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -68,10 +68,14 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const allLots = getAllLots();
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
   const purchasedLots = allLots.filter((lot) => lot.owner === distributorId && !lot.parentLotId);
+  const dispatchedLots = allLots.filter(
+    (lot) => lot.logisticsInfo && (lot.parentLotId && findLot(lot.parentLotId)?.owner === distributorId || lot.owner !== distributorId && lot.status === 'Dispatched')
+  );
+
 
   useEffect(() => {
     if (scannedLot) {
-      const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId);
+      const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId && l.status !== 'Dispatched');
       if (childLots.length > 0) {
         setSubLots(childLots);
       }
@@ -86,7 +90,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     setTimeout(() => {
       if (lot) {
         setScannedLot(lot);
-        const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId);
+        const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId && l.status !== 'Dispatched');
         setSubLots(childLots);
         subLotForm.reset({subLotCount: 2});
       } else {
@@ -99,6 +103,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
   const handleConfirmPurchase = () => {
     if (!lotToBuy) return;
+    updateLot(lotToBuy.lotId, { owner: distributorId, status: 'Purchased' });
     setLotToPay(lotToBuy);
     setLotToBuy(null);
   };
@@ -109,8 +114,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     setIsPaying(true);
 
     setTimeout(() => {
-      updateLot(lotToPay.lotId, { owner: distributorId });
-
       toast({
         title: 'Purchase Successful!',
         description: `You now own Lot ${lotToPay.lotId}.`,
@@ -137,6 +140,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         weight: newWeight,
         price: newPrice,
         owner: distributorId,
+        status: 'Split',
       };
       newSubLots.push(newLot);
     }
@@ -147,7 +151,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
     toast({
       title: 'Sub-lots Created!',
-      description: `${data.subLotCount} new lots have been created and are ready for retailers.`,
+      description: `${data.subLotCount} new lots have been created and are ready to be assigned.`,
     });
   };
 
@@ -159,14 +163,17 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
       logisticsInfo: {
         vehicleNumber: data.vehicleNumber,
         dispatchDate: format(data.dispatchDate, 'yyyy-MM-dd'),
-      }
+      },
+      status: 'Dispatched'
     });
     
     toast({
       title: 'Lot Assigned!',
       description: `Lot ${lotToAssign.lotId} has been assigned to ${data.retailerId}.`,
     });
-
+    
+    // Refresh sublots list and close dialog
+    setSubLots(prev => prev.filter(lot => lot.lotId !== lotToAssign.lotId));
     handlePrint();
     assignForm.reset();
     setLotToAssign(null);
@@ -414,7 +421,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-12">
+        <TabsList className="grid w-full grid-cols-3 h-12">
           <TabsTrigger value="available-crops">
             <ShoppingCart className="mr-2" />
             Available Crops
@@ -422,6 +429,10 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
           <TabsTrigger value="purchased-lots">
             <ShoppingBag className="mr-2" />
             Purchased Lots
+          </TabsTrigger>
+          <TabsTrigger value="dispatched-lots">
+             <PackageCheck className="mr-2" />
+            Dispatched Lots
           </TabsTrigger>
         </TabsList>
         <TabsContent value="available-crops">
@@ -475,6 +486,33 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             </CardContent>
           </Card>
         </TabsContent>
+         <TabsContent value="dispatched-lots">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <PackageCheck className="mr-2" /> Your Dispatched Lots
+              </CardTitle>
+              <CardDescription>These lots have been assigned to retailers and are in transit.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+              {dispatchedLots.length > 0 ? (
+                dispatchedLots.map((lot) => (
+                  <div key={lot.lotId} className="border p-4 rounded-lg">
+                    <LotDetailsCard lot={lot} />
+                     <div className="mt-4 border-t pt-4 text-sm">
+                        <p className="font-semibold">Logistics Details:</p>
+                        <p><span className="text-muted-foreground">Vehicle:</span> {lot.logisticsInfo?.vehicleNumber}</p>
+                        <p><span className="text-muted-foreground">Dispatch Date:</span> {lot.logisticsInfo?.dispatchDate}</p>
+                        <p><span className="text-muted-foreground">Assigned To:</span> <span className="font-mono">{lot.owner}</span></p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-center py-4">You have not dispatched any lots yet.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       <AlertDialog open={!!lotToBuy} onOpenChange={() => setLotToBuy(null)}>
@@ -517,5 +555,3 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
-
-    

@@ -21,7 +21,7 @@ export interface Lot {
   impurities?: string;
   size?: string;
   color?: string;
-  status?: 'Registered' | 'Purchased' | 'Split' | 'Transported' | 'Stocked';
+  status?: 'Registered' | 'Purchased' | 'Split' | 'Dispatched' | 'Stocked';
 }
 
 export interface GradedLot extends Omit<Lot, 'price' | 'owner'> {}
@@ -46,5 +46,3 @@ export interface LotHistory {
   parentLot?: Lot;
   childLots?: Lot[];
 }
-
-    
