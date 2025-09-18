@@ -239,26 +239,27 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                 <h4 className="font-semibold mb-4">Generated Sub-lot QRs:</h4>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-80 overflow-y-auto p-1">
                                     {subLots.map(lot => (
-                                        <Button
-                                            key={lot.lotId}
-                                            variant="outline"
-                                            className="h-auto flex-col p-2 cursor-pointer"
-                                            onClick={() => {
-                                              transportForm.reset();
-                                              setLotForTransport(lot);
-                                            }}
-                                        >
+                                        <div key={lot.lotId} className="border rounded-lg p-2 flex flex-col items-center gap-2 text-center">
                                             <div className="p-2 bg-white rounded-md">
                                                 <QRCode value={lot.lotId} size={80} level={"H"} />
                                             </div>
-                                            <p className="text-xs font-mono mt-1 break-all w-full">{lot.lotId}</p>
+                                            <p className="text-xs font-mono break-all w-full">{lot.lotId}</p>
                                             <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
-                                        </Button>
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="w-full mt-1"
+                                                onClick={() => {
+                                                    transportForm.reset();
+                                                    setLotForTransport(lot);
+                                                }}
+                                            >
+                                                <Truck className="mr-2 h-4 w-4" />
+                                                Transport
+                                            </Button>
+                                        </div>
                                     ))}
                                 </div>
-                                <Alert className="mt-4">
-                                    <AlertDescription>Click a QR code to add transport details for that specific sub-lot.</AlertDescription>
-                                </Alert>
                             </div>
                         )}
                     </CardContent>
@@ -490,4 +491,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 }
 
     
+    
+
     
