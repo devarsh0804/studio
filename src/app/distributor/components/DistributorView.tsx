@@ -64,7 +64,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const assignForm = useForm<AssignFormValues>({ 
     resolver: zodResolver(assignSchema),
     defaultValues: {
-      retailerId: "",
+      retailerId: "retail",
       vehicleNumber: "",
       dispatchDate: "",
     }
@@ -119,19 +119,15 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     setPaymentStatus('processing');
 
     setTimeout(() => {
+      updateLot(lotToPay.lotId, { status: 'Purchased' });
       setPaymentStatus('success');
-      toast({
-        title: 'Purchase Successful!',
-        description: `Collect crop from the mandi at: ${lotToPay.location}`,
-      });
-
-      // Wait a moment on the success state, then close
-      setTimeout(() => {
-        setLotToPay(null);
-        setPaymentStatus('idle'); // Reset for next time
-        setActiveTab('purchased-lots');
-      }, 2500);
     }, 1500);
+  };
+
+  const closePaymentDialog = () => {
+    setLotToPay(null);
+    setPaymentStatus('idle'); // Reset for next time
+    setActiveTab('purchased-lots');
   };
 
   const handleSubLotSubmit: SubmitHandler<SubLotFormValues> = (data) => {
@@ -194,7 +190,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     });
     
     setSubLots(prev => prev.filter(lot => lot.lotId !== lotToAssign!.lotId));
-    assignForm.reset({ retailerId: '', vehicleNumber: '', dispatchDate: '' });
+    assignForm.reset({ retailerId: 'retail', vehicleNumber: '', dispatchDate: '' });
     setLotToAssign(null);
   };
 
@@ -538,59 +534,72 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
       <Dialog open={!!lotToPay} onOpenChange={(open) => !open && paymentStatus !== 'processing' && setLotToPay(null)}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Finalize Payment</DialogTitle>
-            <DialogDescription>
-              Proceed to pay the farmer for Lot {lotToPay?.lotId}. <br /> Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
-              <span className="font-bold">{lotToPay ? lotToPay.price * lotToPay.weight : 0}</span>
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Tabs defaultValue="upi" className="w-full pt-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="upi"><QrCode className="mr-2"/> UPI</TabsTrigger>
-                <TabsTrigger value="bank"><Landmark className="mr-2"/> Bank Transfer</TabsTrigger>
-              </TabsList>
-              <TabsContent value="upi">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Pay with UPI</CardTitle>
-                    <CardDescription>Scan the QR code with your UPI app.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col items-center justify-center space-y-4">
-                    <div className="p-4 bg-white rounded-lg">
-                       <QRCode value={`upi://pay?pa=farmer@agrichain&pn=Farmer&am=${lotToPay ? lotToPay.price * lotToPay.weight : 0}&cu=INR&tn=Lot%20${lotToPay?.lotId}`} size={180} />
-                    </div>
-                    <p className="text-sm text-muted-foreground">Or pay to UPI ID: <span className="font-mono">farmer@agrichain</span></p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="bank">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Bank Transfer Details</CardTitle>
-                    <CardDescription>Use these details to make a bank transfer.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Beneficiary:</span> <span className="font-medium">Ramesh Kumar</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Account No:</span> <span className="font-mono">1234567890</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">IFSC Code:</span> <span className="font-mono">AGRI0001234</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Bank:</span> <span className="font-medium">AgriChain Bank</span></div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+          {paymentStatus === 'success' ? (
+              <div className="flex flex-col items-center justify-center text-center p-8 gap-4">
+                  <Rocket className="w-16 h-16 text-primary animate-bounce"/>
+                  <h2 className="text-2xl font-bold font-headline">Purchase Successful!</h2>
+                  <p className="text-muted-foreground">
+                      You can now collect the crop from the mandi at: <br/>
+                      <span className="font-semibold text-foreground">{lotToPay?.location}</span>
+                  </p>
+                  <Button onClick={closePaymentDialog} className="mt-4 w-full">Done</Button>
+              </div>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>Finalize Payment</DialogTitle>
+                <DialogDescription>
+                  Proceed to pay the farmer for Lot {lotToPay?.lotId}. <br /> Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
+                  <span className="font-bold">{lotToPay ? lotToPay.price * lotToPay.weight : 0}</span>
+                </DialogDescription>
+              </DialogHeader>
+              
+              <Tabs defaultValue="upi" className="w-full pt-4">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="upi"><QrCode className="mr-2"/> UPI</TabsTrigger>
+                    <TabsTrigger value="bank"><Landmark className="mr-2"/> Bank Transfer</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="upi">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Pay with UPI</CardTitle>
+                        <CardDescription>Scan the QR code with your UPI app.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex flex-col items-center justify-center space-y-4">
+                        <div className="p-4 bg-white rounded-lg">
+                           <QRCode value={`upi://pay?pa=farmer@agrichain&pn=Farmer&am=${lotToPay ? lotToPay.price * lotToPay.weight : 0}&cu=INR&tn=Lot%20${lotToPay?.lotId}`} size={180} />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Or pay to UPI ID: <span className="font-mono">farmer@agrichain</span></p>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  <TabsContent value="bank">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Bank Transfer Details</CardTitle>
+                        <CardDescription>Use these details to make a bank transfer.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-2 text-sm">
+                        <div className="flex justify-between"><span className="text-muted-foreground">Beneficiary:</span> <span className="font-medium">Ramesh Kumar</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Account No:</span> <span className="font-mono">1234567890</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">IFSC Code:</span> <span className="font-mono">AGRI0001234</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Bank:</span> <span className="font-medium">AgriChain Bank</span></div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
 
-          <DialogFooter className="!mt-6">
-             <Button variant="outline" disabled={paymentStatus === 'processing'} onClick={() => setLotToPay(null)}>
-              Cancel
-            </Button>
-            <Button onClick={handlePayment} disabled={paymentStatus === 'processing' || paymentStatus === 'success'} className="w-40">
-              {paymentStatus === 'processing' && <Loader2 className="animate-spin" />}
-              {paymentStatus === 'idle' && <><CreditCard className="mr-2" />Confirm Payment</>}
-              {paymentStatus === 'success' && <><Rocket className="mr-2 animate-bounce" />Payment Sent!</>}
-            </Button>
-          </DialogFooter>
+              <DialogFooter className="!mt-6">
+                 <Button variant="outline" disabled={paymentStatus === 'processing'} onClick={() => setLotToPay(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={handlePayment} disabled={paymentStatus === 'processing' || paymentStatus === 'success'} className="w-40">
+                  {paymentStatus === 'processing' && <Loader2 className="animate-spin" />}
+                  {paymentStatus === 'idle' && <><CreditCard className="mr-2" />Confirm Payment</>}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
