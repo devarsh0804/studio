@@ -250,7 +250,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                             <div className="p-2 bg-white rounded-md">
                                                 <QRCode value={lot.lotId} size={80} level={"H"} />
                                             </div>
-                                            <p className="text-xs font-mono mt-1 break-words w-full">{lot.lotId}</p>
+                                            <p className="text-xs font-mono mt-1 break-all w-full">{lot.lotId}</p>
                                             <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
                                         </Button>
                                     ))}
@@ -487,5 +487,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
     );
 }
+
+    
 
     
