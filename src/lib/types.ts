@@ -17,17 +17,11 @@ export interface Lot {
   impurities?: string;
   size?: string;
   color?: string;
+  status?: 'Registered' | 'Purchased' | 'Split' | 'Transported' | 'Stocked';
 }
 
 export interface GradedLot extends Omit<Lot, 'price' | 'owner'> {}
 
-
-export interface TransportEvent {
-  vehicleNumber: string;
-  transportCondition: 'Cold Storage' | 'Normal';
-  warehouseEntryDateTime: string;
-  timestamp: string;
-}
 
 export interface RetailEvent {
   storeId: string;
@@ -43,11 +37,8 @@ export interface RetailPack {
 
 export interface LotHistory {
   lot: Lot;
-  transportEvents: TransportEvent[];
+  transportEvents: any[]; // Removed TransportEvent type
   retailEvents: RetailEvent[];
   parentLot?: Lot;
   childLots?: Lot[];
 }
-
-    
-    

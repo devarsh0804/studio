@@ -2,17 +2,16 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { Lot, TransportEvent, RetailEvent, RetailPack, LotHistory } from '@/lib/types';
+import type { Lot, RetailEvent, RetailPack, LotHistory } from '@/lib/types';
 
 interface AgriChainState {
   lots: Record<string, Lot>;
-  transportEvents: Record<string, TransportEvent[]>;
+  transportEvents: Record<string, any[]>;
   retailEvents: Record<string, RetailEvent[]>;
   retailPacks: Record<string, RetailPack>;
   addLot: (lot: Lot) => void;
   addLots: (lots: Lot[]) => void;
   updateLot: (lotId: string, updates: Partial<Lot>) => void;
-  addTransportEvent: (lotId: string, event: TransportEvent) => void;
   addRetailEvent: (lotId: string, event: RetailEvent) => void;
   addRetailPacks: (packs: RetailPack[]) => void;
   findLot: (lotId: string) => Lot | undefined;
@@ -57,23 +56,6 @@ export const useAgriChainStore = create<AgriChainState>()(
                 }
                 return state;
             }),
-
-        addTransportEvent: (lotId, event) =>
-          set((state) => {
-            // Find the lot to associate the event with the entire history
-            const lot = get().findLot(lotId);
-            if (!lot) return state;
-
-            // If it's a sub-lot, associate with the parent lot
-            const parentId = lot.parentLotId || lotId;
-
-            return {
-              transportEvents: {
-                ...state.transportEvents,
-                [parentId]: [...(state.transportEvents[parentId] || []), event],
-              },
-            }
-          }),
 
         addRetailEvent: (lotId, event) =>
           set((state) => ({
