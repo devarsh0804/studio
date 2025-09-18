@@ -245,18 +245,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                         </div>
                         <p className="text-xs font-mono break-all">{lot.lotId}</p>
                         <p className="text-xs text-muted-foreground">{lot.weight} quintals</p>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="w-full mt-1"
-                          onClick={() => {
-                            const subLotDetails = findLot(lot.lotId, true);
-                            setLotForTransport(subLotDetails || null);
-                          }}
-                        >
-                          <Truck className="mr-2 h-4 w-4" />
-                          Transport
-                        </Button>
                       </div>
                     ))}
                   </div>
