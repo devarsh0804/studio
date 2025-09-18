@@ -276,34 +276,34 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
             
             <div className="space-y-6 pt-6 border-t">
               <div className="grid md:grid-cols-2 gap-6 items-end">
-                <FormField
-                    control={form.control}
-                    name="quality"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Quality Grade</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a quality grade for the crop" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="Premium">Premium</SelectItem>
-                                    <SelectItem value="Standard">Standard</SelectItem>
-                                    <SelectItem value="Basic">Basic</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormDescription>
-                                Select the quality grade determined by the manual inspection.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <Button type="button" variant="secondary">
-                    <Upload className="mr-2" /> Upload Certificate
-                </Button>
+                  <FormField
+                      control={form.control}
+                      name="quality"
+                      render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Quality Grade</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                      <SelectTrigger>
+                                          <SelectValue placeholder="Select a quality grade for the crop" />
+                                      </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      <SelectItem value="Premium">Premium</SelectItem>
+                                      <SelectItem value="Standard">Standard</SelectItem>
+                                      <SelectItem value="Basic">Basic</SelectItem>
+                                  </SelectContent>
+                              </Select>
+                              <FormDescription>
+                                  Select the quality grade determined by the manual inspection.
+                              </FormDescription>
+                              <FormMessage />
+                          </FormItem>
+                      )}
+                  />
+                  <Button type="button" variant="secondary">
+                      <Upload className="mr-2" /> Upload Certificate
+                  </Button>
               </div>
               
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
