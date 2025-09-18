@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket } from "lucide-react";
+import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent } from "lucide-react";
 import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
 import { Separator } from "@/components/ui/separator";
@@ -21,6 +21,7 @@ import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import QRCode from "qrcode.react";
+import { Badge } from "@/components/ui/badge";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -38,6 +39,7 @@ interface RetailerViewProps {
 export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   const [history, setHistory] = useState<LotHistory | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
+  const [paymentType, setPaymentType] = useState<'advance' | 'balance'>('balance');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,26 +65,24 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
         if (scannedLot) {
             if (scannedLot.owner !== retailerId) {
                 setError(`This lot is not assigned to your store (${retailerId}). Current owner: ${scannedLot.owner}`);
-                setHistory(null);
                 return;
             }
 
-            // If the lot is dispatched to this retailer, trigger delivery & payment flow
             if (scannedLot.status === 'Dispatched') {
                 updateLot(scannedLot.lotId, { status: 'Delivered' });
                 toast({
                     title: "Lot Received!",
-                    description: `Lot ${scannedLot.lotId} has been marked as 'Delivered'. Please complete the payment.`,
+                    description: `Lot ${scannedLot.lotId} has been marked as 'Delivered'. Please complete the final payment.`,
                 });
                 
                 const freshLot = findLot(data.lotId)!;
-                setLotToPay(freshLot); // Trigger payment dialog first
+                setLotToPay(freshLot); 
+                setPaymentType('balance');
             } else if (scannedLot.status === 'Awaiting Advance Payment') {
-                 setError(`This lot is awaiting advance payment confirmation from the distributor.`);
+                 setError(`This lot requires an advance payment before it can be dispatched.`);
                  setHistory(null);
             }
             else {
-                // Otherwise, just show the history
                 setHistory(getLotHistory(data.lotId));
             }
 
@@ -118,7 +118,12 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     setPaymentStatus('processing');
 
     setTimeout(() => {
-      updateLot(lotToPay.lotId, { paymentStatus: 'Fully Paid' });
+      if (paymentType === 'advance') {
+        updateLot(lotToPay.lotId, { paymentStatus: 'Advance Paid', status: 'Dispatched' });
+      } else {
+        updateLot(lotToPay.lotId, { paymentStatus: 'Fully Paid' });
+      }
+      
       setPaymentStatus('success');
       toast({
         title: 'Payment Successful!',
@@ -129,8 +134,9 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
         const paidLotId = lotToPay.lotId;
         setLotToPay(null);
         setPaymentStatus('idle'); 
-        // Now show the history for the lot that was just paid for
-        setHistory(getLotHistory(paidLotId));
+        if (paymentType === 'balance') {
+            setHistory(getLotHistory(paidLotId));
+        }
       }, 1000);
     }, 1500);
   };
@@ -246,8 +252,8 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
         </div>
         <Card className="max-w-xl mx-auto">
             <CardHeader>
-            <CardTitle className="flex items-center"><ScanLine className="mr-2" /> Scan Lot QR Code</CardTitle>
-            <CardDescription>Enter the Lot ID to view its full history. This can be a sub-lot or a final retail pack.</CardDescription>
+            <CardTitle className="flex items-center"><ScanLine className="mr-2" /> Scan Incoming Lot</CardTitle>
+            <CardDescription>Enter the Lot ID to confirm delivery and begin the final payment process.</CardDescription>
             </CardHeader>
             <CardContent>
             <Form {...scanForm}>
@@ -273,10 +279,18 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                         <div key={lot.lotId}>
                              {index > 0 && <Separator className="my-6" />}
                              <LotDetailsCard lot={lot} />
-                             <div className="mt-4 flex justify-end">
-                                <Button onClick={() => handleScan({ lotId: lot.lotId })}>
-                                    <History className="mr-2 h-4 w-4" /> View Full History
-                                </Button>
+                             <div className="mt-4 flex justify-end gap-2">
+                                {lot.status === 'Awaiting Advance Payment' && (
+                                    <Button onClick={() => { setLotToPay(lot); setPaymentType('advance'); }}>
+                                        <Percent className="mr-2" /> Pay 30% Advance
+                                    </Button>
+                                )}
+                                {lot.status !== 'Awaiting Advance Payment' && (
+                                     <Button onClick={() => handleScan({ lotId: lot.lotId })} disabled={lot.status === 'Dispatched'}>
+                                        <History className="mr-2 h-4 w-4" /> 
+                                        {lot.status === 'Dispatched' ? 'Awaiting Delivery Scan' : 'View Full History'}
+                                    </Button>
+                                )}
                              </div>
                         </div>
                     ))
@@ -289,13 +303,26 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
          <Dialog open={!!lotToPay} onOpenChange={(open) => !open && paymentStatus !== 'processing' && setLotToPay(null)}>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Finalize Payment to Distributor</DialogTitle>
+                <DialogTitle>
+                    {paymentType === 'advance' ? 'Pay 30% Advance to Distributor' : 'Finalize Payment to Distributor'}
+                </DialogTitle>
                 <DialogDescription>
-                  This lot requires payment of the remaining 70% balance. <br/>
-                  Total value: <BadgeIndianRupee className="w-3 h-3 inline-block" /> {lotToPay ? (lotToPay.price * lotToPay.weight).toFixed(2) : 0}.
-                  <br /> 
-                  Balance amount (70%): <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
-                  <span className="font-bold">{lotToPay ? (lotToPay.price * lotToPay.weight * 0.7).toFixed(2) : 0}</span>
+                  {paymentType === 'advance' ? (
+                      <>
+                        Total value: <BadgeIndianRupee className="w-3 h-3 inline-block" /> {(lotToPay?.price ?? 0 * lotToPay?.weight ?? 0).toFixed(2)}.
+                        <br/>
+                        Advance amount (30%): <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
+                        <span className="font-bold">{lotToPay ? (lotToPay.price * lotToPay.weight * 0.3).toFixed(2) : 0}</span>
+                      </>
+                  ) : (
+                      <>
+                        This lot requires payment of the remaining 70% balance. <br/>
+                        Total value: <BadgeIndianRupee className="w-3 h-3 inline-block" /> {lotToPay ? (lotToPay.price * lotToPay.weight).toFixed(2) : 0}.
+                        <br /> 
+                        Balance amount (70%): <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
+                        <span className="font-bold">{lotToPay ? (lotToPay.price * lotToPay.weight * 0.7).toFixed(2) : 0}</span>
+                      </>
+                  )}
                 </DialogDescription>
               </DialogHeader>
               <Tabs defaultValue="upi" className="w-full pt-4">
@@ -308,7 +335,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                       <CardHeader><CardTitle>Pay with UPI</CardTitle><CardDescription>Scan the QR code with your UPI app.</CardDescription></CardHeader>
                       <CardContent className="flex flex-col items-center justify-center space-y-4">
                         <div className="p-4 bg-white rounded-lg">
-                           <QRCode value={`upi://pay?pa=distro@agrichain&pn=Distributor&am=${lotToPay ? (lotToPay.price * lotToPay.weight * 0.7).toFixed(2) : 0}&cu=INR&tn=Lot%20${lotToPay?.lotId}`} size={180} />
+                           <QRCode value={`upi://pay?pa=distro@agrichain&pn=Distributor&am=${lotToPay ? (lotToPay.price * lotToPay.weight * (paymentType === 'advance' ? 0.3 : 0.7)).toFixed(2) : 0}&cu=INR&tn=Lot%20${lotToPay?.lotId}`} size={180} />
                         </div>
                         <p className="text-sm text-muted-foreground">Or pay to UPI ID: <span className="font-mono">distro@agrichain</span></p>
                       </CardContent>
@@ -327,7 +354,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                   </TabsContent>
                 </Tabs>
               <DialogFooter className="!mt-6">
-                 <Button variant="outline" disabled={paymentStatus === 'processing'} onClick={() => { setLotToPay(null); resetView(); }}>Cancel</Button>
+                 <Button variant="outline" disabled={paymentStatus === 'processing'} onClick={() => setLotToPay(null)}>Cancel</Button>
                 <Button onClick={handlePayment} disabled={paymentStatus === 'processing' || paymentStatus === 'success'} className="w-40">
                   {paymentStatus === 'processing' && <Loader2 className="animate-spin" />}
                   {paymentStatus === 'idle' && <><CreditCard className="mr-2" />Confirm Payment</>}
@@ -372,7 +399,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                       )}/>
                       <Button type="submit" disabled={isSubmitting || isStocked || history.lot.paymentStatus !== 'Fully Paid'} className="w-full">
                         {isSubmitting && <Loader2 className="animate-spin mr-2"/>} 
-                        {isStocked ? 'Lot Stocked' : (history.lot.paymentStatus !== 'Fully Paid' ? 'Payment Pending' : 'Add to Ledger')}
+                        {isStocked ? 'Lot Stocked' : (history.lot.paymentStatus !== 'Fully Paid' ? 'Final Payment Pending' : 'Add to Ledger')}
                       </Button>
                   </form>
               </Form>

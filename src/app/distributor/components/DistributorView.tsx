@@ -48,7 +48,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
   const [lotToAssign, setLotToAssign] = useState<Lot | null>(null);
-  const [lotAwaitingAdvance, setLotAwaitingAdvance] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
@@ -75,7 +74,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
   const purchasedLots = allLots.filter((lot) => lot.owner === distributorId && !lot.parentLotId);
   const dispatchedLots = allLots.filter(
-    (lot) => lot.logisticsInfo && (lot.parentLotId && findLot(lot.parentLotId)?.owner === distributorId || lot.owner !== distributorId && (lot.status === 'Dispatched' || lot.status === 'Delivered'))
+    (lot) => lot.logisticsInfo && (lot.parentLotId && findLot(lot.parentLotId)?.owner === distributorId || lot.owner !== distributorId && (lot.status === 'Dispatched' || lot.status === 'Delivered' || lot.status === 'Stocked' || lot.status === 'Awaiting Advance Payment'))
   );
 
 
@@ -193,31 +192,13 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     
     toast({
       title: 'Lot Assigned!',
-      description: `Lot ${lotToAssign.lotId} has been assigned to ${data.retailerId}. Awaiting 30% advance.`,
+      description: `Lot ${lotToAssign.lotId} has been assigned to ${data.retailerId}. Waiting for 30% advance payment from the retailer.`,
     });
     
-    setLotAwaitingAdvance(findLot(lotToAssign.lotId));
     setSubLots(prev => prev.filter(lot => lot.lotId !== lotToAssign!.lotId));
     assignForm.reset({ retailerId: '', vehicleNumber: '', dispatchDate: '' });
     setLotToAssign(null);
   };
-  
-  const handleConfirmAdvance = () => {
-    if (!lotAwaitingAdvance) return;
-
-    updateLot(lotAwaitingAdvance.lotId, { 
-      status: 'Dispatched',
-      paymentStatus: 'Advance Paid',
-    });
-
-    toast({
-        title: "Advance Received & Dispatched!",
-        description: `Lot ${lotAwaitingAdvance.lotId} is now on its way to the retailer.`,
-    });
-
-    downloadQR(lotAwaitingAdvance.lotId);
-    setLotAwaitingAdvance(null);
-};
 
 
   const resetView = () => {
@@ -298,7 +279,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 <DialogHeader>
                     <DialogTitle>Assign Lot {lotToAssign?.lotId} to Retailer</DialogTitle>
                     <DialogDescription>
-                        Fill in the dispatch details. After assigning, you will need to confirm the 30% advance payment from the retailer to dispatch the lot.
+                        Fill in the dispatch details. The retailer will be prompted to pay a 30% advance before you can dispatch the lot.
                     </DialogDescription>
                 </DialogHeader>
                 {lotToAssign && (
@@ -315,7 +296,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                       <FormControl>
                                         <div className="relative">
                                           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                          <Input placeholder="e.g., retail-store-01" {...field} className="pl-10" />
+                                          <Input placeholder="e.g., retail" {...field} className="pl-10" />
                                         </div>
                                       </FormControl>
                                       <FormMessage />
@@ -361,28 +342,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 )}
             </DialogContent>
         </Dialog>
-
-        <AlertDialog open={!!lotAwaitingAdvance} onOpenChange={() => setLotAwaitingAdvance(null)}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Confirm Advance & Dispatch</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Please confirm that you have received the 30% advance payment for Lot <span className="font-mono">{lotAwaitingAdvance?.lotId}</span> from the retailer.
-                        Total value: <BadgeIndianRupee className="w-4 h-4 inline-block" /> {lotAwaitingAdvance ? lotAwaitingAdvance.price * lotAwaitingAdvance.weight : 0}.
-                        <br/>
-                        Advance amount (30%): <BadgeIndianRupee className="w-4 h-4 inline-block" /> <span className="font-bold">{lotAwaitingAdvance ? (lotAwaitingAdvance.price * lotAwaitingAdvance.weight * 0.3).toFixed(2) : 0}</span>.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <div ref={qrRef} className="hidden">
-                        {lotAwaitingAdvance && <QRCode value={lotAwaitingAdvance.lotId} size={256} />}
-                    </div>
-                    <AlertDialogCancel>Waiting for Payment</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirmAdvance}><Download className="mr-2" /> Confirm Advance & Download QR</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-
       </div>
     );
   }
@@ -522,7 +481,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                           </div>
                           <div>
                               <p className="font-semibold">Status:</p>
-                              <Badge variant={lot.status === 'Delivered' ? 'default' : 'secondary'}>
+                              <Badge variant={lot.status === 'Delivered' ? 'default' : (lot.status === 'Dispatched' ? 'secondary' : 'outline')}>
                                 {lot.status}
                               </Badge>
                                <p className="font-semibold mt-2">Payment:</p>
