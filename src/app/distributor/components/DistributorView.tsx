@@ -66,12 +66,15 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema) });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema) });
-  const transportForm = useForm<TransportFormValues>({ resolver: zodResolver(transportSchema) });
+  const transportForm = useForm<TransportFormValues>({ resolver: zodResolver(transportSchema), defaultValues: { vehicleNumber: '', transportCondition: 'Normal', warehouseEntryDateTime: '' } });
   
   const allLots = getAllLots();
   const availableLots = allLots.filter(lot => lot.owner === lot.farmer && !lot.parentLotId);
   const purchasedLots = allLots.filter(lot => lot.owner === distributorId && !lot.parentLotId && lot.weight > 0);
-  const createdSubLots = allLots.filter(lot => lot.parentLotId && findLot(lot.parentLotId)?.owner === distributorId);
+  const createdSubLots = allLots.filter(lot => {
+    const parent = findLot(lot.parentLotId || '');
+    return parent && parent.owner === distributorId && (lot.status === 'In-Transit' || lot.status === 'Delivered');
+  });
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -504,7 +507,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                         <CardHeader>
                             <CardTitle>Your Created Sub-Lots</CardTitle>
                             <CardDescription>
-                                These are the sub-lots you have created for retailers. Click one to add transport details.
+                                These are the sub-lots you have created for retailers.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -528,16 +531,9 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                                                 Delivered
                                             </Badge>
                                         ) : (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => {
-                                                    transportForm.reset();
-                                                    setLotForTransport(lot);
-                                                }}
-                                            >
-                                                <Truck className="mr-2"/> Add Transport
-                                            </Button>
+                                            <Badge variant="outline">
+                                                Registered
+                                            </Badge>
                                         )}
                                     </div>
                                 </div>
@@ -667,3 +663,4 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   }
 
     
+
