@@ -94,7 +94,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         setSubLots(childLots);
         subLotForm.reset();
       } else {
-        setError(`Lot ID "${data.lot.lotId}" not found. Please check the ID and try again.`);
+        setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
         setScannedLot(null);
       }
       setIsLoading(false);
@@ -499,4 +499,4 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </AlertDialog>
     </div>
     );
-    
+}
