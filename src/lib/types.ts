@@ -6,10 +6,17 @@ export interface Lot {
   harvestDate: string;
   photoUrl: string;
   price: number; // per quintal
-  quality: string;
   owner?: string; // e.g., 'farmer', 'distributor-1', etc.
   location?: string;
   parentLotId?: string; // To link sub-lots to their origin
+
+  // Digital Certificate Fields
+  quality: string; // The final grade: Premium, Standard, Basic
+  gradingDate: string;
+  moisture?: string;
+  impurities?: string;
+  size?: string;
+  color?: string;
 }
 
 export interface TransportEvent {

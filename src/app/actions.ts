@@ -1,6 +1,7 @@
 'use server';
 
 import { distributorUpdateConflictDetection, type DistributorUpdateConflictDetectionInput, type DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
+import { gradeCrop, type GradeCropInput, type GradeCropOutput } from "@/ai/flows/grade-crop-flow";
 import type { Lot } from "@/lib/types";
 
 export async function detectConflictAction(
@@ -30,6 +31,38 @@ export async function detectConflictAction(
         return {
             conflictDetected: true,
             conflictDetails: "An unexpected error occurred while checking for conflicts. Please try again.",
+        };
+    }
+}
+
+
+export async function gradeCropAction(
+    formData: {
+        farmerName: string;
+        cropName: string;
+        location: string;
+        photoDataUri: string;
+    }
+): Promise<GradeCropOutput> {
+    const input: GradeCropInput = {
+        cropName: formData.cropName,
+        farmerName: formData.farmerName,
+        location: formData.location,
+        photoDataUri: formData.photoDataUri,
+    };
+
+    try {
+        const result = await gradeCrop(input);
+        return result;
+    } catch (error) {
+        console.error("Error in grading flow:", error);
+        // Return a default error-state grade
+        return {
+            grade: 'Basic',
+            moisture: 'N/A',
+            impurities: 'N/A',
+            size: 'N/A',
+            color: 'N/A',
         };
     }
 }

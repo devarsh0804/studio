@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,17 +14,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat, BadgeIndianRupee, MapPin } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, BadgeIndianRupee, MapPin, Sparkles, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Lot } from "@/lib/types";
 import { placeHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { gradeCropAction } from "@/app/actions";
+import { useState } from "react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   farmerName: z.string().min(2, { message: "Farmer name must be at least 2 characters." }),
@@ -33,7 +35,6 @@ const formSchema = z.object({
   weight: z.coerce.number().positive({ message: "Weight must be a positive number." }),
   harvestDate: z.date({ required_error: "A harvest date is required." }),
   price: z.coerce.number().positive({ message: "Price must be a positive number." }),
-  quality: z.string().min(1, { message: "Quality is required." }),
 });
 
 interface RegisterCropFormProps {
@@ -42,20 +43,43 @@ interface RegisterCropFormProps {
 
 export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
   const { toast } = useToast();
+  const [isGrading, setIsGrading] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       farmerName: "",
       cropName: "",
       location: "",
-      quality: "Standard",
     },
   });
 
   const cropImage = placeHolderImages.find(p => p.id === 'crop1');
   const farmerImage = placeHolderImages.find(p => p.id === 'farmer1');
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!cropImage) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Crop image not found. Cannot perform grading.",
+      });
+      return;
+    }
+    
+    setIsGrading(true);
+    toast({
+      title: "AI Grading in Progress...",
+      description: "Analyzing crop quality. This may take a moment.",
+    });
+
+    const gradingResult = await gradeCropAction({
+      ...values,
+      photoDataUri: cropImage.imageUrl, // In a real app, this would be an uploaded image data URI
+    });
+    
+    setIsGrading(false);
+
     const formattedDate = format(values.harvestDate, "yyyy-MM-dd");
     const lotId = `LOT-${format(new Date(), "yyyyMMdd")}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
     
@@ -68,14 +92,19 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       harvestDate: formattedDate,
       photoUrl: cropImage?.imageUrl || "",
       price: values.price,
-      quality: values.quality,
       owner: values.farmerName,
+      quality: gradingResult.grade,
+      gradingDate: new Date().toISOString(),
+      moisture: gradingResult.moisture,
+      impurities: gradingResult.impurities,
+      size: gradingResult.size,
+      color: gradingResult.color,
     };
 
     onRegister(newLot);
     toast({
-      title: "Lot Registered!",
-      description: `Lot ID ${lotId} has been successfully created.`,
+      title: "Lot Registered & Graded!",
+      description: `Lot ID ${lotId} has been created with a grade of '${gradingResult.grade}'.`,
     })
     form.reset();
   }
@@ -86,6 +115,9 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
         <CardTitle className="flex items-center">
             <Wheat className="mr-2"/> Register New Crop Lot
         </CardTitle>
+        <CardDescription>
+            Fill in the details below. The crop will be automatically graded using our AI-powered system.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -113,11 +145,11 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                       name="location"
                       render={({ field }) => (
                           <FormItem>
-                          <FormLabel>Location</FormLabel>
+                          <FormLabel>Location (Mandi)</FormLabel>
                           <FormControl>
                             <div className="relative">
                                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="e.g., Punjab" {...field} className="pl-10" />
+                                <Input placeholder="e.g., APMC, Punjab" {...field} className="pl-10" />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -168,28 +200,6 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                       )}
                       />
                     </div>
-                    <FormField
-                      control={form.control}
-                      name="quality"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Quality</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select quality grade" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Premium">Premium</SelectItem>
-                              <SelectItem value="Standard">Standard</SelectItem>
-                              <SelectItem value="Basic">Basic</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                      />
                     <FormField
                     control={form.control}
                     name="harvestDate"
@@ -247,7 +257,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         </Button>
                     </div>
                     <div className="space-y-2">
-                        <FormLabel>Crop Photo</FormLabel>
+                        <FormLabel>Crop Photo for Grading</FormLabel>
                         <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
                             {cropImage ? (
                                 <Image src={cropImage.imageUrl} alt={cropImage.description} fill objectFit="cover" data-ai-hint={cropImage.imageHint}/>
@@ -259,13 +269,24 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                             <Camera className="mr-2 h-4 w-4" /> Upload Photo
                         </Button>
                         <FormDescription>
-                            For demo purposes, placeholder images are used.
+                            For demo purposes, placeholder images are used for analysis.
                         </FormDescription>
                     </div>
                 </div>
             </div>
             
-            <Button type="submit" size="lg" className="w-full">Register Lot</Button>
+            <Alert>
+                <Sparkles className="h-4 w-4" />
+                <AlertTitle>Automated Quality Grading</AlertTitle>
+                <AlertDescription>
+                    Upon submission, an AI will analyze the crop photo and details to generate a digital quality certificate.
+                </AlertDescription>
+            </Alert>
+            
+            <Button type="submit" size="lg" className="w-full" disabled={isGrading}>
+                {isGrading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isGrading ? 'Grading Crop...' : 'Register and Grade Lot'}
+            </Button>
           </form>
         </Form>
       </CardContent>
