@@ -13,14 +13,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer, User, CalendarIcon, Truck, Calendar, PackageCheck } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, Printer, User, Truck, PackageCheck, Download } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 
@@ -155,6 +153,19 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     });
   };
 
+  const downloadQR = (lotId: string) => {
+    if (qrRef.current) {
+        const canvas = qrRef.current.querySelector("canvas");
+        if (canvas) {
+            const image = canvas.toDataURL("image/png");
+            const a = document.createElement("a");
+            a.href = image;
+            a.download = `${lotId}.png`;
+            a.click();
+        }
+    }
+  };
+
   const handleAssignSubmit: SubmitHandler<AssignFormValues> = (data) => {
     if (!lotToAssign) return;
 
@@ -174,28 +185,9 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     
     // Refresh sublots list and close dialog
     setSubLots(prev => prev.filter(lot => lot.lotId !== lotToAssign.lotId));
-    handlePrint();
+    downloadQR(lotToAssign.lotId);
     assignForm.reset();
     setLotToAssign(null);
-  };
-
-
-  const handlePrint = () => {
-    const printContent = qrRef.current;
-    if (printContent) {
-      const printWindow = window.open('', '', 'height=600,width=800');
-      if (printWindow) {
-        printWindow.document.write('<html><head><title>Print QR Code</title>');
-        printWindow.document.write('<style>body { display: flex; justify-content: center; align-items: center; height: 100%; } .qr-container { text-align: center; }</style>');
-        printWindow.document.write('</head><body>');
-        printWindow.document.write('<div class="qr-container">');
-        printWindow.document.write(printContent.innerHTML);
-        printWindow.document.write('</div>');
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.print();
-      }
-    }
   };
 
 
@@ -337,7 +329,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                             />
                             <DialogFooter className="!mt-4">
                                 <Button variant="outline" type="button" onClick={() => setLotToAssign(null)}>Cancel</Button>
-                                <Button type="submit"><Printer className="mr-2"/> Assign & Print</Button>
+                                <Button type="submit"><Download className="mr-2"/> Assign & Download</Button>
                             </DialogFooter>
                           </form>
                         </Form>
@@ -530,7 +522,3 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
-
-    
-    
-    
