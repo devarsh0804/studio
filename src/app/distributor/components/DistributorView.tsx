@@ -269,72 +269,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             </Button>
         </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="purchased-lots"><ShoppingBag className="mr-2"/>Purchased Lots</TabsTrigger>
-            <TabsTrigger value="purchase"><ShoppingCart className="mr-2"/>Available Crops</TabsTrigger>
-            <TabsTrigger value="scan"><ScanLine className="mr-2"/>Scan Lot</TabsTrigger>
-        </TabsList>
-        <TabsContent value="purchased-lots">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center">
-                        <ShoppingBag className="mr-2" /> Your Purchased Lots
-                    </CardTitle>
-                    <CardDescription>
-                        These are lots you own. Select a lot to add details or split it into sub-lots.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    {purchasedLots.length > 0 ? (
-                        purchasedLots.map((lot) => (
-                            <div key={lot.lotId} className="border p-4 rounded-lg">
-                                <LotDetailsCard lot={lot} />
-                                <div className="mt-4 flex justify-end">
-                                    <Button variant="secondary" onClick={() => handleScan({lotId: lot.lotId})}>
-                                        <Spline className="mr-2 h-4 w-4" /> Manage Lot
-                                    </Button>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-muted-foreground text-center py-4">
-                            You have not purchased any lots yet. Go to the &quot;Purchase Lots&quot; tab to buy one.
-                        </p>
-                    )}
-                </CardContent>
-            </Card>
-        </TabsContent>
-        <TabsContent value="purchase">
-             <Card>
-                <CardHeader>
-                    <CardTitle>Available Crops</CardTitle>
-                    <CardDescription>
-                        Browse crops currently available directly from farmers.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    {availableLots.length > 0 ? (
-                        availableLots.map((lot) => (
-                            <div key={lot.lotId} className="border p-4 rounded-lg">
-                                <LotDetailsCard lot={lot} />
-                                <div className="mt-4 flex justify-end">
-                                    <Button onClick={() => setLotToBuy(lot)}>
-                                        <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />{lot.price * lot.weight}
-                                    </Button>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-muted-foreground text-center py-4">
-                            There are no lots currently available for purchase.
-                        </p>
-                    )}
-                </CardContent>
-            </Card>
-        </TabsContent>
-        <TabsContent value="scan">
-            <Card>
+        <Card>
             <CardHeader>
                 <CardTitle className="flex items-center"><ScanLine className="mr-2" /> Scan Lot QR Code</CardTitle>
                 <CardDescription>Enter the Lot ID to fetch its details and manage it.</CardDescription>
@@ -367,6 +302,69 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                     </Alert>
                 )}
             </CardContent>
+        </Card>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="purchased-lots"><ShoppingBag className="mr-2"/>Purchased Lots</TabsTrigger>
+            <TabsTrigger value="purchase"><ShoppingCart className="mr-2"/>Available Crops</TabsTrigger>
+        </TabsList>
+        <TabsContent value="purchased-lots">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center">
+                        <ShoppingBag className="mr-2" /> Your Purchased Lots
+                    </CardTitle>
+                    <CardDescription>
+                        These are lots you own. Select a lot to add details or split it into sub-lots.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {purchasedLots.length > 0 ? (
+                        purchasedLots.map((lot) => (
+                            <div key={lot.lotId} className="border p-4 rounded-lg">
+                                <LotDetailsCard lot={lot} />
+                                <div className="mt-4 flex justify-end">
+                                    <Button variant="secondary" onClick={() => handleScan({lotId: lot.lotId})}>
+                                        <Spline className="mr-2 h-4 w-4" /> Manage Lot
+                                    </Button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center py-4">
+                            You have not purchased any lots yet. Go to the &quot;Available Crops&quot; tab to buy one.
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="purchase">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Available Crops for Purchase</CardTitle>
+                    <CardDescription>
+                        Browse crops currently available directly from farmers.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {availableLots.length > 0 ? (
+                        availableLots.map((lot) => (
+                            <div key={lot.lotId} className="border p-4 rounded-lg">
+                                <LotDetailsCard lot={lot} />
+                                <div className="mt-4 flex justify-end">
+                                    <Button onClick={() => setLotToBuy(lot)}>
+                                        <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />{lot.price * lot.weight}
+                                    </Button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center py-4">
+                            There are no lots currently available for purchase.
+                        </p>
+                    )}
+                </CardContent>
             </Card>
         </TabsContent>
       </Tabs>
