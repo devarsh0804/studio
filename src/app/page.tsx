@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Tractor, Truck, Store, User, RotateCcw } from 'lucide-react';
+import { Tractor, Truck, Store, Cpu, RotateCcw } from 'lucide-react';
 import { RoleCard } from '@/components/RoleCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -23,10 +23,16 @@ export default function Home() {
 
   const roles = [
     {
+      title: 'IoT Grading Station',
+      icon: <Cpu className="w-12 h-12" />,
+      href: '/iot-grading',
+      description: 'Perform AI-powered quality grading on new crop batches.',
+    },
+    {
       title: 'Farmer / Sahayak',
       icon: <Tractor className="w-12 h-12" />,
       href: '/farmer',
-      description: 'Register crops and generate unique QR codes for your produce.',
+      description: 'Register pre-graded lots and generate unique QR codes.',
     },
     {
       title: 'Distributor',
@@ -40,17 +46,12 @@ export default function Home() {
       href: '/retailer',
       description: 'Manage inventory, create retail packs, and track product history.',
     },
-    {
-      title: 'Customer',
-      icon: <User className="w-12 h-12" />,
-      href: '/customer',
-      description: 'Scan product QR codes to trace their journey from farm to shelf.',
-    },
   ];
 
   const handleResetData = () => {
     try {
       localStorage.removeItem('agrichain-storage');
+      localStorage.removeItem('graded-lots-storage');
       toast({
         title: "Application Data Cleared",
         description: "All entered data has been removed. The page will now reload.",

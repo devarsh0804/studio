@@ -19,6 +19,9 @@ export interface Lot {
   color?: string;
 }
 
+export interface GradedLot extends Omit<Lot, 'price' | 'owner'> {}
+
+
 export interface TransportEvent {
   vehicleNumber: string;
   transportCondition: 'Cold Storage' | 'Normal';

@@ -85,20 +85,42 @@ export const useAgriChainStore = create<AgriChainState>()(
             };
           }),
 
-        findLot: (lotId) => get().lots[lotId],
+        findLot: (lotId) => {
+           if (!lotId) return undefined;
+           // Handle finding sub-lots or packs and returning the parent
+           if (lotId.startsWith('PACK-')) {
+              const pack = get().retailPacks[lotId];
+              return pack ? get().lots[pack.parentLotId] : undefined;
+           }
+            if (lotId.includes('-SUB-')) {
+                const parentId = lotId.split('-SUB-')[0];
+                return get().lots[parentId];
+            }
+           return get().lots[lotId];
+        },
 
         findPack: (packId) => get().retailPacks[packId],
         
         getAllLots: () => Object.values(get().lots).sort((a, b) => new Date(b.harvestDate).getTime() - new Date(a.harvestDate).getTime()),
 
-        getLotHistory: (lotId) => {
-          const lot = get().findLot(lotId);
+        getLotHistory: (id) => {
+          let lot: Lot | undefined;
+          
+          if (id.startsWith('PACK-')) {
+            const pack = get().findPack(id);
+            if(pack) {
+              lot = get().findLot(pack.parentLotId);
+            }
+          } else {
+            lot = get().findLot(id);
+          }
+          
           if (!lot) return null;
           
-          const transport = get().transportEvents[lotId] || [];
-          const retail = get().retailEvents[lotId] || [];
+          const transport = get().transportEvents[lot.lotId] || [];
+          const retail = get().retailEvents[lot.lotId] || [];
           const parentLot = lot.parentLotId ? get().findLot(lot.parentLotId) : undefined;
-          const childLots = Object.values(get().lots).filter(l => l.parentLotId === lotId);
+          const childLots = Object.values(get().lots).filter(l => l.parentLotId === lot.lotId);
 
           return {
             lot,
