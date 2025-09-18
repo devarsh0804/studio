@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Tractor, Truck, Store, Cpu, RotateCcw } from 'lucide-react';
+import { Tractor, Truck, Store, RotateCcw } from 'lucide-react';
 import { RoleCard } from '@/components/RoleCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -23,16 +23,10 @@ export default function Home() {
 
   const roles = [
     {
-      title: 'IoT Grading Station',
-      icon: <Cpu className="w-12 h-12" />,
-      href: '/iot-grading',
-      description: 'Perform AI-powered quality grading on new crop batches.',
-    },
-    {
       title: 'Farmer / Sahayak',
       icon: <Tractor className="w-12 h-12" />,
       href: '/farmer',
-      description: 'Register pre-graded lots and generate unique QR codes.',
+      description: 'Register lots, get them graded, and generate unique QR codes.',
     },
     {
       title: 'Distributor',
@@ -103,7 +97,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
         {roles.map((role) => (
           <RoleCard key={role.title} {...role} />
         ))}
