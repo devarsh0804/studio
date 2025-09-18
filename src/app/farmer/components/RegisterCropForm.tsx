@@ -67,7 +67,8 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
     if (step === "grading") {
       setProgress(0);
       const startTime = Date.now();
-      const duration = 30000; // 30 seconds
+      // Shorten duration for better UX, but keep it noticeable
+      const duration = 5000; // 5 seconds
       
       const interval = setInterval(() => {
         const elapsedTime = Date.now() - startTime;
@@ -108,25 +109,26 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
     setStep("grading");
     toast({
       title: "Automated Grading Initiated...",
-      description: "Analyzing crop with simulated IoT sensors. This will take about 30 seconds.",
+      description: "Analyzing crop with simulated IoT sensors. This will take a moment.",
     });
 
     try {
         const values = form.getValues();
-        const result = await gradeCropAction({
+        const resultPromise = gradeCropAction({
           ...values,
           photoDataUri: cropImage.imageUrl, 
         });
         
-        // Ensure the 30s animation completes
-        setTimeout(() => {
-            setGradingResult(result);
-            setStep("certificate");
-            toast({
-              title: "Grading Complete!",
-              description: `A digital certificate has been generated with a grade of '${result.grade}'.`,
-            });
-        }, 30000);
+        // Wait for both animation and AI call to complete
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        const result = await resultPromise;
+        
+        setGradingResult(result);
+        setStep("certificate");
+        toast({
+          title: "Grading Complete!",
+          description: `A digital certificate has been generated with a grade of '${result.grade}'.`,
+        });
 
     } catch (error) {
         console.error("Error during grading:", error);
@@ -207,7 +209,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
             </div>
             <p className="text-lg font-semibold text-primary">Analyzing... Please wait.</p>
             <Progress value={progress} className="w-full max-w-sm mx-auto" />
-            <p className="text-sm text-muted-foreground">This simulates a 30-second hardware analysis process.</p>
+            <p className="text-sm text-muted-foreground">This simulates a hardware analysis process.</p>
         </CardContent>
       </Card>
     );
@@ -276,7 +278,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                             </div>
                         </div>
                         <div className="flex items-start">
-                            <Calendar className="w-4 h-4 mr-2 mt-0.5 text-muted-foreground" />
+                            <CalendarIcon className="w-4 h-4 mr-2 mt-0.5 text-muted-foreground" />
                             <div>
                                 <p className="text-muted-foreground">Grading Date</p>
                                 <p className="font-medium">{gradingDate && isValid(gradingDate) ? format(gradingDate, 'PPp') : 'N/A'}</p>
@@ -467,8 +469,8 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                 </AlertDescription>
             </Alert>
             
-            <Button type="submit" size="lg" className="w-full" disabled={step === "grading"}>
-                {step === "grading" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="submit" size="lg" className="w-full" disabled={step !== 'form'}>
+                {step === 'grading' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Start Grading
             </Button>
           </form>
