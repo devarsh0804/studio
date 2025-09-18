@@ -130,7 +130,7 @@ export const useAgriChainStore = create<AgriChainState>()(
           
           const transport = get().transportEvents[lot.lotId] || [];
           const retail = get().retailEvents[lot.lotId] || [];
-          const parentLot = lot.parentLotId ? get().findLot(lot.parentLotId) : undefined;
+          const parentLot = lot.parentLotId ? get().findLot(lot.parentLotId, true) : undefined;
           const childLots = Object.values(get().lots).filter(l => l.parentLotId === lot.lotId);
 
           return {
@@ -148,3 +148,5 @@ export const useAgriChainStore = create<AgriChainState>()(
     )
   )
 );
+
+    

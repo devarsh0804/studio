@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -72,14 +73,14 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const availableLots = allLots.filter(lot => lot.owner === lot.farmer && !lot.parentLotId);
   const purchasedLots = allLots.filter(lot => lot.owner === distributorId && !lot.parentLotId && lot.weight > 0);
   const createdSubLots = allLots.filter(lot => {
-    const parent = findLot(lot.parentLotId || '');
+    const parent = findLot(lot.parentLotId || '', true);
     return parent && parent.owner === distributorId && (lot.status === 'In-Transit' || lot.status === 'Delivered');
   });
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
     setError(null);
-    const lot = findLot(data.lotId);
+    const lot = findLot(data.lotId, true);
     setTimeout(() => {
       if (lot) {
         setScannedLot(lot);
@@ -397,11 +398,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   return (
     <div className="space-y-8">
         <div className="flex justify-between items-center">
-             <Button asChild>
-                <Link href="/distributor/transport">
-                    <Truck className="mr-2" /> Add Transport Details
-                </Link>
-            </Button>
+             <h1 className="text-2xl font-bold font-headline">Welcome, {distributorId}</h1>
             <Button variant="ghost" onClick={onLogout}>
                 <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
@@ -664,3 +661,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
     
 
+
+
+    
