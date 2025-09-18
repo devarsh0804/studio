@@ -41,7 +41,7 @@ export default function Home() {
       description: 'Manage inventory, confirm deliveries, and track product history.',
     },
     {
-      title: 'Consumer',
+      title: 'Scan Product',
       icon: <ScanLine className="w-12 h-12" />,
       href: '/trace',
       description: 'Scan a product QR code to view its full journey from farm to fork.',

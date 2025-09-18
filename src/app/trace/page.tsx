@@ -134,7 +134,7 @@ export default function TracePage() {
   return (
     <>
       <PageHeader 
-        title="Consumer: Trace Product"
+        title="Scan Product"
         description="Scan a product's QR code to see its complete journey."
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
@@ -162,7 +162,7 @@ export default function TracePage() {
                     <CardHeader>
                     <CardTitle className="flex items-center"><History className="mr-2"/> Full Lot History</CardTitle>
                     <CardDescription>This is the complete journey of the product from farm to store, verified by AgriChain Trace.</CardDescription>
-                    </CardHeader>
+                    </Header>
                     <CardContent>
                         <Timeline events={getTimelineEvents()} />
                     </CardContent>

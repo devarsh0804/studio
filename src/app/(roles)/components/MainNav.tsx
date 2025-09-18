@@ -9,7 +9,7 @@ const links = [
     { name: "Farmer", href: "/farmer", icon: Tractor },
     { name: "Distributor", href: "/distributor", icon: Truck },
     { name: "Retailer", href: "/retailer", icon: Store },
-    { name: "Consumer", href: "/trace", icon: ScanLine },
+    { name: "Scan Product", href: "/trace", icon: ScanLine },
 ];
 
 export function MainNav() {
