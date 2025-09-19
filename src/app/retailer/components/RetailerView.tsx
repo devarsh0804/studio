@@ -64,31 +64,38 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
     setTimeout(() => {
         setIsLoading(false);
-        if (scannedLot) {
-            if (scannedLot.owner !== retailerId) {
-                setError(`This lot is not assigned to your store (${retailerId}). Current owner: ${scannedLot.owner}`);
-                return;
-            }
-
-            if (scannedLot.status === 'Dispatched') {
-                updateLot(scannedLot.lotId, { status: 'Delivered' });
-                toast({
-                    title: "Lot Received!",
-                    description: `Lot ${scannedLot.lotId} has been marked as 'Delivered'. Please complete the final payment.`,
-                });
-                
-                const freshLot = findLot(data.lotId)!;
-                setLotToPay(freshLot); 
-                setPaymentType('balance');
-            }
-            else {
-                setHistory(getLotHistory(data.lotId));
-            }
-
-        } else {
+        if (!scannedLot) {
             setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
             setHistory(null);
+            return;
         }
+
+        if (scannedLot.owner !== retailerId) {
+            setError(`This lot is not assigned to your store (${retailerId}). Current owner: ${scannedLot.owner}`);
+            return;
+        }
+        
+        let lotToProcess = scannedLot;
+
+        // If lot is arriving, mark as delivered
+        if (lotToProcess.status === 'Dispatched') {
+            updateLot(lotToProcess.lotId, { status: 'Delivered' });
+            toast({
+                title: "Lot Received!",
+                description: `Lot ${lotToProcess.lotId} has been marked as 'Delivered'. Please complete the final payment.`,
+            });
+            lotToProcess = findLot(data.lotId)!; // Re-fetch to get updated status
+        }
+        
+        // If lot requires final payment, show payment dialog
+        if (lotToProcess.paymentStatus === 'Advance Paid') {
+            setLotToPay(lotToProcess); 
+            setPaymentType('balance');
+        } else {
+            // Otherwise, show history
+            setHistory(getLotHistory(data.lotId));
+        }
+
     }, 500);
   };
   
@@ -322,9 +329,9 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                                     {index > 0 && <Separator className="my-6" />}
                                     <LotDetailsCard lot={lot} />
                                     <div className="mt-4 flex justify-end gap-2">
-                                        <Button onClick={() => handleScan({ lotId: lot.lotId })} disabled={lot.status === 'Dispatched' || lot.paymentStatus !== 'Fully Paid'}>
+                                        <Button onClick={() => handleScan({ lotId: lot.lotId })} disabled={lot.status !== 'Dispatched' && lot.paymentStatus !== 'Advance Paid' && lot.paymentStatus !== 'Fully Paid'}>
                                             <History className="mr-2 h-4 w-4" /> 
-                                            {lot.status === 'Dispatched' ? 'Awaiting Delivery Scan' : 'View Full History'}
+                                            {lot.status === 'Dispatched' ? 'Confirm Delivery' : 'View Full History'}
                                         </Button>
                                     </div>
                                 </div>
