@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -13,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent, FileText } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -72,7 +73,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
   const purchasedLots = allLots.filter((lot) => lot.owner === distributorId && !lot.parentLotId);
   const dispatchedLots = allLots.filter(
-    (lot) => lot.paymentStatus === 'Advance Paid' || lot.paymentStatus === 'Fully Paid'
+    (lot) => (lot.paymentStatus === 'Advance Paid' || lot.paymentStatus === 'Fully Paid') && lot.parentLotId && findLot(lot.parentLotId!)?.owner === distributorId
   );
 
 
@@ -479,7 +480,12 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                       You can now collect the crop from the mandi at: <br/>
                       <span className="font-semibold text-foreground">{lotToPay?.location}</span>
                   </p>
-                  <Button onClick={closePaymentDialog} className="mt-4 w-full">Done</Button>
+                  <div className='flex items-center gap-2 mt-4 w-full'>
+                    <Button variant="outline" className="w-full">
+                        <FileText className="mr-2" /> Download Receipt
+                    </Button>
+                    <Button onClick={closePaymentDialog} className="w-full">Done</Button>
+                  </div>
               </div>
           ) : (
             <>
@@ -595,5 +601,3 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
-
-    

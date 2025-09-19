@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart } from "lucide-react";
+import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText } from "lucide-react";
 import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
 import { Separator } from "@/components/ui/separator";
@@ -132,19 +132,19 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
         description: `Payment for Lot ${lotToPay.lotId} has been sent.`,
       });
 
-      setTimeout(() => {
-        const paidLotId = lotToPay.lotId;
-        setLotToPay(null);
-        setPaymentStatus('idle'); 
-        if (paymentType === 'balance') {
-            setHistory(getLotHistory(paidLotId));
-        } else {
-            setActiveTab('inventory');
-        }
-      }, 1000);
     }, 1500);
   };
   
+  const closePaymentDialog = () => {
+    const paidLotId = lotToPay?.lotId;
+    setLotToPay(null);
+    setPaymentStatus('idle'); 
+    if (paymentType === 'balance' && paidLotId) {
+        setHistory(getLotHistory(paidLotId));
+    } else {
+        setActiveTab('inventory');
+    }
+  }
 
   const resetView = () => {
     setHistory(null);
@@ -339,6 +339,25 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
          <Dialog open={!!lotToPay} onOpenChange={(open) => !open && paymentStatus !== 'processing' && setLotToPay(null)}>
             <DialogContent className="sm:max-w-md">
+            {paymentStatus === 'success' ? (
+                <div className="flex flex-col items-center justify-center text-center p-8 gap-4">
+                    <Rocket className="w-16 h-16 text-primary animate-bounce"/>
+                    <h2 className="text-2xl font-bold font-headline">Payment Sent!</h2>
+                    <p className="text-muted-foreground">
+                        {paymentType === 'advance' 
+                            ? "The distributor has been notified to dispatch the lot." 
+                            : "The transaction is complete. You can now stock this item."
+                        }
+                    </p>
+                    <div className='flex items-center gap-2 mt-4 w-full'>
+                        <Button variant="outline" className="w-full">
+                            <FileText className="mr-2" /> Download Receipt
+                        </Button>
+                        <Button onClick={closePaymentDialog} className="w-full">Done</Button>
+                    </div>
+                </div>
+            ) : (
+              <>
               <DialogHeader>
                 <DialogTitle>
                     {paymentType === 'advance' ? 'Pay 30% Advance to Distributor' : 'Finalize Payment to Distributor'}
@@ -398,6 +417,8 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                   {paymentStatus === 'success' && <><Rocket className="mr-2 animate-bounce" />Payment Sent!</>}
                 </Button>
               </DialogFooter>
+            </>
+            )}
             </DialogContent>
           </Dialog>
 
@@ -445,5 +466,3 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     </div>
   );
 }
-
-    
