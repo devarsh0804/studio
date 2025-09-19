@@ -33,6 +33,7 @@ export interface RetailEvent {
   storeId: string;
   shelfDate: string;
   timestamp: string;
+  lotId: string;
 }
 
 export interface RetailPack {

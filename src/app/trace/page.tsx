@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, Award, Droplets, Microscope, Palette, Ruler, History } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, Award, Droplets, Microscope, Palette, Ruler, History, Spline, Truck } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { Timeline } from '@/components/Timeline';
 import { Separator } from '@/components/ui/separator';
@@ -51,30 +51,22 @@ export default function TracePage() {
   };
   
   const getTimelineEvents = () => {
-    if (!history) return [];
-
-    let lotHierarchy: Lot[] = [];
-    let tempLot = history.lot;
+    if (!history || !history.parentLot) return [];
     
-    while (tempLot) {
-        lotHierarchy.unshift(tempLot);
-        tempLot = tempLot.parentLotId ? findLot(tempLot.parentLotId) as Lot : null as any;
-    }
-
     const events = [];
-    const parentLot = lotHierarchy[0];
-    const gradingDate = parentLot.gradingDate ? new Date(parentLot.gradingDate) : null;
+    const {lot: currentLot, parentLot, childLots} = history;
 
+    // 1. Farmer Event
+    const gradingDate = parentLot.gradingDate ? new Date(parentLot.gradingDate) : null;
     events.push({
         type: 'FARM',
         title: 'Harvested & Registered',
         timestamp: format(new Date(parentLot.harvestDate), 'PP'),
         details: (
-            <div className="space-y-2 text-sm">
+             <div className="space-y-2 text-sm">
                 <p><strong>Farmer:</strong> {parentLot.farmer}</p>
                 <p><strong>Location:</strong> {parentLot.location}</p>
                 <p><strong>Crop:</strong> {parentLot.cropName}</p>
-                <p><strong>Total Harvested Weight:</strong> {parentLot.weight} quintals</p>
                 <p><strong>Original Lot ID:</strong> {parentLot.lotId}</p>
                 <Separator className="my-3"/>
                 <h4 className="font-semibold">Digital Certificate</h4>
@@ -92,40 +84,73 @@ export default function TracePage() {
         )
     });
 
-    lotHierarchy.forEach(lot => {
-        if (lot.logisticsInfo) {
-             const title = lot.paymentStatus === 'Advance Paid' ? 'Dispatched after Advance' : 'Dispatched to Retailer';
+    // 2. Distributor Purchase Event
+    if(gradingDate) {
+        events.push({
+            type: 'DISTRIBUTOR_BUY',
+            title: 'Purchased by Distributor',
+            timestamp: format(gradingDate, 'PP'),
+            details: (
+                 <div className="space-y-2 text-sm">
+                    <p><strong>Distributor:</strong> {parentLot.owner}</p>
+                    <p><strong>Lot ID:</strong> {parentLot.lotId}</p>
+                    <p>Acquired full lot of {parentLot.weight} quintals.</p>
+                </div>
+            )
+        });
+    }
+
+    // 3. Distributor Split Event
+    if (childLots && childLots.length > 0) {
+        const splitDate = childLots[0].gradingDate ? new Date(childLots[0].gradingDate) : gradingDate;
+        events.push({
+            type: 'DISTRIBUTOR_SPLIT',
+            title: 'Split into Sub-lots',
+            timestamp: splitDate ? format(splitDate, 'PP') : 'N/A',
+            details: (
+                 <div className="space-y-2 text-sm">
+                    <p>Original lot was split into {childLots.length} sub-lots.</p>
+                    <p><strong>This product is from Sub-lot:</strong> {currentLot.lotId}</p>
+                </div>
+            )
+        });
+    }
+
+    // 4. Transport Event for the current lot
+    if (currentLot.logisticsInfo) {
+        events.push({
+            type: 'TRANSPORT',
+            title: 'Dispatched to Retailer',
+            timestamp: format(new Date(currentLot.logisticsInfo.dispatchDate), 'PP'),
+            details: (
+                 <div className="space-y-2 text-sm">
+                    <p><strong>Lot ID:</strong> {currentLot.lotId}</p>
+                    <p><strong>Assigned To:</strong> {currentLot.owner}</p>
+                    <p><strong>Vehicle:</strong> {currentLot.logisticsInfo.vehicleNumber}</p>
+                    <Separator className="my-3"/>
+                    <p><strong>Weight in this Lot:</strong> {currentLot.weight} quintals</p>
+                    <p className="flex items-center"><Award className="w-4 h-4 mr-2 text-primary"/><strong>Quality:</strong> <span className="ml-1 font-mono">{currentLot.quality}</span></p>
+                </div>
+            )
+        });
+    }
+
+    // 5. Retailer Stocking Event
+    history.retailEvents.forEach(e => {
+        if (e.lotId === currentLot.lotId) {
+            const shelfDate = new Date(e.shelfDate);
+            shelfDate.setDate(shelfDate.getDate() + 1);
+
             events.push({
-                type: 'TRANSPORT',
-                title: title,
-                timestamp: format(new Date(lot.logisticsInfo.dispatchDate), 'PP'),
-                details: (
-                     <div className="space-y-2 text-sm">
-                        <p><strong>Lot ID:</strong> {lot.lotId}</p>
-                        <p><strong>Assigned To:</strong> {lot.owner}</p>
-                        <p><strong>Vehicle:</strong> {lot.logisticsInfo.vehicleNumber}</p>
-                        <Separator className="my-3"/>
-                        <p><strong>Weight in this Lot:</strong> {lot.weight} quintals</p>
-                        <p className="flex items-center"><Award className="w-4 h-4 mr-2 text-primary"/><strong>Quality:</strong> <span className="ml-1 font-mono">{lot.quality}</span></p>
-                    </div>
-                )
+                type: 'RETAIL',
+                title: 'Stocked at Retailer',
+                timestamp: isValid(shelfDate) ? format(shelfDate, 'PP') : 'Invalid Date',
+                details: <>
+                 <p><strong>Store ID:</strong> {e.storeId}</p>
+                 <p><strong>Lot ID:</strong> {currentLot.lotId}</p>
+                </>
             });
         }
-    });
-
-    history.retailEvents.forEach(e => {
-        const shelfDate = new Date(e.shelfDate);
-        shelfDate.setDate(shelfDate.getDate() + 1);
-
-        events.push({
-            type: 'RETAIL',
-            title: 'Stocked at Retailer',
-            timestamp: isValid(shelfDate) ? format(shelfDate, 'PP') : 'Invalid Date',
-            details: <>
-             <p><strong>Store ID:</strong> {e.storeId}</p>
-             <p><strong>Lot ID:</strong> {history.lot.lotId}</p>
-            </>
-        });
     });
     
     return events;

@@ -1,9 +1,12 @@
+
 import { cn } from "@/lib/utils";
-import { Tractor, Truck, Store, ShoppingCart, ShieldCheck } from "lucide-react";
+import { Tractor, Truck, Store, ShoppingCart, ShieldCheck, Spline, ShoppingBag } from "lucide-react";
 import type { ReactNode } from "react";
 
 const iconMap: { [key: string]: ReactNode } = {
   FARM: <Tractor className="h-5 w-5" />,
+  DISTRIBUTOR_BUY: <ShoppingBag className="h-5 w-5" />,
+  DISTRIBUTOR_SPLIT: <Spline className="h-5 w-5" />,
   TRANSPORT: <Truck className="h-5 w-5" />,
   RETAIL: <Store className="h-5 w-5" />,
   CUSTOMER: <ShoppingCart className="h-5 w-5" />,

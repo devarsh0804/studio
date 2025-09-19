@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText } from "lucide-react";
+import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText, Spline, Truck } from "lucide-react";
 import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
 import { Separator } from "@/components/ui/separator";
@@ -77,20 +77,15 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
         
         let lotToProcess = scannedLot;
 
-        // If lot is arriving, mark as delivered
-        if (lotToProcess.status === 'Dispatched') {
+        // If lot requires final payment, show payment dialog
+        if (lotToProcess.paymentStatus === 'Advance Paid') {
             updateLot(lotToProcess.lotId, { status: 'Delivered' });
+            setLotToPay(lotToProcess); 
+            setPaymentType('balance');
             toast({
                 title: "Lot Received!",
                 description: `Lot ${lotToProcess.lotId} has been marked as 'Delivered'. Please complete the final payment.`,
             });
-            lotToProcess = findLot(data.lotId)!; // Re-fetch to get updated status
-        }
-        
-        // If lot requires final payment, show payment dialog
-        if (lotToProcess.paymentStatus === 'Advance Paid') {
-            setLotToPay(lotToProcess); 
-            setPaymentType('balance');
         } else {
             // Otherwise, show history
             setHistory(getLotHistory(data.lotId));
@@ -161,30 +156,19 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   }
   
   const getTimelineEvents = () => {
-    if (!history) return [];
-
-    let lotHierarchy: Lot[] = [];
-    let tempLot = history.lot;
+    if (!history || !history.parentLot) return [];
     
-    // Build hierarchy from current lot up to the parent
-    while (tempLot) {
-        lotHierarchy.unshift(tempLot);
-        tempLot = tempLot.parentLotId ? findLot(tempLot.parentLotId) as Lot : null as any;
-    }
-
     const events = [];
+    const {lot: currentLot, parentLot, childLots} = history;
 
-    const parentLot = lotHierarchy[0];
+    // 1. Farmer Event
     const gradingDate = parentLot.gradingDate ? new Date(parentLot.gradingDate) : null;
-
-
-    // Farmer event (from parent lot)
     events.push({
         type: 'FARM',
         title: 'Harvested & Registered',
         timestamp: format(new Date(parentLot.harvestDate), 'PP'),
         details: (
-            <div className="space-y-2 text-sm">
+             <div className="space-y-2 text-sm">
                 <p><strong>Farmer:</strong> {parentLot.farmer}</p>
                 <p><strong>Location:</strong> {parentLot.location}</p>
                 <p><strong>Crop:</strong> {parentLot.cropName}</p>
@@ -205,43 +189,75 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
         )
     });
 
-    // Distributor events (from the hierarchy)
-    lotHierarchy.forEach(lot => {
-        if (lot.logisticsInfo) {
-             const title = lot.paymentStatus === 'Advance Paid' ? 'Dispatched after Advance' : 'Dispatched to Retailer';
+    // 2. Distributor Purchase Event
+    // We assume the purchase happens shortly after grading. This can be made more robust with a timestamp.
+    if(gradingDate) {
+        events.push({
+            type: 'DISTRIBUTOR_BUY',
+            title: 'Purchased by Distributor',
+            timestamp: format(gradingDate, 'PP'),
+            details: (
+                 <div className="space-y-2 text-sm">
+                    <p><strong>Distributor:</strong> {parentLot.owner}</p>
+                    <p><strong>Lot ID:</strong> {parentLot.lotId}</p>
+                    <p>Acquired full lot of {parentLot.weight} quintals.</p>
+                </div>
+            )
+        });
+    }
+
+    // 3. Distributor Split Event
+    if (childLots && childLots.length > 0) {
+        const splitDate = childLots[0].gradingDate ? new Date(childLots[0].gradingDate) : gradingDate;
+        events.push({
+            type: 'DISTRIBUTOR_SPLIT',
+            title: 'Split into Sub-lots',
+            timestamp: splitDate ? format(splitDate, 'PP') : 'N/A',
+            details: (
+                 <div className="space-y-2 text-sm">
+                    <p>Original lot was split into {childLots.length} sub-lots.</p>
+                    <p><strong>This product is from Sub-lot:</strong> {currentLot.lotId}</p>
+                </div>
+            )
+        });
+    }
+
+    // 4. Transport Event for the current lot
+    if (currentLot.logisticsInfo) {
+        events.push({
+            type: 'TRANSPORT',
+            title: 'Dispatched to Retailer',
+            timestamp: format(new Date(currentLot.logisticsInfo.dispatchDate), 'PP'),
+            details: (
+                 <div className="space-y-2 text-sm">
+                    <p><strong>Lot ID:</strong> {currentLot.lotId}</p>
+                    <p><strong>Assigned To:</strong> {currentLot.owner}</p>
+                    <p><strong>Vehicle:</strong> {currentLot.logisticsInfo.vehicleNumber}</p>
+                    <Separator className="my-3"/>
+                    <p><strong>Weight in this Lot:</strong> {currentLot.weight} quintals</p>
+                    <p className="flex items-center"><Award className="w-4 h-4 mr-2 text-primary"/><strong>Quality:</strong> <span className="ml-1 font-mono">{currentLot.quality}</span></p>
+                </div>
+            )
+        });
+    }
+
+    // 5. Retailer Stocking Event
+    history.retailEvents.forEach(e => {
+        // Find the event for the current lot
+        if (e.lotId === currentLot.lotId) {
+            const shelfDate = new Date(e.shelfDate);
+            shelfDate.setDate(shelfDate.getDate() + 1);
+
             events.push({
-                type: 'TRANSPORT',
-                title: title,
-                timestamp: format(new Date(lot.logisticsInfo.dispatchDate), 'PP'),
-                details: (
-                     <div className="space-y-2 text-sm">
-                        <p><strong>Lot ID:</strong> {lot.lotId}</p>
-                        <p><strong>Purchased By:</strong> {lot.owner}</p>
-                        <p><strong>Vehicle:</strong> {lot.logisticsInfo.vehicleNumber}</p>
-                        <Separator className="my-3"/>
-                        <p><strong>Weight in this Lot:</strong> {lot.weight} quintals</p>
-                        <p className="flex items-center"><Award className="w-4 h-4 mr-2 text-primary"/><strong>Quality:</strong> <span className="ml-1 font-mono">{lot.quality}</span></p>
-                    </div>
-                )
+                type: 'RETAIL',
+                title: 'Stocked at Retailer',
+                timestamp: isValid(shelfDate) ? format(shelfDate, 'PP') : 'Invalid Date',
+                details: <>
+                 <p><strong>Store ID:</strong> {e.storeId}</p>
+                 <p><strong>Lot ID:</strong> {currentLot.lotId}</p>
+                </>
             });
         }
-    });
-
-    // Retail events (from history object)
-    history.retailEvents.forEach(e => {
-        const shelfDate = new Date(e.shelfDate);
-        // Add a day to the date to fix the off-by-one issue
-        shelfDate.setDate(shelfDate.getDate() + 1);
-
-        events.push({
-            type: 'RETAIL',
-            title: 'Stocked at Retailer',
-            timestamp: isValid(shelfDate) ? format(shelfDate, 'PP') : 'Invalid Date',
-            details: <>
-             <p><strong>Store ID:</strong> {e.storeId}</p>
-             <p><strong>Lot ID:</strong> {history.lot.lotId}</p>
-            </>
-        });
     });
     
     return events;
@@ -329,7 +345,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                                     {index > 0 && <Separator className="my-6" />}
                                     <LotDetailsCard lot={lot} />
                                     <div className="mt-4 flex justify-end gap-2">
-                                        <Button onClick={() => handleScan({ lotId: lot.lotId })} disabled={lot.status !== 'Dispatched' && lot.paymentStatus !== 'Advance Paid' && lot.paymentStatus !== 'Fully Paid'}>
+                                        <Button onClick={() => handleScan({ lotId: lot.lotId })} disabled={!['Dispatched', 'Delivered', 'Stocked'].includes(lot.status ?? '')}>
                                             <History className="mr-2 h-4 w-4" /> 
                                             {lot.status === 'Dispatched' ? 'Confirm Delivery' : 'View Full History'}
                                         </Button>
