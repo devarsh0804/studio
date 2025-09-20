@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FarmerView } from "./components/FarmerView";
 import { FarmerLogin, type FarmerLoginCredentials } from "./components/FarmerLogin";
 import { useToast } from "@/hooks/use-toast";
+import { PageHeader } from "@/components/PageHeader";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
