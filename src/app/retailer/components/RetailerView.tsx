@@ -316,7 +316,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                         <CardDescription>Browse sub-lots currently available from distributors.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 max-h-[60vh] overflow-y-auto">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {marketplaceLots.length > 0 ? (
                                 marketplaceLots.map((lot) => (
                                     <LotDetailsCard key={lot.lotId} lot={lot}>
@@ -326,7 +326,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                                     </LotDetailsCard>
                                 ))
                             ) : (
-                                <p className="text-muted-foreground text-center py-8 col-span-2">No lots are available in the marketplace right now.</p>
+                                <p className="text-muted-foreground text-center py-8 col-span-3">No lots are available in the marketplace right now.</p>
                             )}
                         </div>
                     </CardContent>
@@ -339,7 +339,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                         <CardDescription>These are the lots assigned to your store, <span className="font-bold">{retailerId}</span>.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 max-h-[60vh] overflow-y-auto">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {inventoryLots.length > 0 ? (
                                 inventoryLots.map((lot) => (
                                     <LotDetailsCard key={lot.lotId} lot={lot}>
@@ -350,7 +350,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                                     </LotDetailsCard>
                                 ))
                             ) : (
-                                <p className="text-muted-foreground text-center py-8 col-span-2">You have no lots in your inventory yet. Visit the marketplace to buy one.</p>
+                                <p className="text-muted-foreground text-center py-8 col-span-3">You have no lots in your inventory yet. Visit the marketplace to buy one.</p>
                             )}
                         </div>
                     </CardContent>
