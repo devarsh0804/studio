@@ -1,5 +1,4 @@
 import { MainNav } from "./components/MainNav";
-import { PageHeader } from "@/components/PageHeader";
 
 export default function RolesLayout({
     children,
@@ -13,7 +12,6 @@ export default function RolesLayout({
                     <MainNav />
                 </div>
             </div>
-            <PageHeader />
             <div className="flex-1 space-y-4 p-8 pt-6">
                 {children}
             </div>
