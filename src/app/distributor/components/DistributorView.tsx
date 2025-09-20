@@ -343,7 +343,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <CardTitle>Available Crops for Purchase</CardTitle>
               <CardDescription>Browse crops currently available directly from farmers.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+            <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {availableLots.length > 0 ? (
                     availableLots.map((lot) => (
@@ -369,7 +369,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               </CardTitle>
               <CardDescription>These are lots you own. Select a lot to create sub-lots for retailers.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+            <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {purchasedLots.length > 0 ? (
                         purchasedLots.map((lot) => (
@@ -394,7 +394,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               </CardTitle>
               <CardDescription>These lots have had their advance paid by a retailer and are ready for transport assignment.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {dispatchedLots.length > 0 ? (
                   dispatchedLots.map((lot) => (
@@ -607,3 +607,5 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
+
+    

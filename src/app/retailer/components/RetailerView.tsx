@@ -315,7 +315,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                         <CardTitle>Available Lots for Purchase</CardTitle>
                         <CardDescription>Browse sub-lots currently available from distributors.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6 max-h-[60vh] overflow-y-auto">
+                    <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {marketplaceLots.length > 0 ? (
                                 marketplaceLots.map((lot) => (
@@ -338,7 +338,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                         <CardTitle>Your Inventory</CardTitle>
                         <CardDescription>These are the lots assigned to your store, <span className="font-bold">{retailerId}</span>.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6 max-h-[60vh] overflow-y-auto">
+                    <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {inventoryLots.length > 0 ? (
                                 inventoryLots.map((lot) => (
@@ -487,3 +487,5 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     </div>
   );
 }
+
+    
