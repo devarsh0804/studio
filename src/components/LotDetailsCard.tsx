@@ -7,18 +7,30 @@ import type { Lot } from "@/lib/types";
 import { BadgeIndianRupee, Calendar, Fingerprint, MapPin, ShieldCheck, Tractor } from "lucide-react";
 import { CertificateDialog } from "./CertificateDialog";
 import { Button } from "./ui/button";
+import Image from "next/image";
 
 interface LotDetailsCardProps {
   lot: Lot;
   children?: React.ReactNode; 
+  showImage?: boolean;
 }
 
-export function LotDetailsCard({ lot, children }: LotDetailsCardProps) {
+export function LotDetailsCard({ lot, children, showImage = true }: LotDetailsCardProps) {
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
 
   return (
     <>
       <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
+        {showImage && (
+          <div className="relative aspect-[4/3] w-full">
+            <Image
+              src={lot.photoUrl}
+              alt={lot.cropName}
+              fill
+              className="object-cover rounded-t-lg"
+            />
+          </div>
+        )}
         <CardHeader className="pb-4">
           <div className="flex justify-between items-start">
             <div>

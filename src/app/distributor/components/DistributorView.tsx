@@ -397,7 +397,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                         dispatchedLots.map((lot) => (
                           <Card key={lot.lotId} className="flex flex-col">
                               <CardHeader>
-                                  <LotDetailsCard lot={lot}>
+                                  <LotDetailsCard lot={lot} showImage={false}>
                                       <div className="mt-4 border-t pt-4 text-sm w-full">
                                           <div className="flex justify-between items-start">
                                           <div>

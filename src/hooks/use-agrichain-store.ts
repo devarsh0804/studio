@@ -93,6 +93,20 @@ export const useAgriChainStore = create<AgriChainState>()(
           
           const parentLot = lotHierarchy[0];
 
+          if (!parentLot) {
+            // This can happen for lots that don't have a parent (i.e., they are the parent)
+            // or if the parent isn't found for some reason.
+            const retail = get().retailEvents[currentLot.lotId] || [];
+            const childLots = Object.values(get().lots).filter(l => l.parentLotId === currentLot.lotId);
+            return {
+              lot: currentLot,
+              retailEvents: retail,
+              parentLot: undefined,
+              childLots,
+            };
+          }
+
+
           const retail = get().retailEvents[parentLot.lotId] || [];
           const childLots = Object.values(get().lots).filter(l => l.parentLotId === parentLot.lotId);
 
