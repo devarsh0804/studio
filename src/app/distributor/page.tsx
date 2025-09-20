@@ -4,6 +4,8 @@ import { useState } from "react";
 import { DistributorView } from "./components/DistributorView";
 import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
 import { useToast } from "@/hooks/use-toast";
+import { useUserStore } from "@/hooks/use-user-store";
+
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -12,12 +14,12 @@ const VALID_CREDENTIALS = {
 };
 
 export default function DistributorPage() {
-  const [distributor, setDistributor] = useState<{ name: string; code: string} | null>(null);
+  const { user, setUser, clearUser } = useUserStore();
   const { toast } = useToast();
 
   const handleLogin = (credentials: DistributorLoginCredentials) => {
     if (credentials.name === VALID_CREDENTIALS.name && credentials.code === VALID_CREDENTIALS.code) {
-      setDistributor({ name: credentials.name, code: credentials.code });
+      setUser({ name: credentials.name, id: credentials.code, role: 'DISTRIBUTOR' });
       toast({
         title: "Login Successful",
         description: `Welcome back, ${credentials.name}!`,
@@ -32,12 +34,15 @@ export default function DistributorPage() {
   };
 
   const handleLogout = () => {
-    setDistributor(null);
+    clearUser();
     toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
     });
   };
+  
+  const distributor = user && user.role === 'DISTRIBUTOR' ? user : null;
+
 
   return (
     <>

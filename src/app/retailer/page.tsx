@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
 import { useToast } from "@/hooks/use-toast";
+import { useUserStore } from "@/hooks/use-user-store";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -12,12 +13,12 @@ const VALID_CREDENTIALS = {
 };
 
 export default function RetailerPage() {
-  const [retailer, setRetailer] = useState<{ storeName: string; storeCode: string } | null>(null);
+  const { user, setUser, clearUser } = useUserStore();
   const { toast } = useToast();
 
   const handleLogin = (credentials: RetailerLoginCredentials) => {
     if (credentials.storeName === VALID_CREDENTIALS.storeName && credentials.storeCode === VALID_CREDENTIALS.storeCode) {
-      setRetailer(credentials);
+      setUser({name: credentials.storeName, id: credentials.storeCode, role: 'RETAILER'});
       toast({
         title: "Login Successful",
         description: `Welcome to ${credentials.storeName}!`,
@@ -32,19 +33,21 @@ export default function RetailerPage() {
   };
 
   const handleLogout = () => {
-    setRetailer(null);
+    clearUser();
     toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
     });
   };
+  
+  const retailer = user && user.role === 'RETAILER' ? user : null;
 
   return (
     <>
       {!retailer ? (
         <RetailerLogin onLogin={handleLogin} />
       ) : (
-        <RetailerView retailerId={retailer.storeName} onLogout={handleLogout} />
+        <RetailerView retailerId={retailer.name} onLogout={handleLogout} />
       )}
     </>
   );

@@ -40,7 +40,7 @@ export default function Home() {
       href: '/retailer',
       description: 'Manage inventory, confirm deliveries, and track product history.',
     },
-    {
+     {
       title: 'Scan Product',
       icon: <ScanLine className="w-12 h-12" />,
       href: '/trace',
@@ -50,8 +50,7 @@ export default function Home() {
 
   const handleResetData = () => {
     try {
-      localStorage.removeItem('agrichain-storage');
-      localStorage.removeItem('user-session-storage');
+      localStorage.clear();
       toast({
         title: "Application Data Cleared",
         description: "All entered data has been removed. The page will now reload.",

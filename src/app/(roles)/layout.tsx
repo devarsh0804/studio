@@ -8,7 +8,7 @@ export default function RolesLayout({
     return (
         <div className="flex-col md:flex">
             <div className="border-b">
-                <div className="flex h-16 items-center px-4 container mx-auto">
+                <div className="flex h-16 items-center px-4 container mx-auto justify-between">
                     <MainNav />
                 </div>
             </div>
