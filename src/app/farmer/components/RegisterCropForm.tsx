@@ -274,7 +274,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                 <div className="space-y-4">
                      <div className="space-y-2">
                         <FormLabel>Crop Photo</FormLabel>
-                        <div className="w-full aspect-[16/11] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
+                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
                             {cropImage ? (
                                 <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
                             ) : (

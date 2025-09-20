@@ -50,28 +50,28 @@ export function LotDetailsCard({ lot, children }: LotDetailsCardProps) {
           )}
           <div className="flex items-center">
             <User className="w-4 h-4 mr-3 text-muted-foreground" />
-            <p className="w-24 text-muted-foreground">Farmer</p>
-            <p className="font-medium">{lot.farmer}</p>
+            <span className="text-muted-foreground">Farmer:</span>
+            <span className="font-medium ml-2">{lot.farmer}</span>
           </div>
           <div className="flex items-center">
             <MapPin className="w-4 h-4 mr-3 text-muted-foreground" />
-            <p className="w-24 text-muted-foreground">Location</p>
-            <p className="font-medium">{lot.location}</p>
+            <span className="text-muted-foreground">Location:</span>
+            <span className="font-medium ml-2">{lot.location}</span>
           </div>
           <div className="flex items-center">
             <Weight className="w-4 h-4 mr-3 text-muted-foreground" />
-            <p className="w-24 text-muted-foreground">Weight</p>
-            <p className="font-medium">{lot.weight} q</p>
+            <span className="text-muted-foreground">Weight:</span>
+            <span className="font-medium ml-2">{lot.weight} q</span>
           </div>
           <div className="flex items-center">
             <BadgeIndianRupee className="w-4 h-4 mr-3 text-muted-foreground" />
-            <p className="w-24 text-muted-foreground">Price</p>
-            <p className="font-medium">{lot.price}/q</p>
+            <span className="text-muted-foreground">Price:</span>
+            <span className="font-medium ml-2">{lot.price}/q</span>
           </div>
           <div className="flex items-center">
             <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
-            <p className="w-24 text-muted-foreground">Harvested</p>
-            <p className="font-medium">{lot.harvestDate}</p>
+            <span className="text-muted-foreground">Harvested:</span>
+            <span className="font-medium ml-2">{lot.harvestDate}</span>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-2 pt-4">
