@@ -33,9 +33,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <main className="flex-grow w-full container mx-auto px-4 py-12 md:py-16">
-        <section>
+    <div className="flex flex-col min-h-screen bg-background">
+      <main className="flex-grow flex flex-col items-center justify-center w-full container mx-auto px-4 py-12 md:py-16">
+        <section className="w-full">
           <div className="text-center">
              <h1 className="text-4xl md:text-5xl font-extrabold font-headline tracking-tight">
                 AgriChain Trace
@@ -71,17 +71,21 @@ export default function Home() {
               description="Scan a product's QR code to view its entire journey from farm to shelf."
             />
           </div>
-
-          <div className="mt-96 border-t pt-8">
-            <h3 className="text-lg font-semibold text-muted-foreground text-center">Developer Options</h3>
-            <div className="mt-4 text-center">
-              <Button variant="destructive" onClick={() => setIsResetDialogOpen(true)}>
-                <Trash2 className="mr-2 h-4 w-4" /> Reset All Data
-              </Button>
-            </div>
-          </div>
         </section>
       </main>
+
+      <footer className="w-full py-8">
+        <div className="container mx-auto px-4">
+            <div className="border-t pt-8">
+              <h3 className="text-lg font-semibold text-muted-foreground text-center">Developer Options</h3>
+              <div className="mt-4 text-center">
+                <Button variant="destructive" onClick={() => setIsResetDialogOpen(true)}>
+                  <Trash2 className="mr-2 h-4 w-4" /> Reset All Data
+                </Button>
+              </div>
+            </div>
+        </div>
+      </footer>
 
       <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
         <AlertDialogContent>
