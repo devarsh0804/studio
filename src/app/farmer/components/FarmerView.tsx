@@ -8,7 +8,8 @@ import { useAgriChainStore }from "@/hooks/use-agrichain-store";
 import { RegisterCropForm } from "./RegisterCropForm";
 import { RegisteredLotsList } from "./RegisteredLotsList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileCheck2, List, LineChart } from "lucide-react";
+import { FileCheck2, List, LogOut, User, LineChart } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { FarmerAnalytics } from "./FarmerAnalytics";
 
 
@@ -35,6 +36,14 @@ export function FarmerView({ farmerName, onLogout }: FarmerViewProps) {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold font-headline flex items-center gap-2">
+          <User /> Farmer Dashboard
+        </h1>
+        <Button variant="outline" onClick={onLogout}>
+          <LogOut className="mr-2" /> Logout
+        </Button>
+      </div>
        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 h-12">
                 <TabsTrigger value="register">

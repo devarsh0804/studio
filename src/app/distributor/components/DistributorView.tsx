@@ -279,6 +279,15 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold font-headline flex items-center gap-2">
+          <User /> Distributor Dashboard
+        </h1>
+        <Button variant="outline" onClick={onLogout}>
+          <LogOut className="mr-2" /> Logout
+        </Button>
+      </div>
+
        <Card>
           <CardHeader>
             <CardTitle className="flex items-center">

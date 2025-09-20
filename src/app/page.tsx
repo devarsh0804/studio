@@ -17,8 +17,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { UserProfile } from "./(roles)/components/UserProfile";
-import { MainNav } from "./(roles)/components/MainNav";
 
 export default function Home() {
   const { clearStore } = useAgriChainStore();
@@ -36,15 +34,28 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-grow w-full container mx-auto px-4 py-12 md:py-16 flex items-center">
-        <section className="text-center w-full">
+      <header className="relative h-64 md:h-80 flex items-center justify-center text-center text-white bg-green-800">
+        <div 
+          className="absolute inset-0 bg-cover bg-center" 
+          style={{ 
+            backgroundImage: "url('https://images.unsplash.com/photo-1625246333195-78d9c38AD449?q=80&w=1920&h=1080&fit=crop')",
+          }}
+        >
+          <div className="absolute inset-0 bg-black/60"></div>
+        </div>
+        <div className="relative z-10 px-4">
           <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight">
             AgriChain Trace
           </h1>
-          <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto text-muted-foreground">
+          <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto text-green-100">
             Bringing transparency and trust to the agricultural supply chain, from farm to fork.
           </p>
-           <p className="mt-10 text-2xl font-bold font-headline">Who are you?</p>
+        </div>
+      </header>
+
+      <main className="flex-grow w-full container mx-auto px-4 py-12 md:py-16">
+        <section className="text-center">
+          <h2 className="text-3xl font-bold font-headline">Who are you?</h2>
           <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
             Select your role in the supply chain or scan a product to begin.
           </p>

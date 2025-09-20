@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { FarmerView } from "./components/FarmerView";
 import { FarmerLogin, type FarmerLoginCredentials } from "./components/FarmerLogin";
 import { useToast } from "@/hooks/use-toast";
-import { useUserStore } from "@/hooks/use-user-store";
+import { PageHeader } from "@/components/PageHeader";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -15,7 +15,8 @@ const VALID_CREDENTIALS = {
 };
 
 export default function FarmerPage() {
-  const { user, setUser, clearUser } = useUserStore();
+  const [farmer, setFarmer] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleLogin = (credentials: FarmerLoginCredentials) => {
     if (
@@ -23,7 +24,7 @@ export default function FarmerPage() {
       credentials.farmerId === VALID_CREDENTIALS.farmerId &&
       credentials.farmerCode === VALID_CREDENTIALS.farmerCode
     ) {
-      setUser({name: credentials.farmerName, id: credentials.farmerId, role: 'FARMER'});
+      setFarmer(credentials.farmerName);
       toast({
         title: "Login Successful",
         description: `Welcome back, ${credentials.farmerName}!`,
@@ -38,29 +39,26 @@ export default function FarmerPage() {
   };
   
   const handleLogout = () => {
-    clearUser();
+    setFarmer(null);
     toast({
         title: "Logged Out",
         description: "You have been successfully logged out."
     })
   }
 
-  // Effect to clear user if they navigate away from a role-specific page
-  useEffect(() => {
-    if (user && user.role !== 'FARMER') {
-      clearUser();
-    }
-  }, [user, clearUser]);
-
-  const farmerUser = user && user.role === 'FARMER' ? user : null;
-
   return (
     <>
-      {!farmerUser ? (
-        <FarmerLogin onLogin={handleLogin} />
-      ) : (
-        <FarmerView farmerName={farmerUser.name} onLogout={handleLogout}/>
-      )}
+      <PageHeader 
+        title="Farmer Portal"
+        description="Register crops, generate digital certificates, and track your sales."
+      />
+      <main className="flex-grow container mx-auto p-4 md:p-8">
+        {!farmer ? (
+          <FarmerLogin onLogin={handleLogin} />
+        ) : (
+          <FarmerView farmerName={farmer} onLogout={handleLogout}/>
+        )}
+      </main>
     </>
   );
 }

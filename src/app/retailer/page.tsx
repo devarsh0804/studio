@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
 import { useToast } from "@/hooks/use-toast";
-import { useUserStore } from "@/hooks/use-user-store";
+import { PageHeader } from "@/components/PageHeader";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -14,11 +14,12 @@ const VALID_CREDENTIALS = {
 };
 
 export default function RetailerPage() {
-  const { user, setUser, clearUser } = useUserStore();
+  const [retailer, setRetailer] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleLogin = (credentials: RetailerLoginCredentials) => {
     if (credentials.storeName === VALID_CREDENTIALS.storeName && credentials.storeCode === VALID_CREDENTIALS.storeCode) {
-      setUser({name: credentials.storeName, id: credentials.storeCode, role: 'RETAILER'});
+      setRetailer(credentials.storeName);
       toast({
         title: "Login Successful",
         description: `Welcome to ${credentials.storeName}!`,
@@ -33,28 +34,26 @@ export default function RetailerPage() {
   };
 
   const handleLogout = () => {
-    clearUser();
+    setRetailer(null);
     toast({
         title: "Logged Out",
         description: "You have been successfully logged out."
     })
   }
 
-  useEffect(() => {
-    if (user && user.role !== 'RETAILER') {
-      clearUser();
-    }
-  }, [user, clearUser]);
-
-  const retailerUser = user && user.role === 'RETAILER' ? user : null;
-
   return (
     <>
-      {!retailerUser ? (
-        <RetailerLogin onLogin={handleLogin} />
-      ) : (
-        <RetailerView retailerId={retailerUser.name} onLogout={handleLogout} />
-      )}
+       <PageHeader 
+        title="Retailer Portal"
+        description="Purchase lots from distributors, manage your inventory, and view product history."
+      />
+      <main className="flex-grow container mx-auto p-4 md:p-8">
+        {!retailer ? (
+          <RetailerLogin onLogin={handleLogin} />
+        ) : (
+          <RetailerView retailerId={retailer} onLogout={handleLogout} />
+        )}
+      </main>
     </>
   );
 }
