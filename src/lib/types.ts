@@ -6,7 +6,7 @@ export interface Lot {
   weight: number; // in quintals
   harvestDate: string;
   photoUrl: string;
-  price: number; // per quintal
+  price: number; // per kg - CHANGED from per quintal
   owner?: string; // e.g., 'farmer', 'distributor-1', etc.
   location?: string;
   parentLotId?: string; // To link sub-lots to their origin

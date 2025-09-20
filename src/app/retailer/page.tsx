@@ -44,15 +44,12 @@ export default function RetailerPage() {
   const currentRetailer = user && user.role === 'RETAILER' ? user : null;
 
   return (
-    <>
-      <PageHeader />
-      <main className="flex-grow container mx-auto p-4 md:p-8">
+    <div className="flex-grow container mx-auto p-4 md:p-8">
       {!currentRetailer ? (
         <RetailerLogin onLogin={handleLogin} />
       ) : (
         <RetailerView retailerId={currentRetailer.name} />
       )}
-      </main>
-    </>
+    </div>
   );
 }

@@ -156,7 +156,6 @@ export default function TracePage() {
   }
 
   return (
-    <>
       <main className="flex-grow container mx-auto p-4 md:p-8">
         <div className="max-w-2xl mx-auto space-y-8">
             <Card>
@@ -190,6 +189,5 @@ export default function TracePage() {
             )}
         </div>
       </main>
-    </>
   );
 }

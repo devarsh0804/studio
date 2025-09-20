@@ -53,15 +53,12 @@ export default function FarmerPage() {
   const currentFarmer = user && user.role === 'FARMER' ? user : null;
 
   return (
-    <>
-      <PageHeader />
-      <main className="flex-grow container mx-auto p-4 md:p-8">
+    <div className="flex-grow container mx-auto p-4 md:p-8">
       {!currentFarmer ? (
         <FarmerLogin onLogin={handleLogin} />
       ) : (
         <FarmerView farmerName={currentFarmer.name}/>
       )}
-      </main>
-    </>
+    </div>
   );
 }

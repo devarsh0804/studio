@@ -43,15 +43,12 @@ export default function DistributorPage() {
   const currentDistributor = user && user.role === 'DISTRIBUTOR' ? user : null;
 
   return (
-    <>
-      <PageHeader />
-      <main className="flex-grow container mx-auto p-4 md:p-8">
+    <div className="flex-grow container mx-auto p-4 md:p-8">
       {!currentDistributor ? (
         <DistributorLogin onLogin={handleLogin} />
       ) : (
         <DistributorView distributorId={currentDistributor.name} />
       )}
-      </main>
-    </>
+    </div>
   );
 }
