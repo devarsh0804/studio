@@ -320,7 +320,14 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
                             {inventoryLots.length > 0 ? (
                                 inventoryLots.map((lot) => (
                                     <LotDetailsCard key={lot.lotId} lot={lot}>
-                                        <Button className="w-full" onClick={() => handleScan({ lotId: lot.lotId })} disabled={!['Dispatched', 'Delivered', 'Stocked'].includes(lot.status ?? '')}>
+                                        <Button 
+                                            className="w-full" 
+                                            onClick={() => handleScan({ lotId: lot.lotId })} 
+                                            disabled={
+                                                (lot.status === 'Dispatched' && !lot.logisticsInfo) || 
+                                                !['Dispatched', 'Delivered', 'Stocked'].includes(lot.status ?? '')
+                                            }
+                                        >
                                             <History className="mr-2 h-4 w-4" /> 
                                             {lot.status === 'Dispatched' ? 'Confirm Delivery' : 'View Full History'}
                                         </Button>
