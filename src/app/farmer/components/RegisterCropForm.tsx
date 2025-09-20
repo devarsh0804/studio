@@ -118,9 +118,9 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div className="space-y-4">
                     <FormField
                     control={form.control}
                     name="farmerName"
@@ -247,10 +247,10 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
 
                 </div>
 
-                <div className="space-y-6 pt-6 border-t md:border-t-0 md:border-l md:pl-8 md:pt-0">
+                <div className="space-y-4 pt-4 border-t md:border-t-0 md:border-l md:pl-6 md:pt-0">
                     <div className="space-y-2">
                         <FormLabel>Crop Photo</FormLabel>
-                        <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
+                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
                              {cropImage ? (
                                 <Image src={cropImage.imageUrl} alt={cropImage.description} fill objectFit="cover" data-ai-hint={cropImage.imageHint}/>
                             ) : (
@@ -292,7 +292,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                 </div>
             </div>
             
-            <div className="pt-6 border-t">
+            <div className="pt-4 border-t">
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Register Lot & Generate QR
