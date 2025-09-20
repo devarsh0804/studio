@@ -6,6 +6,7 @@ import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
+import { useUserStore } from "@/hooks/use-user-store";
 
 
 // In a real app, this would come from a secure source
@@ -15,12 +16,12 @@ const VALID_CREDENTIALS = {
 };
 
 export default function RetailerPage() {
-  const [retailer, setRetailer] = useState<{ storeName: string; storeCode: string } | null>(null);
+  const { user, setUser } = useUserStore();
   const { toast } = useToast();
 
   const handleLogin = (credentials: RetailerLoginCredentials) => {
     if (credentials.storeName === VALID_CREDENTIALS.storeName && credentials.storeCode === VALID_CREDENTIALS.storeCode) {
-      setRetailer(credentials);
+      setUser({name: credentials.storeName, id: credentials.storeCode, role: 'RETAILER'});
       toast({
         title: "Login Successful",
         description: `Welcome to ${credentials.storeName}!`,
@@ -34,25 +35,14 @@ export default function RetailerPage() {
     }
   };
 
-  const handleLogout = () => {
-    setRetailer(null);
-    toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
-    });
-  };
-
   return (
     <>
-      <PageHeader
-        title="Retailer Dashboard"
-        description="Scan a lot to view its history and manage retail inventory."
-      />
+      <PageHeader />
       <main className="flex-grow container mx-auto p-4 md:p-8">
-        {!retailer ? (
+        {!user || user.role !== 'RETAILER' ? (
           <RetailerLogin onLogin={handleLogin} />
         ) : (
-          <RetailerView retailerId={retailer.storeName} onLogout={handleLogout} />
+          <RetailerView retailerId={user.name} />
         )}
       </main>
     </>
