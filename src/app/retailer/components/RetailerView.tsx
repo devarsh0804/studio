@@ -77,19 +77,17 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
         
         let lotToProcess = scannedLot;
 
-        // If lot requires final payment, show payment dialog
-        if (lotToProcess.paymentStatus === 'Advance Paid') {
+        if (lotToProcess.paymentStatus === 'Advance Paid' && lotToProcess.status !== 'Fully Paid') {
             if(lotToProcess.status !== 'Delivered') {
                 updateLot(lotToProcess.lotId, { status: 'Delivered' });
+                toast({
+                    title: "Lot Received!",
+                    description: `Lot ${lotToProcess.lotId} has been marked as 'Delivered'. Please complete the final payment.`,
+                });
             }
             setLotToPay(lotToProcess); 
             setPaymentType('balance');
-            toast({
-                title: "Lot Received!",
-                description: `Lot ${lotToProcess.lotId} has been marked as 'Delivered'. Please complete the final payment.`,
-            });
         } else {
-            // Otherwise, show history
             setHistory(getLotHistory(data.lotId));
         }
 
@@ -158,46 +156,47 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   }
   
   const getTimelineEvents = () => {
-    if (!history || !history.parentLot) return [];
+    if (!history) return [];
     
     const events = [];
     const {lot: currentLot, parentLot, childLots} = history;
 
     // 1. Farmer Event
-    const gradingDate = parentLot.gradingDate ? new Date(parentLot.gradingDate) : null;
-    events.push({
-        type: 'FARM',
-        title: 'Harvested & Registered',
-        timestamp: format(new Date(parentLot.harvestDate), 'PP'),
-        details: (
-             <div className="space-y-2 text-sm">
-                <p><strong>Farmer:</strong> {parentLot.farmer}</p>
-                <p><strong>Location:</strong> {parentLot.location}</p>
-                <p><strong>Crop:</strong> {parentLot.cropName}</p>
-                <p><strong>Original Lot ID:</strong> {parentLot.lotId}</p>
-                <Separator className="my-3"/>
-                <h4 className="font-semibold">Digital Certificate</h4>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                    <p className="flex items-center"><Award className="w-4 h-4 mr-2 text-primary"/><strong>Grade:</strong> <span className="ml-1 font-mono">{parentLot.quality}</span></p>
-                    <p className="flex items-center"><Droplets className="w-4 h-4 mr-2 text-primary"/><strong>Moisture:</strong> <span className="ml-1 font-mono">{parentLot.moisture}</span></p>
-                    <p className="flex items-center"><Microscope className="w-4 h-4 mr-2 text-primary"/><strong>Impurities:</strong> <span className="ml-1 font-mono">{parentLot.impurities}</span></p>
-                    <p className="flex items-center"><Ruler className="w-4 h-4 mr-2 text-primary"/><strong>Size:</strong> <span className="ml-1 font-mono">{parentLot.size}</span></p>
-                    <p className="flex items-center"><Palette className="w-4 h-4 mr-2 text-primary"/><strong>Color:</strong> <span className="ml-1 font-mono">{parentLot.color}</span></p>
+    if (parentLot) {
+        const gradingDate = parentLot.gradingDate ? new Date(parentLot.gradingDate) : null;
+        events.push({
+            type: 'FARM',
+            title: 'Harvested & Registered',
+            timestamp: format(new Date(parentLot.harvestDate), 'PP'),
+            details: (
+                <div className="space-y-2 text-sm">
+                    <p><strong>Farmer:</strong> {parentLot.farmer}</p>
+                    <p><strong>Location:</strong> {parentLot.location}</p>
+                    <p><strong>Crop:</strong> {parentLot.cropName}</p>
+                    <p><strong>Original Lot ID:</strong> {parentLot.lotId}</p>
+                    <Separator className="my-3"/>
+                    <h4 className="font-semibold">Digital Certificate</h4>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                        <p className="flex items-center"><Award className="w-4 h-4 mr-2 text-primary"/><strong>Grade:</strong> <span className="ml-1 font-mono">{parentLot.quality}</span></p>
+                        <p className="flex items-center"><Droplets className="w-4 h-4 mr-2 text-primary"/><strong>Moisture:</strong> <span className="ml-1 font-mono">{parentLot.moisture}</span></p>
+                        <p className="flex items-center"><Microscope className="w-4 h-4 mr-2 text-primary"/><strong>Impurities:</strong> <span className="ml-1 font-mono">{parentLot.impurities}</span></p>
+                        <p className="flex items-center"><Ruler className="w-4 h-4 mr-2 text-primary"/><strong>Size:</strong> <span className="ml-1 font-mono">{parentLot.size}</span></p>
+                        <p className="flex items-center"><Palette className="w-4 h-4 mr-2 text-primary"/><strong>Color:</strong> <span className="ml-1 font-mono">{parentLot.color}</span></p>
+                    </div>
+                    <p className="text-xs text-muted-foreground pt-1">
+                        Graded on {gradingDate && isValid(gradingDate) ? format(gradingDate, 'PPp') : 'N/A'}
+                    </p>
                 </div>
-                <p className="text-xs text-muted-foreground pt-1">
-                    Graded on {gradingDate && isValid(gradingDate) ? format(gradingDate, 'PPp') : 'N/A'}
-                </p>
-            </div>
-        )
-    });
+            )
+        });
 
-    // 2. Distributor Purchase Event
-    // We assume the purchase happens shortly after grading. This can be made more robust with a timestamp.
-    if(gradingDate) {
+        // 2. Distributor Purchase Event
+        const purchaseDate = gradingDate ? new Date(gradingDate) : new Date(parentLot.harvestDate);
+        purchaseDate.setHours(purchaseDate.getHours() + 1); // Assume purchase happens after grading/harvest
         events.push({
             type: 'DISTRIBUTOR_BUY',
             title: 'Purchased by Distributor',
-            timestamp: format(gradingDate, 'PP'),
+            timestamp: format(purchaseDate, 'PP'),
             details: (
                  <div className="space-y-2 text-sm">
                     <p><strong>Distributor:</strong> {parentLot.owner}</p>
@@ -209,8 +208,9 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     }
 
     // 3. Distributor Split Event
-    if (childLots && childLots.length > 0) {
-        const splitDate = childLots[0].gradingDate ? new Date(childLots[0].gradingDate) : gradingDate;
+    if (childLots && childLots.length > 0 && parentLot) {
+        const splitDate = childLots[0].gradingDate ? new Date(childLots[0].gradingDate) : new Date(parentLot.gradingDate);
+        splitDate.setHours(splitDate.getHours() + 2); // Assume split happens after purchase
         events.push({
             type: 'DISTRIBUTOR_SPLIT',
             title: 'Split into Sub-lots',
@@ -245,7 +245,6 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
     // 5. Retailer Stocking Event
     history.retailEvents.forEach(e => {
-        // Find the event for the current lot
         if (e.lotId === currentLot.lotId) {
             const shelfDate = new Date(e.shelfDate);
             shelfDate.setDate(shelfDate.getDate() + 1);
@@ -274,32 +273,17 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
   if (!history) {
     return (
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold font-headline">Welcome, {retailerId}</h1>
+      <div className="space-y-6">
+        <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold font-headline">Welcome, {retailerId}</h1>
+              <p className="text-muted-foreground">Browse the marketplace or manage your inventory.</p>
+            </div>
             <Button variant="ghost" onClick={onLogout}>
                 <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
         </div>
 
-        <Card>
-            <CardHeader>
-            <CardTitle className="flex items-center"><ScanLine className="mr-2" /> Scan Incoming Lot</CardTitle>
-            <CardDescription>Enter the Lot ID from the shipment to confirm delivery and proceed with final payment.</CardDescription>
-            </CardHeader>
-            <CardContent>
-            <Form {...scanForm}>
-                <form onSubmit={scanForm.handleSubmit(handleScan)} className="flex gap-2">
-                <FormField control={scanForm.control} name="lotId" render={({ field }) => (
-                    <FormItem className="flex-1"><FormControl><Input placeholder="e.g., LOT-20240101-001-SUB-001" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                <Button type="submit" disabled={isLoading}>{isLoading ? <Loader2 className="animate-spin" /> : <Search />}</Button>
-                </form>
-            </Form>
-            {error && <Alert variant="destructive" className="mt-4"><XCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
-            </CardContent>
-        </Card>
-        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 h-12">
                 <TabsTrigger value="marketplace">
@@ -309,13 +293,13 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                     <ShoppingBag className="mr-2"/> Your Inventory
                 </TabsTrigger>
             </TabsList>
-            <TabsContent value="marketplace">
-                <Card>
+            <TabsContent value="marketplace" className="mt-0">
+                <Card className="rounded-t-none">
                     <CardHeader>
                         <CardTitle>Available Lots for Purchase</CardTitle>
                         <CardDescription>Browse sub-lots currently available from distributors.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {marketplaceLots.length > 0 ? (
                                 marketplaceLots.map((lot) => (
@@ -332,13 +316,13 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                     </CardContent>
                 </Card>
             </TabsContent>
-            <TabsContent value="inventory">
-                <Card>
+            <TabsContent value="inventory" className="mt-0">
+                <Card className="rounded-t-none">
                     <CardHeader>
                         <CardTitle>Your Inventory</CardTitle>
                         <CardDescription>These are the lots assigned to your store, <span className="font-bold">{retailerId}</span>.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {inventoryLots.length > 0 ? (
                                 inventoryLots.map((lot) => (
@@ -448,7 +432,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
         <div className="flex justify-end">
             <Button variant="outline" onClick={resetView}>Back to Dashboard</Button>
         </div>
