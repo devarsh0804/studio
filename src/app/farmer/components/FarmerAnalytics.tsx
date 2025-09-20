@@ -3,9 +3,9 @@
 
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BadgeIndianRupee, LineChart, List, PieChart, Star, Wheat } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Legend, Pie, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig } from "@/components/ui/chart";
+import { BadgeIndianRupee, List, PieChart, Star, Wheat } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Pie, Cell } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from "@/components/ui/chart";
 
 interface FarmerAnalyticsProps {
   farmerName: string;
@@ -138,9 +138,7 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
                         <BarChart accessibilityLayer data={incomeByCropData}>
                             <CartesianGrid vertical={false} />
-                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
-                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${Number(value) / 1000}k`}/>
-                             <ChartTooltip
+                            <ChartTooltip
                                 cursor={false}
                                 content={<ChartTooltipContent indicator="dot" />}
                             />
@@ -176,5 +174,3 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
     </div>
   );
 }
-
-    

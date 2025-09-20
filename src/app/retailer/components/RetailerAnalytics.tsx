@@ -5,7 +5,7 @@ import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeIndianRupee, Box, PackageCheck, PieChart, ShoppingBag, Store, Truck, Wheat } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig, ChartLegendContent } from "@/components/ui/chart";
 
 interface RetailerAnalyticsProps {
   retailerId: string;
@@ -150,5 +150,3 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
     </div>
   );
 }
-
-    
