@@ -108,7 +108,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full max-w-4xl mx-auto">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center">
             <FileCheck2 className="mr-2"/> Register New Lot
@@ -120,7 +120,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                 {/* Left Column */}
                 <div className="space-y-4">
                     <FormField
@@ -246,7 +246,21 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                             </FormItem>
                         )}
                         />
-                    <FormField
+                </div>
+
+                 {/* Right Column */}
+                <div className="space-y-4">
+                     <div className="space-y-2">
+                        <FormLabel>Crop Photo</FormLabel>
+                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
+                            {cropImage ? (
+                                <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
+                            ) : (
+                                <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
+                            )}
+                        </div>
+                    </div>
+                     <FormField
                         control={form.control}
                         name="quality"
                         render={({ field }) => (
@@ -268,20 +282,6 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                             </FormItem>
                         )}
                     />
-                </div>
-
-                 {/* Right Column */}
-                <div className="space-y-4">
-                     <div className="space-y-2">
-                        <FormLabel>Crop Photo</FormLabel>
-                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
-                            {cropImage ? (
-                                <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
-                            ) : (
-                                <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
-                            )}
-                        </div>
-                    </div>
                     <Button type="button" variant="outline" className="w-full">
                         <Camera className="mr-2 h-4 w-4" /> Upload Photo
                     </Button>
@@ -290,8 +290,8 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                     </Button>
                 </div>
             </div>
-            <div className="pt-4 border-t">
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <div className="pt-6 border-t">
+              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Register Lot & Generate QR
               </Button>
@@ -302,3 +302,5 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
     </Card>
   );
 }
+
+    
