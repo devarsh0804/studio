@@ -90,7 +90,6 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       quality: values.quality,
       gradingDate: new Date().toISOString(),
       status: 'Registered',
-      // Generate random data for the certificate
       moisture: `${(Math.random() * (18 - 10) + 10).toFixed(1)}%`,
       impurities: `${(Math.random() * (2 - 0.1) + 0.1).toFixed(1)}%`,
       size: ['Uniform Medium', 'Large', 'Small'][Math.floor(Math.random() * 3)],
@@ -104,11 +103,11 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
           description: `The QR code for Lot ID ${lotId} is now ready.`,
         });
         setIsSubmitting(false);
-    }, 500); // simulate network delay
+    }, 500);
   }
 
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle className="flex items-center">
             <FileCheck2 className="mr-2"/> Register New Lot
@@ -119,168 +118,149 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="grid md:grid-cols-2 gap-8 items-start">
-                <div className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="farmerName"
-                      render={({ field }) => (
-                          <FormItem>
-                          <FormLabel>Farmer Name</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="e.g., Ramesh Kumar" {...field} className="pl-10" />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                          </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="location"
-                      render={({ field }) => (
-                          <FormItem>
-                          <FormLabel>Location (Mandi)</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="e.g., APMC, Punjab" {...field} className="pl-10" />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                          </FormItem>
-                      )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="cropName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Crop Name</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                                <Wheat className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="e.g., Wheat, Rice" {...field} className="pl-10"/>
-                            </div>
-                          </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                      control={form.control}
-                      name="weight"
-                      render={({ field }) => (
-                          <FormItem>
-                          <FormLabel>Weight (quintals)</FormLabel>
-                          <FormControl>
-                              <div className="relative">
-                                <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input type="number" placeholder="e.g., 5" {...field} className="pl-10"/>
-                              </div>
-                          </FormControl>
-                          <FormMessage />
-                          </FormItem>
-                      )}
-                      />
-                       <FormField
-                        control={form.control}
-                        name="harvestDate"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-col justify-end">
-                            <FormLabel>Harvest Date</FormLabel>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                <FormControl>
-                                    <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                        "w-full pl-3 text-left font-normal",
-                                        !field.value && "text-muted-foreground"
-                                    )}
-                                    >
-                                    {field.value ? (
-                                        format(field.value, "PP")
-                                    ) : (
-                                        <span>Pick a date</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    disabled={(date) =>
-                                    date > new Date() || date < new Date("1900-01-01")
-                                    }
-                                    initialFocus
-                                />
-                                </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                            </FormItem>
-                        )}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="farmerName"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Farmer Name</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="e.g., Ramesh Kumar" {...field} className="pl-10" />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Location (Mandi)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="e.g., APMC, Punjab" {...field} className="pl-10" />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+            />
+            <FormField
+            control={form.control}
+            name="cropName"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Crop Name</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                        <Wheat className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="e.g., Wheat, Rice" {...field} className="pl-10"/>
+                    </div>
+                  </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+              control={form.control}
+              name="weight"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Weight (quintals)</FormLabel>
+                  <FormControl>
+                      <div className="relative">
+                        <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type="number" placeholder="e.g., 5" {...field} className="pl-10"/>
+                      </div>
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+              />
+                <FormField
+                control={form.control}
+                name="harvestDate"
+                render={({ field }) => (
+                    <FormItem className="flex flex-col justify-end">
+                    <FormLabel>Harvest Date</FormLabel>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <FormControl>
+                            <Button
+                            variant={"outline"}
+                            className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                            )}
+                            >
+                            {field.value ? (
+                                format(field.value, "PP")
+                            ) : (
+                                <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                        </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                            }
+                            initialFocus
                         />
-                    </div>
-                     <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => (
-                          <FormItem>
-                          <FormLabel>Set Your Price (per quintal)</FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                    <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
-                                </div>
-                            </FormControl>
-                          <FormMessage />
-                          </FormItem>
-                      )}
-                    />
-                </div>
-                <div className="space-y-6">
-                    <div className="space-y-2">
-                        <FormLabel>Farmer Photo</FormLabel>
-                        <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
-                            {farmerImage ? (
-                                <Image src={farmerImage.imageUrl} alt={farmerImage.description} fill objectFit="cover" data-ai-hint={farmerImage.imageHint}/>
-                            ) : (
-                                <p className="text-muted-foreground text-sm">No Image</p>
-                            )}
-                        </div>
-                        <Button type="button" variant="outline" className="w-full">
-                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
-                        </Button>
-                    </div>
-                    <div className="space-y-2">
-                        <FormLabel>Crop Photo</FormLabel>
-                        <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
-                            {cropImage ? (
-                                <Image src={cropImage.imageUrl} alt={cropImage.description} fill objectFit="cover" data-ai-hint={cropImage.imageHint}/>
-                            ) : (
-                                <p className="text-muted-foreground text-sm">No Image</p>
-                            )}
-                        </div>
-                        <Button type="button" variant="outline" className="w-full">
-                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
-                        </Button>
-                        <FormDescription>
-                            For demo purposes, placeholder images are used.
-                        </FormDescription>
-                    </div>
-                </div>
+                        </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
             </div>
+             <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Set Your Price (per quintal)</FormLabel>
+                    <FormControl>
+                        <div className="relative">
+                            <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
+                        </div>
+                    </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+            />
             
             <div className="space-y-6 pt-6 border-t">
               <div className="space-y-4">
+                 <div className="space-y-2">
+                    <FormLabel>Crop Photo</FormLabel>
+                    <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
+                        {cropImage ? (
+                            <Image src={cropImage.imageUrl} alt={cropImage.description} fill objectFit="cover" data-ai-hint={cropImage.imageHint}/>
+                        ) : (
+                            <p className="text-muted-foreground text-sm">No Image</p>
+                        )}
+                    </div>
+                    <Button type="button" variant="outline" className="w-full">
+                        <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                    </Button>
+                    <FormDescription>
+                        For demo purposes, a placeholder image is used.
+                    </FormDescription>
+                </div>
                 <FormField
                     control={form.control}
                     name="quality"
@@ -306,12 +286,6 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         </FormItem>
                     )}
                 />
-                <FormItem>
-                    <FormLabel>Quality Certificate</FormLabel>
-                    <Button type="button" variant="secondary" className="w-full">
-                        <Upload className="mr-2" /> Upload Certificate
-                    </Button>
-                </FormItem>
               </div>
               
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
