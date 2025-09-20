@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { RoleCard } from '@/components/RoleCard';
-import { Tractor, Truck, Store, ScanLine, Trash2 } from 'lucide-react';
+import { Tractor, Truck, Store, ScanLine, Trash2, Wheat, ShieldCheck } from 'lucide-react';
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -43,7 +43,11 @@ export default function Home() {
         >
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
-        <div className="relative z-10 px-4">
+        <div className="relative z-10 px-4 flex flex-col items-center">
+          <div className="flex items-center gap-3 mb-4 bg-white/20 backdrop-blur-sm p-3 rounded-xl border border-white/30">
+            <Wheat className="w-10 h-10 text-white"/>
+            <ShieldCheck className="w-8 h-8 text-white opacity-90"/>
+          </div>
           <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight">
             AgriChain Trace
           </h1>
