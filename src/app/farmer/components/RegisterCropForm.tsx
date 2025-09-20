@@ -246,26 +246,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                             </FormItem>
                         )}
                         />
-                </div>
-                 {/* Right Column */}
-                <div className="space-y-4">
-                     <div className="space-y-2">
-                        <FormLabel>Crop Photo</FormLabel>
-                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
-                            {cropImage ? (
-                                <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
-                            ) : (
-                                <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
-                            )}
-                        </div>
-                        <Button type="button" variant="outline" className="w-full">
-                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
-                        </Button>
-                        <FormDescription>
-                            For demo purposes, a placeholder image is used.
-                        </FormDescription>
-                    </div>
-                     <FormField
+                    <FormField
                         control={form.control}
                         name="quality"
                         render={({ field }) => (
@@ -290,6 +271,25 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                             </FormItem>
                         )}
                     />
+                </div>
+                 {/* Right Column */}
+                <div className="space-y-4">
+                     <div className="space-y-2">
+                        <FormLabel>Crop Photo</FormLabel>
+                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
+                            {cropImage ? (
+                                <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
+                            ) : (
+                                <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
+                            )}
+                        </div>
+                        <Button type="button" variant="outline" className="w-full">
+                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                        </Button>
+                        <FormDescription>
+                            For demo purposes, a placeholder image is used.
+                        </FormDescription>
+                    </div>
                     <div className="space-y-2">
                         <Button type="button" variant="outline" className="w-full">
                             <FileText className="mr-2 h-4 w-4" /> Upload Certificate
@@ -314,5 +314,3 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
     </Card>
   );
 }
-
-    
