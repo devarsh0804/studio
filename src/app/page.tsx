@@ -36,9 +36,6 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <main className="flex-grow w-full container mx-auto px-4 py-12 md:py-16">
         <section className="text-center">
-           <div className="flex justify-center items-center mb-6">
-                <ShieldCheck className="w-12 h-12 text-primary"/>
-           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold font-headline tracking-tight text-gray-800">
             AgriChain Trace
           </h1>
