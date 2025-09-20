@@ -1,9 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { DistributorView } from "./components/DistributorView";
 import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
 import { useToast } from "@/hooks/use-toast";
-import { useUserStore } from "@/hooks/use-user-store";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -12,12 +12,12 @@ const VALID_CREDENTIALS = {
 };
 
 export default function DistributorPage() {
-  const { user, setUser, clearUser } = useUserStore();
+  const [distributor, setDistributor] = useState<{ name: string; code: string} | null>(null);
   const { toast } = useToast();
 
   const handleLogin = (credentials: DistributorLoginCredentials) => {
     if (credentials.name === VALID_CREDENTIALS.name && credentials.code === VALID_CREDENTIALS.code) {
-      setUser({ name: credentials.name, id: credentials.name, role: 'DISTRIBUTOR' });
+      setDistributor({ name: credentials.name, code: credentials.code });
       toast({
         title: "Login Successful",
         description: `Welcome back, ${credentials.name}!`,
@@ -32,14 +32,12 @@ export default function DistributorPage() {
   };
 
   const handleLogout = () => {
-    clearUser();
+    setDistributor(null);
     toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
     });
   };
-  
-  const distributor = user && user.role === 'DISTRIBUTOR' ? { name: user.name, code: ''} : null;
 
   return (
     <>
