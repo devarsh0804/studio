@@ -58,22 +58,20 @@ export function LotDetailsCard({ lot, children }: LotDetailsCardProps) {
             <p className="w-24 text-muted-foreground">Location</p>
             <p className="font-medium">{lot.location}</p>
           </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-              <div className="flex items-center">
-                <Weight className="w-4 h-4 mr-3 text-muted-foreground" />
-                <p className="w-20 text-muted-foreground">Weight</p>
-                <p className="font-medium">{lot.weight} q</p>
-              </div>
-               <div className="flex items-center">
-                <BadgeIndianRupee className="w-4 h-4 mr-3 text-muted-foreground" />
-                <p className="w-20 text-muted-foreground">Price</p>
-                <p className="font-medium">{lot.price}/q</p>
-              </div>
-              <div className="flex items-center col-span-2">
-                <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
-                <p className="w-20 text-muted-foreground">Harvested</p>
-                <p className="font-medium">{lot.harvestDate}</p>
-              </div>
+          <div className="flex items-center">
+            <Weight className="w-4 h-4 mr-3 text-muted-foreground" />
+            <p className="w-24 text-muted-foreground">Weight</p>
+            <p className="font-medium">{lot.weight} q</p>
+          </div>
+          <div className="flex items-center">
+            <BadgeIndianRupee className="w-4 h-4 mr-3 text-muted-foreground" />
+            <p className="w-24 text-muted-foreground">Price</p>
+            <p className="font-medium">{lot.price}/q</p>
+          </div>
+          <div className="flex items-center">
+            <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
+            <p className="w-24 text-muted-foreground">Harvested</p>
+            <p className="font-medium">{lot.harvestDate}</p>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-2 pt-4">
