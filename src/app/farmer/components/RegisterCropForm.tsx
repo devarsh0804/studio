@@ -205,74 +205,73 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         )}
                         />
                     </div>
+                     <FormField
+                        control={form.control}
+                        name="harvestDate"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Harvest Date</FormLabel>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <FormControl>
+                                    <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-full pl-3 text-left font-normal",
+                                        !field.value && "text-muted-foreground"
+                                    )}
+                                    >
+                                    {field.value ? (
+                                        format(field.value, "PP")
+                                    ) : (
+                                        <span>Pick a date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    disabled={(date) =>
+                                    date > new Date() || date < new Date("1900-01-01")
+                                    }
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    <FormField
+                        control={form.control}
+                        name="quality"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Quality Grade</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a quality grade for the crop" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Premium">Premium</SelectItem>
+                                        <SelectItem value="Standard">Standard</SelectItem>
+                                        <SelectItem value="Basic">Basic</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                 </div>
+
                  {/* Right Column */}
                 <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="harvestDate"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Harvest Date</FormLabel>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                    <FormControl>
-                                        <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                            "w-full pl-3 text-left font-normal",
-                                            !field.value && "text-muted-foreground"
-                                        )}
-                                        >
-                                        {field.value ? (
-                                            format(field.value, "PP")
-                                        ) : (
-                                            <span>Pick a date</span>
-                                        )}
-                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                        </Button>
-                                    </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        mode="single"
-                                        selected={field.value}
-                                        onSelect={field.onChange}
-                                        disabled={(date) =>
-                                        date > new Date() || date < new Date("1900-01-01")
-                                        }
-                                        initialFocus
-                                    />
-                                    </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                        <FormField
-                            control={form.control}
-                            name="quality"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Quality Grade</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a quality grade for the crop" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Premium">Premium</SelectItem>
-                                            <SelectItem value="Standard">Standard</SelectItem>
-                                            <SelectItem value="Basic">Basic</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
                      <div className="space-y-2">
                         <FormLabel>Crop Photo</FormLabel>
                         <div className="w-full aspect-[16/11] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
@@ -283,14 +282,12 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                             )}
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <Button type="button" variant="outline" className="w-full">
-                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
-                        </Button>
-                        <Button type="button" variant="outline" className="w-full">
-                            <FileText className="mr-2 h-4 w-4" /> Upload Certificate
-                        </Button>
-                    </div>
+                    <Button type="button" variant="outline" className="w-full">
+                        <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                    </Button>
+                    <Button type="button" variant="outline" className="w-full">
+                        <FileText className="mr-2 h-4 w-4" /> Upload Certificate
+                    </Button>
                 </div>
             </div>
             <div className="pt-4 border-t">
