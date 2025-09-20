@@ -17,6 +17,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { UserProfile } from "./(roles)/components/UserProfile";
+import { MainNav } from "./(roles)/components/MainNav";
 
 export default function Home() {
   const { clearStore } = useAgriChainStore();

@@ -30,7 +30,7 @@ export function DistributorLogin({ onLogin }: DistributorLoginProps) {
   };
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center py-12">
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center">

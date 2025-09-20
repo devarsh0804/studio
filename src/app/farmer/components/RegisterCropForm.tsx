@@ -108,7 +108,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
   }
 
   return (
-    <Card className="w-full lg:w-3/4 mx-auto">
+    <Card className="w-full">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center">
             <FileCheck2 className="mr-2"/> Register New Lot

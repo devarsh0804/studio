@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { DistributorView } from "./components/DistributorView";
 import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
 import { useToast } from "@/hooks/use-toast";
-import { PageHeader } from "@/components/PageHeader";
+import { useUserStore } from "@/hooks/use-user-store";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -14,12 +14,11 @@ const VALID_CREDENTIALS = {
 };
 
 export default function DistributorPage() {
-  const [distributor, setDistributor] = useState<{name: string, id: string} | null>(null);
-  const { toast } = useToast();
+  const { user, setUser, clearUser } = useUserStore();
 
   const handleLogin = (credentials: DistributorLoginCredentials) => {
     if (credentials.name === VALID_CREDENTIALS.name && credentials.code === VALID_CREDENTIALS.code) {
-      setDistributor({name: credentials.name, id: credentials.code});
+      setUser({name: credentials.name, id: credentials.code, role: 'DISTRIBUTOR'});
       toast({
         title: "Login Successful",
         description: `Welcome back, ${credentials.name}!`,
@@ -34,23 +33,28 @@ export default function DistributorPage() {
   };
 
   const handleLogout = () => {
-    setDistributor(null);
+    clearUser();
     toast({
         title: "Logged Out",
         description: "You have been successfully logged out."
     })
   }
 
+  useEffect(() => {
+    if (user && user.role !== 'DISTRIBUTOR') {
+      clearUser();
+    }
+  }, [user, clearUser]);
+
+  const distributorUser = user && user.role === 'DISTRIBUTOR' ? user : null;
+
   return (
     <>
-      <PageHeader />
-      <main className="flex-grow container mx-auto p-4 md:p-8">
-        {!distributor ? (
-          <DistributorLogin onLogin={handleLogin} />
-        ) : (
-          <DistributorView distributorId={distributor.name} onLogout={handleLogout} />
-        )}
-      </main>
+      {!distributorUser ? (
+        <DistributorLogin onLogin={handleLogin} />
+      ) : (
+        <DistributorView distributorId={distributorUser.name} onLogout={handleLogout} />
+      )}
     </>
   );
 }
