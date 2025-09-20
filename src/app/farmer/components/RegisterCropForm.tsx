@@ -119,51 +119,6 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Left Column */}
-                <div className="space-y-4">
-                     <div className="space-y-2">
-                        <FormLabel>Crop Photo</FormLabel>
-                        <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
-                            {cropImage ? (
-                                <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
-                            ) : (
-                                <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
-                            )}
-                        </div>
-                        <Button type="button" variant="outline" className="w-full">
-                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
-                        </Button>
-                        <FormDescription>
-                            For demo purposes, a placeholder image is used.
-                        </FormDescription>
-                    </div>
-                     <FormField
-                        control={form.control}
-                        name="quality"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Quality Grade</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a quality grade for the crop" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Premium">Premium</SelectItem>
-                                        <SelectItem value="Standard">Standard</SelectItem>
-                                        <SelectItem value="Basic">Basic</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormDescription>
-                                    Select the quality grade determined by the manual inspection.
-                                </FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
                 {/* Right Column */}
                 <div className="space-y-4">
                     <FormField
@@ -290,6 +245,51 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         )}
                         />
                 </div>
+                 {/* Left Column */}
+                <div className="space-y-4">
+                     <div className="space-y-2">
+                        <FormLabel>Crop Photo</FormLabel>
+                        <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
+                            {cropImage ? (
+                                <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
+                            ) : (
+                                <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
+                            )}
+                        </div>
+                        <Button type="button" variant="outline" className="w-full">
+                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                        </Button>
+                        <FormDescription>
+                            For demo purposes, a placeholder image is used.
+                        </FormDescription>
+                    </div>
+                     <FormField
+                        control={form.control}
+                        name="quality"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Quality Grade</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a quality grade for the crop" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Premium">Premium</SelectItem>
+                                        <SelectItem value="Standard">Standard</SelectItem>
+                                        <SelectItem value="Basic">Basic</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                    Select the quality grade determined by the manual inspection.
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
             </div>
             
             <div className="pt-4 border-t">
