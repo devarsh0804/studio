@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { DistributorView } from "./components/DistributorView";
 import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
 import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { useUserStore } from "@/hooks/use-user-store";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -15,12 +13,12 @@ const VALID_CREDENTIALS = {
 };
 
 export default function DistributorPage() {
-  const [distributor, setDistributor] = useState<DistributorLoginCredentials | null>(null);
+  const { user, setUser, clearUser } = useUserStore();
   const { toast } = useToast();
 
   const handleLogin = (credentials: DistributorLoginCredentials) => {
     if (credentials.name === VALID_CREDENTIALS.name && credentials.code === VALID_CREDENTIALS.code) {
-      setDistributor(credentials);
+      setUser({ name: credentials.name, id: credentials.name, role: 'DISTRIBUTOR' });
       toast({
         title: "Login Successful",
         description: `Welcome back, ${credentials.name}!`,
@@ -35,22 +33,21 @@ export default function DistributorPage() {
   };
 
   const handleLogout = () => {
-    setDistributor(null);
+    clearUser();
+    toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+    });
   };
+  
+  const distributor = user && user.role === 'DISTRIBUTOR' ? { name: user.name, code: ''} : null;
 
   return (
     <>
       <PageHeader 
         title={distributor ? `Welcome, ${distributor.name}` : "Distributor Dashboard"}
         description={distributor ? "Purchase lots, split them, and add transport details." : "Please log in to continue."}
-      >
-        {distributor && (
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        )}
-      </PageHeader>
+      />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!distributor ? (
           <DistributorLogin onLogin={handleLogin} />

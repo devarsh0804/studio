@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
 import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { useUserStore } from "@/hooks/use-user-store";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -15,12 +13,12 @@ const VALID_CREDENTIALS = {
 };
 
 export default function RetailerPage() {
-  const [retailer, setRetailer] = useState<RetailerLoginCredentials | null>(null);
+  const { user, setUser, clearUser } = useUserStore();
   const { toast } = useToast();
 
   const handleLogin = (credentials: RetailerLoginCredentials) => {
     if (credentials.storeName === VALID_CREDENTIALS.storeName && credentials.storeCode === VALID_CREDENTIALS.storeCode) {
-      setRetailer(credentials);
+      setUser({ name: credentials.storeName, id: credentials.storeName, role: 'RETAILER' });
       toast({
         title: "Login Successful",
         description: `Welcome to ${credentials.storeName}!`,
@@ -35,22 +33,21 @@ export default function RetailerPage() {
   };
 
   const handleLogout = () => {
-    setRetailer(null);
+    clearUser();
+    toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+    });
   };
+  
+  const retailer = user && user.role === 'RETAILER' ? { storeName: user.name, storeCode: ''} : null;
 
   return (
     <>
       <PageHeader 
         title={retailer ? `Welcome, ${retailer.storeName}` : "Retailer"}
         description={retailer ? "Scan a lot to view its history and manage retail inventory." : "Please log in to continue."}
-      >
-        {retailer && (
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        )}
-      </PageHeader>
+      />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!retailer ? (
           <RetailerLogin onLogin={handleLogin} />
