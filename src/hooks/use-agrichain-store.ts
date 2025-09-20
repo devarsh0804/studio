@@ -15,14 +15,19 @@ interface AgriChainState {
   findLot: (lotId: string) => Lot | undefined;
   getLotHistory: (lotId: string) => LotHistory | null;
   getAllLots: () => Lot[];
+  clearStore: () => void;
 }
+
+const initialState = {
+    lots: {},
+    retailEvents: {},
+};
 
 export const useAgriChainStore = create<AgriChainState>()(
   devtools(
     persist(
       (set, get) => ({
-        lots: {},
-        retailEvents: {},
+        ...initialState,
 
         addLot: (lot) =>
           set((state) => ({
@@ -98,6 +103,7 @@ export const useAgriChainStore = create<AgriChainState>()(
             childLots,
           };
         },
+        clearStore: () => set(initialState),
       }),
       {
         name: 'agrichain-storage',
