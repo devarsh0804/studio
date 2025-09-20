@@ -8,17 +8,15 @@ import { useAgriChainStore }from "@/hooks/use-agrichain-store";
 import { RegisterCropForm } from "./RegisterCropForm";
 import { RegisteredLotsList } from "./RegisteredLotsList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileCheck2, List, LogOut, User, LineChart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FileCheck2, List, User, LineChart } from "lucide-react";
 import { FarmerAnalytics } from "./FarmerAnalytics";
 
 
 interface FarmerViewProps {
   farmerName: string;
-  onLogout: () => void;
 }
 
-export function FarmerView({ farmerName, onLogout }: FarmerViewProps) {
+export function FarmerView({ farmerName }: FarmerViewProps) {
   const [registeredLot, setRegisteredLot] = useState<Lot | null>(null);
   const { addLot } = useAgriChainStore();
   const [activeTab, setActiveTab] = useState("register");

@@ -34,10 +34,9 @@ type RetailerFormValues = z.infer<typeof retailerSchema>;
 
 interface RetailerViewProps {
     retailerId: string;
-    onLogout: () => void;
 }
 
-export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
+export function RetailerView({ retailerId }: RetailerViewProps) {
   const [history, setHistory] = useState<LotHistory | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
   const [paymentType, setPaymentType] = useState<'advance' | 'balance'>('advance');

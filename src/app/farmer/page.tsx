@@ -51,12 +51,14 @@ export default function FarmerPage() {
       <PageHeader 
         title="Farmer Portal"
         description="Register crops, generate digital certificates, and track your sales."
+        isLoggedIn={!!farmer}
+        onLogout={handleLogout}
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!farmer ? (
           <FarmerLogin onLogin={handleLogin} />
         ) : (
-          <FarmerView farmerName={farmer} onLogout={handleLogout}/>
+          <FarmerView farmerName={farmer} />
         )}
       </main>
     </>

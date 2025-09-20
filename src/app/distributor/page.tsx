@@ -46,12 +46,14 @@ export default function DistributorPage() {
       <PageHeader 
         title="Distributor Portal"
         description="Purchase lots, manage sub-lots, and handle logistics."
+        isLoggedIn={!!distributor}
+        onLogout={handleLogout}
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!distributor ? (
           <DistributorLogin onLogin={handleLogin} />
         ) : (
-          <DistributorView distributorId={distributor} onLogout={handleLogout} />
+          <DistributorView distributorId={distributor} />
         )}
       </main>
     </>

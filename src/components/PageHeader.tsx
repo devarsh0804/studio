@@ -3,15 +3,17 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 interface PageHeaderProps {
     title: string;
     description: string;
+    isLoggedIn?: boolean;
+    onLogout?: () => void;
 }
 
-export function PageHeader({ title, description }: PageHeaderProps) {
+export function PageHeader({ title, description, isLoggedIn, onLogout }: PageHeaderProps) {
     const pathname = usePathname();
     // Don't show header on the main homepage
     if (pathname === "/") {
@@ -25,11 +27,18 @@ export function PageHeader({ title, description }: PageHeaderProps) {
                     <h1 className="text-3xl font-bold font-headline">{title}</h1>
                     <p className="text-muted-foreground mt-1">{description}</p>
                 </div>
-                <Button asChild variant="outline">
-                    <Link href="/">
-                        <Home className="mr-2" /> Back to Home
-                    </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                    {isLoggedIn && onLogout && (
+                         <Button onClick={onLogout} variant="outline">
+                            <LogOut className="mr-2" /> Logout
+                        </Button>
+                    )}
+                    <Button asChild variant="outline">
+                        <Link href="/">
+                            <Home className="mr-2" /> Back to Home
+                        </Link>
+                    </Button>
+                </div>
             </div>
         </div>
     );

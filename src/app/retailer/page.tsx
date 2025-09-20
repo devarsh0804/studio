@@ -46,12 +46,14 @@ export default function RetailerPage() {
        <PageHeader 
         title="Retailer Portal"
         description="Purchase lots from distributors, manage your inventory, and view product history."
+        isLoggedIn={!!retailer}
+        onLogout={handleLogout}
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!retailer ? (
           <RetailerLogin onLogin={handleLogin} />
         ) : (
-          <RetailerView retailerId={retailer} onLogout={handleLogout} />
+          <RetailerView retailerId={retailer} />
         )}
       </main>
     </>
