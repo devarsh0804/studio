@@ -16,6 +16,7 @@ interface CertificateDialogProps {
 
 export function CertificateDialog({ isOpen, onOpenChange, lot }: CertificateDialogProps) {
   const gradingDate = lot.gradingDate ? new Date(lot.gradingDate) : null;
+  // In a real blockchain app, this would be the actual transaction hash from the network.
   const transactionId = `0x${[...Array(64)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
 
   const downloadQR = () => {
@@ -36,16 +37,20 @@ export function CertificateDialog({ isOpen, onOpenChange, lot }: CertificateDial
           <DialogTitle className="flex items-center text-2xl">
             <Fingerprint className="mr-3 w-7 h-7 text-primary"/> Digital Grading Certificate
           </DialogTitle>
-          <DialogDescription className="font-mono text-primary pt-1">{lot.lotId}</DialogDescription>
+          <DialogDescription className="text-primary pt-1">This certificate is immutably stored on the blockchain.</DialogDescription>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 py-4">
             <div className="space-y-4">
-                <h3 className="font-semibold text-lg flex items-center gap-2"><Tractor/> Farmer & Crop Details</h3>
+                <h3 className="font-semibold text-lg flex items-center gap-2"><Tractor/> Origin Details</h3>
+                <p><strong>Lot ID:</strong> <span className="font-mono">{lot.lotId}</span></p>
                 <p><strong>Farmer:</strong> {lot.farmer}</p>
                 <p><strong>Crop:</strong> {lot.cropName}</p>
                 <p><strong>Issued By:</strong> Mandi Officer / IoT Sensor System</p>
-                <p><strong>Blockchain TxID:</strong> <span className="font-mono text-xs break-all">{transactionId}</span></p>
+                <div>
+                  <p><strong>Blockchain TxID:</strong></p>
+                  <p className="font-mono text-xs break-all text-muted-foreground">{transactionId}</p>
+                </div>
             </div>
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Quality Analysis</h3>
@@ -82,11 +87,13 @@ export function CertificateDialog({ isOpen, onOpenChange, lot }: CertificateDial
         <DialogFooter className="border-t pt-4 flex-col md:flex-row items-center justify-between w-full">
             <div className="flex items-center gap-4">
                 <div className="p-1 bg-white rounded-md">
-                     <QRCode value={lot.lotId} size={64} id={`cert-qr-${lot.lotId}`} />
+                     {/* In a real app, this QR would encode the transactionId or a URL pointing to a block explorer */}
+                     <QRCode value={transactionId} size={64} id={`cert-qr-${lot.lotId}`} />
                 </div>
-                <Button variant="secondary" onClick={downloadQR}>
-                    <Download className="mr-2"/> Download QR
-                </Button>
+                <div>
+                    <p className="font-semibold text-sm">On-Chain QR</p>
+                    <p className="text-xs text-muted-foreground">Key to the blockchain record.</p>
+                </div>
             </div>
             <Button onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>
@@ -94,3 +101,4 @@ export function CertificateDialog({ isOpen, onOpenChange, lot }: CertificateDial
     </Dialog>
   );
 }
+
