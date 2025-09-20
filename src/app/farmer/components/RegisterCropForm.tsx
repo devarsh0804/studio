@@ -106,7 +106,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
   }
 
   return (
-    <Card>
+    <Card className="w-full lg:w-3/4 mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center">
             <FileCheck2 className="mr-2"/> Register New Lot
@@ -117,9 +117,55 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                <div className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Left Column */}
+                <div className="md:col-span-1 space-y-4">
+                     <div className="space-y-2">
+                        <FormLabel>Crop Photo</FormLabel>
+                        <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
+                            {cropImage ? (
+                                <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
+                            ) : (
+                                <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
+                            )}
+                        </div>
+                        <Button type="button" variant="outline" className="w-full">
+                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                        </Button>
+                        <FormDescription>
+                            For demo purposes, a placeholder image is used.
+                        </FormDescription>
+                    </div>
+                     <FormField
+                        control={form.control}
+                        name="quality"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Quality Grade</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a quality grade for the crop" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Premium">Premium</SelectItem>
+                                        <SelectItem value="Standard">Standard</SelectItem>
+                                        <SelectItem value="Basic">Basic</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                    Select the quality grade determined by the manual inspection.
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                {/* Right Column */}
+                <div className="md:col-span-2 space-y-4">
                     <FormField
                     control={form.control}
                     name="farmerName"
@@ -187,9 +233,26 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         />
                          <FormField
                         control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Price (per quintal)</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
+                                    </div>
+                                </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    </div>
+                     <FormField
+                        control={form.control}
                         name="harvestDate"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col justify-end">
+                            <FormItem>
                             <FormLabel>Harvest Date</FormLabel>
                             <Popover>
                                 <PopoverTrigger asChild>
@@ -226,71 +289,6 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                             </FormItem>
                         )}
                         />
-                    </div>
-                </div>
-
-                <div className="space-y-4 pt-4 border-t md:border-t-0 md:border-l md:pl-6 md:pt-0">
-                    <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Set Your Price (per quintal)</FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                    <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
-                                </div>
-                            </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="quality"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Quality Grade</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a quality grade for the crop" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Premium">Premium</SelectItem>
-                                        <SelectItem value="Standard">Standard</SelectItem>
-                                        <SelectItem value="Basic">Basic</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormDescription>
-                                    Select the quality grade determined by the manual inspection.
-                                </FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                     <div className="space-y-2">
-                        <FormLabel>Crop Photo</FormLabel>
-                        <div className="flex items-center gap-4">
-                            <div className="w-24 h-20 rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
-                                {cropImage ? (
-                                    <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
-                                ) : (
-                                    <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
-                                )}
-                            </div>
-                            <div className="flex-1 space-y-2">
-                                <Button type="button" variant="outline" className="w-full">
-                                    <Camera className="mr-2 h-4 w-4" /> Upload Photo
-                                </Button>
-                                <FormDescription>
-                                    A placeholder image is used for this demo.
-                                </FormDescription>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
             
