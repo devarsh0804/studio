@@ -614,5 +614,3 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
     </div>
   );
 }
-
-    

@@ -471,5 +471,3 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     </div>
   );
 }
-
-    
