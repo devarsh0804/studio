@@ -2,9 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { RoleCard } from '@/components/RoleCard';
-import { Tractor, Truck, Store, ScanLine, Trash2, ShieldCheck } from 'lucide-react';
+import { Tractor, Truck, Store, ScanLine, Trash2 } from 'lucide-react';
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -18,14 +17,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { placeHolderImages } from "@/lib/placeholder-images";
-
 
 export default function Home() {
   const { clearStore } = useAgriChainStore();
   const { toast } = useToast();
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
-  const heroImage = placeHolderImages.find(p => p.id === 'hero');
 
   const handleResetData = () => {
     clearStore();
@@ -35,43 +31,21 @@ export default function Home() {
       description: "All application data has been reset.",
     });
   };
-  
-  if (!heroImage) return null;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-       <header className="relative h-[50vh] md:h-[60vh] flex items-center justify-center text-center text-white overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src={heroImage.imageUrl}
-            alt={heroImage.description}
-            fill
-            className="object-cover"
-            priority
-            data-ai-hint={heroImage.imageHint}
-          />
-          <div className="absolute inset-0 bg-black/50" />
-        </div>
-        <div className="relative z-10 p-4">
-          <div className="flex items-center justify-center mb-4 text-white">
-              <ShieldCheck className="w-16 h-16" />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight drop-shadow-md">
-            AgriChain Trace
-          </h1>
-          <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto drop-shadow-sm">
-            Bringing transparency and trust to the agricultural supply chain, from farm to fork.
-          </p>
-        </div>
-      </header>
-
-      <main className="flex-grow w-full container mx-auto px-4 py-12 md:py-16 -mt-24 md:-mt-32 relative z-20">
+      <main className="flex-grow w-full container mx-auto px-4 py-12 md:py-16">
         <section>
-           <h2 className="text-center text-2xl font-bold font-headline text-gray-800 sr-only">Who are you?</h2>
-            <p className="mt-2 text-center text-muted-foreground max-w-2xl mx-auto sr-only">
-                Select your role in the supply chain or scan a product to begin.
+          <div className="text-center">
+             <h1 className="text-4xl md:text-5xl font-extrabold font-headline tracking-tight">
+                AgriChain Trace
+            </h1>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+                Bringing transparency and trust to the agricultural supply chain, from farm to fork.
             </p>
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
+          </div>
+         
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
             <RoleCard 
               title="Farmer"
               href="/farmer"
