@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText, Spline, Truck } from "lucide-react";
+import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText, Spline, Truck, LineChart } from "lucide-react";
 import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
 import { Separator } from "@/components/ui/separator";
@@ -22,6 +22,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import QRCode from "qrcode.react";
 import { Badge } from "@/components/ui/badge";
+import { RetailerAnalytics } from "./RetailerAnalytics";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -274,12 +275,15 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
     return (
       <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-12">
+            <TabsList className="grid w-full grid-cols-3 h-12">
                 <TabsTrigger value="marketplace">
                     <ShoppingCart className="mr-2"/> Marketplace
                 </TabsTrigger>
                 <TabsTrigger value="inventory">
                     <ShoppingBag className="mr-2"/> Your Inventory
+                </TabsTrigger>
+                 <TabsTrigger value="analytics">
+                    <LineChart className="mr-2"/> Analytics
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="marketplace" className="mt-0">
@@ -328,6 +332,9 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
                         </div>
                     </CardContent>
                 </Card>
+            </TabsContent>
+            <TabsContent value="analytics" className="mt-0">
+                <RetailerAnalytics retailerId={retailerId} />
             </TabsContent>
         </Tabs>
 

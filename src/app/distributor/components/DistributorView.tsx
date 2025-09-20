@@ -13,13 +13,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent, FileText } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent, FileText, LineChart } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { DistributorAnalytics } from './DistributorAnalytics';
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -315,7 +316,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
         </Card>
 
            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 h-12">
+              <TabsList className="grid w-full grid-cols-4 h-12">
                 <TabsTrigger value="available-crops">
                   <ShoppingCart className="mr-2" />
                   Available Crops
@@ -327,6 +328,9 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                 <TabsTrigger value="dispatched-lots">
                   <PackageCheck className="mr-2" />
                   Dispatched Lots
+                </TabsTrigger>
+                <TabsTrigger value="analytics">
+                    <LineChart className="mr-2"/> Analytics
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="available-crops" className="mt-0">
@@ -449,6 +453,9 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+               <TabsContent value="analytics" className="mt-0">
+                    <DistributorAnalytics distributorId={distributorId} />
               </TabsContent>
             </Tabs>
 
