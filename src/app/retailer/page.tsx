@@ -5,6 +5,8 @@ import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
 import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -39,9 +41,16 @@ export default function RetailerPage() {
   return (
     <>
       <PageHeader 
-        title="Retailer"
+        title={retailer ? `Welcome, ${retailer.storeName}` : "Retailer"}
         description={retailer ? "Scan a lot to view its history and manage retail inventory." : "Please log in to continue."}
-      />
+      >
+        {retailer && (
+          <Button variant="outline" size="sm" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        )}
+      </PageHeader>
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!retailer ? (
           <RetailerLogin onLogin={handleLogin} />

@@ -9,9 +9,10 @@ import { usePathname } from "next/navigation";
 interface PageHeaderProps {
   title: string;
   description: string;
+  children?: React.ReactNode;
 }
 
-export function PageHeader({ title, description }: PageHeaderProps) {
+export function PageHeader({ title, description, children }: PageHeaderProps) {
   const pathname = usePathname();
 
   // Do not show the header on the homepage
@@ -26,12 +27,15 @@ export function PageHeader({ title, description }: PageHeaderProps) {
                 <h1 className="text-2xl font-bold font-headline text-primary">{title}</h1>
                 <p className="text-sm text-muted-foreground">{description}</p>
             </div>
-            <Button asChild variant="outline" size="sm">
-                <Link href="/">
-                    <Home className="mr-2 h-4 w-4" />
-                    Back to Home
-                </Link>
-            </Button>
+            <div className="flex items-center gap-4">
+              {children}
+              <Button asChild variant="outline" size="sm">
+                  <Link href="/">
+                      <Home className="mr-2 h-4 w-4" />
+                      Back to Home
+                  </Link>
+              </Button>
+            </div>
         </div>
     </header>
   );

@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { FarmerView } from "./components/FarmerView";
 import { FarmerLogin, type FarmerLoginCredentials } from "./components/FarmerLogin";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -48,9 +50,16 @@ export default function FarmerPage() {
   return (
     <>
       <PageHeader 
-        title="Farmer"
+        title={farmerUser ? `Welcome, ${farmerUser.farmerName}` : "Farmer"}
         description={farmerUser ? "Register your new crop lot and generate a unique tracking QR code." : "Please log in to continue."}
-      />
+      >
+        {farmerUser && (
+          <Button variant="outline" size="sm" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        )}
+      </PageHeader>
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!farmerUser ? (
           <FarmerLogin onLogin={handleLogin} />

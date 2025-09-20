@@ -273,17 +273,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
   if (!history) {
     return (
-      <div className="space-y-8">
-        <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold font-headline">Welcome, {retailerId}</h1>
-              <p className="text-muted-foreground">Browse the marketplace or manage your inventory.</p>
-            </div>
-            <Button variant="ghost" onClick={onLogout}>
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-            </Button>
-        </div>
-
+      <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 h-12">
                 <TabsTrigger value="marketplace">
