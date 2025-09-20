@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { RoleCard } from '@/components/RoleCard';
-import { Tractor, Truck, Store, ScanLine, Trash2, Wheat, ShieldCheck } from 'lucide-react';
+import { Tractor, Truck, Store, ScanLine, Trash2, ShieldCheck } from 'lucide-react';
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -33,37 +33,26 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="relative h-64 md:h-80 flex items-center justify-center text-center text-white bg-green-800">
-        <div 
-          className="absolute inset-0 bg-cover bg-center" 
-          style={{ 
-            backgroundImage: "url('https://images.unsplash.com/photo-1625246333195-78d9c38AD449?q=80&w=1920&h=1080&fit=crop')",
-          }}
-        >
-          <div className="absolute inset-0 bg-black/60"></div>
-        </div>
-        <div className="relative z-10 px-4 flex flex-col items-center">
-          <div className="flex items-center gap-3 mb-4 bg-white/20 backdrop-blur-sm p-3 rounded-xl border border-white/30">
-            <Wheat className="w-10 h-10 text-white"/>
-            <ShieldCheck className="w-8 h-8 text-white opacity-90"/>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight">
-            AgriChain Trace
-          </h1>
-          <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto text-green-100">
-            Bringing transparency and trust to the agricultural supply chain, from farm to fork.
-          </p>
-        </div>
-      </header>
-
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <main className="flex-grow w-full container mx-auto px-4 py-12 md:py-16">
         <section className="text-center">
-          <h2 className="text-3xl font-bold font-headline">Who are you?</h2>
-          <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
-            Select your role in the supply chain or scan a product to begin.
+           <div className="flex justify-center items-center mb-6">
+                <ShieldCheck className="w-12 h-12 text-primary"/>
+           </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold font-headline tracking-tight text-gray-800">
+            AgriChain Trace
+          </h1>
+          <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto text-gray-600">
+            Bringing transparency and trust to the agricultural supply chain, from farm to fork.
           </p>
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
+        </section>
+        
+        <section className="mt-12">
+           <h2 className="text-center text-2xl font-bold font-headline text-gray-800">Who are you?</h2>
+            <p className="mt-2 text-center text-muted-foreground max-w-2xl mx-auto">
+                Select your role in the supply chain or scan a product to begin.
+            </p>
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
             <RoleCard 
               title="Farmer"
               href="/farmer"
@@ -91,8 +80,8 @@ export default function Home() {
           </div>
 
           <div className="mt-16 border-t pt-8">
-            <h3 className="text-lg font-semibold text-muted-foreground">Developer Options</h3>
-            <div className="mt-4">
+            <h3 className="text-lg font-semibold text-muted-foreground text-center">Developer Options</h3>
+            <div className="mt-4 text-center">
               <Button variant="destructive" onClick={() => setIsResetDialogOpen(true)}>
                 <Trash2 className="mr-2 h-4 w-4" /> Reset All Data
               </Button>
