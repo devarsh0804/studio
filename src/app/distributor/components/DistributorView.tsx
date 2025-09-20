@@ -277,7 +277,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold font-headline">Welcome, {distributorId}</h1>
@@ -288,8 +288,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <Card className="lg:col-span-1">
+       <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <ScanLine className="mr-2" /> Scan or Manage Lot
@@ -326,7 +325,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
           </CardContent>
         </Card>
 
-        <div className="lg:col-span-2">
            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 h-12">
                 <TabsTrigger value="available-crops">
@@ -464,8 +462,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                 </Card>
               </TabsContent>
             </Tabs>
-        </div>
-      </div>
 
       <AlertDialog open={!!lotToBuy} onOpenChange={() => setLotToBuy(null)}>
         <AlertDialogContent>
