@@ -70,10 +70,11 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
         if (existing) {
             existing.value += 1;
         } else {
-            acc.push({ name: status, value: 1 });
+            const fill = status === 'Sold' ? 'var(--color-sold)' : 'var(--color-unsold)';
+            acc.push({ name: status, value: 1, fill });
         }
         return acc;
-    }, [] as { name: string, value: number }[]);
+    }, [] as { name: string; value: number; fill: string }[]);
 
 
   return (
@@ -136,7 +137,7 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <BarChart accessibilityLayer data={incomeByCropData}>
+                        <BarChart accessibilityLayer data={incomeByCropData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                             <CartesianGrid vertical={false} />
                             <ChartTooltip
                                 cursor={false}
@@ -151,19 +152,17 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
                 <CardHeader>
                     <CardTitle className="flex items-center"><PieChart className="mr-2"/> Lot Status</CardTitle>
                 </CardHeader>
-                <CardContent>
-                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <PieChart accessibilityLayer>
+                <CardContent className="flex-1 pb-0">
+                     <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
+                        <PieChart>
                           <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                           <Pie
                             data={lotStatusData}
                             dataKey="value"
                             nameKey="name"
                             innerRadius={50}
-                          >
-                             <Cell key="cell-0" fill="var(--color-sold)" />
-                             <Cell key="cell-1" fill="var(--color-unsold)" />
-                          </Pie>
+                            strokeWidth={5}
+                          />
                            <ChartLegend content={<ChartLegendContent nameKey="name" />} />
                         </PieChart>
                       </ChartContainer>

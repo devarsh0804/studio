@@ -132,15 +132,11 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
                 <CardHeader>
                     <CardTitle className="flex items-center"><PieChart className="mr-2"/> Inventory Status</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 pb-0">
                     <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
                         <PieChart>
                           <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                          <Pie data={lotStatusData} dataKey="value" nameKey="name" innerRadius={50}>
-                             {lotStatusData.map((entry) => (
-                                <Cell key={entry.name} fill={entry.fill} />
-                             ))}
-                          </Pie>
+                          <Pie data={lotStatusData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5} />
                           <ChartLegend content={<ChartLegendContent nameKey="name" />} />
                         </PieChart>
                     </ChartContainer>
