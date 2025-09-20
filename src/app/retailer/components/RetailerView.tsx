@@ -79,7 +79,9 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
 
         // If lot requires final payment, show payment dialog
         if (lotToProcess.paymentStatus === 'Advance Paid') {
-            updateLot(lotToProcess.lotId, { status: 'Delivered' });
+            if(lotToProcess.status !== 'Delivered') {
+                updateLot(lotToProcess.lotId, { status: 'Delivered' });
+            }
             setLotToPay(lotToProcess); 
             setPaymentType('balance');
             toast({
@@ -98,7 +100,7 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
     if (!history) return;
     setIsSubmitting(true);
     
-    const newEvent: RetailEvent = { ...data, storeId: retailerId, timestamp: new Date().toISOString() };
+    const newEvent: RetailEvent = { ...data, storeId: retailerId, timestamp: new Date().toISOString(), lotId: history.lot.lotId };
     addRetailEvent(history.lot.lotId, newEvent);
     updateLot(history.lot.lotId, { status: 'Stocked' });
 
@@ -314,21 +316,19 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                         <CardDescription>Browse sub-lots currently available from distributors.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 max-h-[60vh] overflow-y-auto">
-                        {marketplaceLots.length > 0 ? (
-                            marketplaceLots.map((lot, index) => (
-                                <div key={lot.lotId}>
-                                    {index > 0 && <Separator className="my-6" />}
-                                    <LotDetailsCard lot={lot} />
-                                    <div className="mt-4 flex justify-end gap-2">
-                                        <Button onClick={() => { setLotToPay(lot); setPaymentType('advance'); }}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {marketplaceLots.length > 0 ? (
+                                marketplaceLots.map((lot) => (
+                                    <LotDetailsCard key={lot.lotId} lot={lot}>
+                                        <Button className="w-full" onClick={() => { setLotToPay(lot); setPaymentType('advance'); }}>
                                             <ShoppingCart className="mr-2" /> Buy Lot
                                         </Button>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-muted-foreground text-center py-8">No lots are available in the marketplace right now.</p>
-                        )}
+                                    </LotDetailsCard>
+                                ))
+                            ) : (
+                                <p className="text-muted-foreground text-center py-8 col-span-2">No lots are available in the marketplace right now.</p>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -339,22 +339,20 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
                         <CardDescription>These are the lots assigned to your store, <span className="font-bold">{retailerId}</span>.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 max-h-[60vh] overflow-y-auto">
-                        {inventoryLots.length > 0 ? (
-                            inventoryLots.map((lot, index) => (
-                                <div key={lot.lotId}>
-                                    {index > 0 && <Separator className="my-6" />}
-                                    <LotDetailsCard lot={lot} />
-                                    <div className="mt-4 flex justify-end gap-2">
-                                        <Button onClick={() => handleScan({ lotId: lot.lotId })} disabled={!['Dispatched', 'Delivered', 'Stocked'].includes(lot.status ?? '')}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {inventoryLots.length > 0 ? (
+                                inventoryLots.map((lot) => (
+                                    <LotDetailsCard key={lot.lotId} lot={lot}>
+                                        <Button className="w-full" onClick={() => handleScan({ lotId: lot.lotId })} disabled={!['Dispatched', 'Delivered', 'Stocked'].includes(lot.status ?? '')}>
                                             <History className="mr-2 h-4 w-4" /> 
                                             {lot.status === 'Dispatched' ? 'Confirm Delivery' : 'View Full History'}
                                         </Button>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-muted-foreground text-center py-8">You have no lots in your inventory yet. Visit the marketplace to buy one.</p>
-                        )}
+                                    </LotDetailsCard>
+                                ))
+                            ) : (
+                                <p className="text-muted-foreground text-center py-8 col-span-2">You have no lots in your inventory yet. Visit the marketplace to buy one.</p>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
             </TabsContent>

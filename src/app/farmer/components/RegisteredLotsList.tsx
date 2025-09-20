@@ -1,9 +1,9 @@
+
 "use client";
 
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 export function RegisteredLotsList() {
     const { getAllLots } = useAgriChainStore(
@@ -35,12 +35,9 @@ export function RegisteredLotsList() {
                     View the details of all your registered crop lots.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-            {registeredLots.map((lot, index) => (
-                <div key={lot.lotId}>
-                    {index > 0 && <Separator className="my-6" />}
-                    <LotDetailsCard lot={lot} />
-                </div>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {registeredLots.map((lot) => (
+                <LotDetailsCard key={lot.lotId} lot={lot} />
             ))}
             </CardContent>
         </Card>

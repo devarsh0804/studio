@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -213,62 +212,66 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
             Back to Dashboard
           </Button>
         </div>
-        <LotDetailsCard lot={scannedLot} />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <LotDetailsCard lot={scannedLot} />
 
-        {isOwnedByDistributor && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Spline className="mr-2" /> Create or Manage Sub-lots
-              </CardTitle>
-              <CardDescription>{canBeSplit ? 'Split this lot into smaller quantities. These will be available for retailers to purchase.' : 'This lot has already been split, or it is a sub-lot itself.'}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {canBeSplit && (
-                <Form {...subLotForm}>
-                  <form onSubmit={subLotForm.handleSubmit(handleSubLotSubmit)} className="flex gap-2">
-                    <FormField
-                      control={subLotForm.control}
-                      name="subLotCount"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormControl>
-                            <Input type="number" placeholder={`Split ${scannedLot.weight} quintal lot into...`} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit">
-                      <PackagePlus className="h-4 w-4" />
-                    </Button>
-                  </form>
-                </Form>
-              )}
-              {subLots.length > 0 && (
-                <div className="mt-6">
-                  <h4 className="font-semibold mb-4">Generated Sub-lots (Available to Retailers):</h4>
-                   <div className="grid md:grid-cols-2 gap-4">
-                    {subLots.map((lot) => (
-                      <Card key={lot.lotId} className="flex flex-col">
-                        <CardHeader className="pb-4">
-                            <CardTitle className="text-base font-mono flex items-center gap-2"><QrCode className="text-muted-foreground"/> {lot.lotId}</CardTitle>
-                            <CardDescription>{lot.weight} quintals</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-1 flex flex-col items-center justify-center gap-4">
-                            <div className="p-2 bg-white rounded-lg">
-                                <QRCode value={lot.lotId} size={128} id={`qr-${lot.lotId}`} />
-                            </div>
-                            <p className="text-sm text-muted-foreground text-center">This lot is now available for retailers to buy.</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+            {isOwnedByDistributor && (
+            <Card>
+                <CardHeader>
+                <CardTitle className="flex items-center">
+                    <Spline className="mr-2" /> Create or Manage Sub-lots
+                </CardTitle>
+                <CardDescription>{canBeSplit ? 'Split this lot into smaller quantities. These will be available for retailers to purchase.' : 'This lot has already been split, or it is a sub-lot itself.'}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                {canBeSplit && (
+                    <Form {...subLotForm}>
+                    <form onSubmit={subLotForm.handleSubmit(handleSubLotSubmit)} className="flex gap-2">
+                        <FormField
+                        control={subLotForm.control}
+                        name="subLotCount"
+                        render={({ field }) => (
+                            <FormItem className="flex-1">
+                            <FormControl>
+                                <Input type="number" placeholder={`Split ${scannedLot.weight} quintal lot into...`} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <Button type="submit">
+                        <PackagePlus className="h-4 w-4" />
+                        </Button>
+                    </form>
+                    </Form>
+                )}
+                {subLots.length > 0 && (
+                    <div className="mt-6">
+                    <h4 className="font-semibold mb-4">Generated Sub-lots (Available to Retailers):</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {subLots.map((lot) => (
+                        <Card key={lot.lotId} className="flex flex-col">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-base font-mono flex items-center gap-2"><QrCode className="text-muted-foreground"/> {lot.lotId}</CardTitle>
+                                <CardDescription>{lot.weight} quintals</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-1 flex flex-col items-center justify-center gap-4">
+                                <div className="p-2 bg-white rounded-lg">
+                                    <QRCode value={lot.lotId} size={128} id={`qr-${lot.lotId}`} />
+                                </div>
+                                <p className="text-sm text-muted-foreground text-center">This lot is now available for retailers to buy.</p>
+                            </CardContent>
+                        </Card>
+                        ))}
+                    </div>
+                    </div>
+                )}
+                </CardContent>
+            </Card>
+            )}
+        </div>
+
       </div>
     );
   }
@@ -341,21 +344,20 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <CardDescription>Browse crops currently available directly from farmers.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-              {availableLots.length > 0 ? (
-                availableLots.map((lot) => (
-                  <div key={lot.lotId} className="border p-4 rounded-lg">
-                    <LotDetailsCard lot={lot} />
-                    <div className="mt-4 flex justify-end">
-                      <Button onClick={() => setLotToBuy(lot)}>
-                        <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />
-                        {lot.price * lot.weight}
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-center py-4">There are no lots currently available for purchase.</p>
-              )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {availableLots.length > 0 ? (
+                    availableLots.map((lot) => (
+                    <LotDetailsCard key={lot.lotId} lot={lot}>
+                        <Button className="w-full" onClick={() => setLotToBuy(lot)}>
+                            <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />
+                            {lot.price * lot.weight}
+                        </Button>
+                    </LotDetailsCard>
+                    ))
+                ) : (
+                    <p className="text-muted-foreground text-center py-4 col-span-2">There are no lots currently available for purchase.</p>
+                )}
+                </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -368,20 +370,19 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <CardDescription>These are lots you own. Select a lot to create sub-lots for retailers.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-              {purchasedLots.length > 0 ? (
-                purchasedLots.map((lot) => (
-                  <div key={lot.lotId} className="border p-4 rounded-lg">
-                    <LotDetailsCard lot={lot} />
-                    <div className="mt-4 flex justify-end">
-                       <Button variant="secondary" onClick={() => handleScan({ lotId: lot.lotId })}>
-                        <Spline className="mr-2 h-4 w-4" /> Create Sub-Lots
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-center py-4">You have not purchased any lots yet. Go to the "Available Crops" tab to buy one.</p>
-              )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {purchasedLots.length > 0 ? (
+                        purchasedLots.map((lot) => (
+                        <LotDetailsCard key={lot.lotId} lot={lot}>
+                            <Button variant="secondary" className="w-full" onClick={() => handleScan({ lotId: lot.lotId })}>
+                                <Spline className="mr-2 h-4 w-4" /> Create Sub-Lots
+                            </Button>
+                        </LotDetailsCard>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center py-4 col-span-2">You have not purchased any lots yet. Go to the "Available Crops" tab to buy one.</p>
+                    )}
+                </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -394,61 +395,66 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <CardDescription>These lots have had their advance paid by a retailer and are ready for transport assignment.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-              {dispatchedLots.length > 0 ? (
-                dispatchedLots.map((lot) => (
-                  <div key={lot.lotId} className="border p-4 rounded-lg">
-                    <LotDetailsCard lot={lot} />
-                     <div className="mt-4 border-t pt-4 text-sm">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-semibold">Logistics Details:</p>
-                            {lot.logisticsInfo ? (
-                                <>
-                                    <p><span className="text-muted-foreground">Vehicle:</span> {lot.logisticsInfo?.vehicleNumber}</p>
-                                    <p><span className="text-muted-foreground">Dispatch Date:</span> {lot.logisticsInfo?.dispatchDate}</p>
-                                </>
-                            ) : (
-                                <p className="text-muted-foreground">Pending...</p>
-                            )}
-                            <p className='mt-2'><span className="text-muted-foreground">Purchased By:</span> <span className="font-mono">{lot.owner}</span></p>
-                          </div>
-                          <div className='flex flex-col items-end gap-2'>
-                              <div>
-                                <p className="font-semibold text-right">Status:</p>
-                                <Badge variant={lot.status === 'Delivered' ? 'default' : (lot.status === 'Dispatched' ? 'secondary' : 'outline')}>
-                                    {lot.status}
-                                </Badge>
-                              </div>
-                              <div>
-                                <p className="font-semibold text-right">Payment:</p>
-                                <Badge variant={lot.paymentStatus === 'Fully Paid' ? 'default' : (lot.paymentStatus === 'Advance Paid' ? 'outline' : 'destructive')}>
-                                  {lot.paymentStatus}
-                                </Badge>
-                              </div>
-                          </div>
-                        </div>
-                        <div className="mt-4 flex flex-col items-center gap-4">
-                            {!lot.logisticsInfo ? (
-                               <Button className="w-full" onClick={() => setLotToTransport(lot)}>
-                                    <Truck className="mr-2 h-4 w-4"/> Add Transport
-                                </Button>
-                            ) : (
-                                <>
-                                    <div className="p-2 bg-white rounded-lg">
-                                        <QRCode value={lot.lotId} size={128} id={`qr-${lot.lotId}`} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {dispatchedLots.length > 0 ? (
+                  dispatchedLots.map((lot) => (
+                    <Card key={lot.lotId} className="flex flex-col">
+                        <CardHeader>
+                            <LotDetailsCard lot={lot}>
+                                 <div className="mt-4 border-t pt-4 text-sm w-full">
+                                    <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-semibold">Logistics Details:</p>
+                                        {lot.logisticsInfo ? (
+                                            <>
+                                                <p><span className="text-muted-foreground">Vehicle:</span> {lot.logisticsInfo?.vehicleNumber}</p>
+                                                <p><span className="text-muted-foreground">Dispatch Date:</span> {lot.logisticsInfo?.dispatchDate}</p>
+                                            </>
+                                        ) : (
+                                            <p className="text-muted-foreground">Pending...</p>
+                                        )}
+                                        <p className='mt-2'><span className="text-muted-foreground">Purchased By:</span> <span className="font-mono">{lot.owner}</span></p>
                                     </div>
-                                    <Button variant="secondary" className="w-full" onClick={() => downloadQR(lot.lotId)}>
-                                        <Download className="mr-2 h-4 w-4"/> Download QR for Shipment
-                                    </Button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-center py-4">No lots have been dispatched yet.</p>
-              )}
+                                    <div className='flex flex-col items-end gap-2'>
+                                        <div>
+                                            <p className="font-semibold text-right">Status:</p>
+                                            <Badge variant={lot.status === 'Delivered' ? 'default' : (lot.status === 'Dispatched' ? 'secondary' : 'outline')}>
+                                                {lot.status}
+                                            </Badge>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-right">Payment:</p>
+                                            <Badge variant={lot.paymentStatus === 'Fully Paid' ? 'default' : (lot.paymentStatus === 'Advance Paid' ? 'outline' : 'destructive')}>
+                                            {lot.paymentStatus}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <div className="mt-4 flex flex-col items-center gap-4">
+                                        {!lot.logisticsInfo ? (
+                                        <Button className="w-full" onClick={() => setLotToTransport(lot)}>
+                                                <Truck className="mr-2 h-4 w-4"/> Add Transport
+                                            </Button>
+                                        ) : (
+                                            <>
+                                                <div className="p-2 bg-white rounded-lg">
+                                                    <QRCode value={lot.lotId} size={128} id={`qr-${lot.lotId}`} />
+                                                </div>
+                                                <Button variant="secondary" className="w-full" onClick={() => downloadQR(lot.lotId)}>
+                                                    <Download className="mr-2 h-4 w-4"/> Download QR for Shipment
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </LotDetailsCard>
+                        </CardHeader>
+                    </Card>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-center py-4 col-span-2">No lots have been dispatched yet.</p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef } from "react";
@@ -62,7 +63,9 @@ export function QrCodeDisplay({ lot, onRegisterNew }: QrCodeDisplayProps) {
         </CardContent>
       </Card>
       
-      <LotDetailsCard lot={lot} />
+      <div className="max-w-md mx-auto">
+        <LotDetailsCard lot={lot} />
+      </div>
 
     </div>
   );
