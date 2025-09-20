@@ -33,10 +33,9 @@ type RetailerFormValues = z.infer<typeof retailerSchema>;
 
 interface RetailerViewProps {
     retailerId: string;
-    onLogout: () => void;
 }
 
-export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
+export function RetailerView({ retailerId }: RetailerViewProps) {
   const [history, setHistory] = useState<LotHistory | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
   const [paymentType, setPaymentType] = useState<'advance' | 'balance'>('advance');
@@ -274,12 +273,6 @@ export function RetailerView({ retailerId, onLogout }: RetailerViewProps) {
   if (!history) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold font-headline">Retailer Dashboard</h1>
-            <Button onClick={onLogout} variant="outline">
-                <LogOut className="mr-2" /> Logout
-            </Button>
-        </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 h-12">
                 <TabsTrigger value="marketplace">

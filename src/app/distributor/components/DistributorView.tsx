@@ -39,10 +39,9 @@ type TransportFormValues = z.infer<typeof transportSchema>;
 
 interface DistributorViewProps {
   distributorId: string;
-  onLogout: () => void;
 }
 
-export function DistributorView({ distributorId, onLogout }: DistributorViewProps) {
+export function DistributorView({ distributorId }: DistributorViewProps) {
   const [scannedLot, setScannedLot] = useState<Lot | null>(null);
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
@@ -278,12 +277,6 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
 
   return (
     <div className="space-y-6">
-       <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold font-headline">Distributor Dashboard</h1>
-            <Button onClick={onLogout} variant="outline">
-                <LogOut className="mr-2" /> Logout
-            </Button>
-       </div>
        <Card>
           <CardHeader>
             <CardTitle className="flex items-center">

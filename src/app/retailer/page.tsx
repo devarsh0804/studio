@@ -1,10 +1,12 @@
+
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
+import { useUserStore } from "@/hooks/use-user-store";
 
 
 // In a real app, this would come from a secure source
@@ -14,12 +16,18 @@ const VALID_CREDENTIALS = {
 };
 
 export default function RetailerPage() {
-  const [retailer, setRetailer] = useState<{name: string, id: string} | null>(null);
+  const { user, setUser, clearUser } = useUserStore();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (user && user.role !== 'RETAILER') {
+      clearUser();
+    }
+  }, [user, clearUser]);
 
   const handleLogin = (credentials: RetailerLoginCredentials) => {
     if (credentials.storeName === VALID_CREDENTIALS.storeName && credentials.storeCode === VALID_CREDENTIALS.storeCode) {
-      setRetailer({name: credentials.storeName, id: credentials.storeCode});
+      setUser({name: credentials.storeName, id: credentials.storeCode, role: 'RETAILER'});
       toast({
         title: "Login Successful",
         description: `Welcome to ${credentials.storeName}!`,
@@ -33,22 +41,16 @@ export default function RetailerPage() {
     }
   };
 
-  const handleLogout = () => {
-    setRetailer(null);
-    toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
-    });
-  };
+  const currentRetailer = user && user.role === 'RETAILER' ? user : null;
 
   return (
     <>
       <PageHeader />
       <main className="flex-grow container mx-auto p-4 md:p-8">
-      {!retailer ? (
+      {!currentRetailer ? (
         <RetailerLogin onLogin={handleLogin} />
       ) : (
-        <RetailerView retailerId={retailer.name} onLogout={handleLogout} />
+        <RetailerView retailerId={currentRetailer.name} />
       )}
       </main>
     </>

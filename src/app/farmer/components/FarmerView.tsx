@@ -13,11 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 interface FarmerViewProps {
-  onLogout: () => void;
   farmerName: string;
 }
 
-export function FarmerView({ onLogout, farmerName }: FarmerViewProps) {
+export function FarmerView({ farmerName }: FarmerViewProps) {
   const [registeredLot, setRegisteredLot] = useState<Lot | null>(null);
   const { addLot } = useAgriChainStore();
   const [activeTab, setActiveTab] = useState("register");
@@ -35,13 +34,6 @@ export function FarmerView({ onLogout, farmerName }: FarmerViewProps) {
 
   return (
     <div className="space-y-6">
-       <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold font-headline">Farmer Dashboard</h1>
-            <Button onClick={onLogout} variant="outline">
-                <LogOut className="mr-2" /> Logout
-            </Button>
-       </div>
-
        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 h-12">
                 <TabsTrigger value="register">
