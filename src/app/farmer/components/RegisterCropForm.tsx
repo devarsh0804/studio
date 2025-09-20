@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight, FileText } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -290,6 +290,14 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                             </FormItem>
                         )}
                     />
+                    <div className="space-y-2">
+                        <Button type="button" variant="outline" className="w-full">
+                            <FileText className="mr-2 h-4 w-4" /> Upload Certificate
+                        </Button>
+                        <FormDescription>
+                            Optionally upload a PDF quality certificate from a grading authority.
+                        </FormDescription>
+                    </div>
                 </div>
 
             </div>
@@ -306,3 +314,5 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
     </Card>
   );
 }
+
+    
