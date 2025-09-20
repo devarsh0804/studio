@@ -3,10 +3,8 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Home, LogOut } from "lucide-react";
+import { Home } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useUserStore } from "@/hooks/use-user-store";
-import { useToast } from "@/hooks/use-toast";
 
 const pageTitles: Record<string, { title: string, description: string }> = {
     '/farmer': { title: 'Farmer Dashboard', description: 'Register your new crop lot and generate a unique tracking QR code.' },
@@ -17,17 +15,6 @@ const pageTitles: Record<string, { title: string, description: string }> = {
 
 export function PageHeader() {
   const pathname = usePathname();
-  const { user, clearUser } = useUserStore();
-  const { toast } = useToast();
-
-  const handleLogout = () => {
-    const userName = user?.name;
-    clearUser();
-    toast({
-        title: "Logged Out",
-        description: `User ${userName} has been successfully logged out.`,
-    });
-  };
 
   if (pathname === "/") {
       return null;
@@ -45,12 +32,6 @@ export function PageHeader() {
                 <p className="text-sm text-muted-foreground">{description}</p>
             </div>
             <div className="flex items-center gap-4">
-              {user && (
-                <Button onClick={handleLogout} variant="outline" size="sm">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </Button>
-              )}
               <Button asChild variant="outline" size="sm">
                   <Link href="/">
                       <Home className="mr-2 h-4 w-4" />
