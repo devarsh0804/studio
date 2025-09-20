@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -108,7 +109,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
 
   return (
     <Card className="w-full lg:w-3/4 mx-auto">
-      <CardHeader>
+      <CardHeader className="pb-4">
         <CardTitle className="flex items-center">
             <FileCheck2 className="mr-2"/> Register New Lot
         </CardTitle>
@@ -118,8 +119,8 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
                 {/* Left Column */}
                 <div className="space-y-4">
                     <FormField
@@ -294,7 +295,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
             </div>
             
             <div className="pt-4 border-t">
-              <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Register Lot & Generate QR
               </Button>
