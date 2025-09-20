@@ -5,28 +5,32 @@ import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeIndianRupee, LineChart, List, PieChart, Star, Wheat } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, Pie, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
-import type { ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig } from "@/components/ui/chart";
 
 interface FarmerAnalyticsProps {
   farmerName: string;
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-
 const chartConfig = {
-  value: {
+  income: {
     label: "Income",
-    color: "hsl(var(--primary))",
+    color: "hsl(var(--chart-1))",
   },
+  unsold: {
+    label: "Unsold",
+    color: "hsl(var(--chart-2))",
+  },
+  sold: {
+    label: "Sold",
+    color: "hsl(var(--chart-1))",
+  }
 } satisfies ChartConfig;
-
 
 export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
     const { getAllLots } = useAgriChainStore();
     const farmerLots = getAllLots().filter(lot => lot.farmer === farmerName);
 
     const totalIncome = farmerLots.reduce((acc, lot) => {
-        // Farmer gets paid when the original lot is purchased, not sub-lots
         if (lot.owner !== farmerName && !lot.parentLotId) {
             return acc + (lot.price * lot.weight);
         }
@@ -34,9 +38,7 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
     }, 0);
 
     const pendingPayments = farmerLots.reduce((acc, lot) => {
-        // This is a simplification. In a real app, payment status would be more robust.
-        // Assuming farmer is paid once the lot owner changes.
-        if (lot.owner === farmerName) { // If farmer is still the owner, payment is pending
+        if (lot.owner === farmerName) {
             return acc + (lot.price * lot.weight);
         }
         return acc;
@@ -45,7 +47,7 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
     const totalLotsRegistered = farmerLots.length;
 
     const cropSales = farmerLots.reduce((acc, lot) => {
-        if (lot.owner !== farmerName) { // Count as sold if owner has changed
+        if (lot.owner !== farmerName) {
             acc[lot.cropName] = (acc[lot.cropName] || 0) + 1;
         }
         return acc;
@@ -80,37 +82,45 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Income</CardTitle>
-                    <BadgeIndianRupee className="h-4 w-4 text-muted-foreground" />
+                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <BadgeIndianRupee className="h-5 w-5" />
+                    </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{totalIncome.toLocaleString()}</div>
+                    <div className="text-2xl font-bold">₹{totalIncome.toLocaleString()}</div>
                     <p className="text-xs text-muted-foreground">From all completed sales</p>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
-                    <BadgeIndianRupee className="h-4 w-4 text-muted-foreground" />
+                     <div className="w-8 h-8 flex items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+                      <BadgeIndianRupee className="h-5 w-5" />
+                    </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{pendingPayments.toLocaleString()}</div>
+                    <div className="text-2xl font-bold">₹{pendingPayments.toLocaleString()}</div>
                     <p className="text-xs text-muted-foreground">From unsold lots</p>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Lots Registered</CardTitle>
-                    <List className="h-4 w-4 text-muted-foreground" />
+                     <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500/10 text-blue-500">
+                        <List className="h-5 w-5" />
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{totalLotsRegistered}</div>
-                    <p className="text-xs text-muted-foreground">Total crops registered on the platform</p>
+                    <p className="text-xs text-muted-foreground">Total crops on the platform</p>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Top Selling Crop</CardTitle>
-                    <Star className="h-4 w-4 text-muted-foreground" />
+                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-yellow-500/10 text-yellow-500">
+                        <Star className="h-5 w-5" />
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{topSellingCrop}</div>
@@ -125,21 +135,18 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
                     <CardTitle className="flex items-center"><Wheat className="mr-2"/> Income by Crop</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={incomeByCropData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
-                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: "hsl(var(--background))",
-                                    borderColor: "hsl(var(--border))",
-                                }}
+                    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                        <BarChart accessibilityLayer data={incomeByCropData}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
+                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${Number(value) / 1000}k`}/>
+                             <ChartTooltip
+                                cursor={false}
+                                content={<ChartTooltipContent indicator="dot" />}
                             />
-                            <Legend />
-                            <Bar dataKey="income" fill="hsl(var(--primary))" name="Income" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="income" fill="var(--color-income)" radius={4} />
                         </BarChart>
-                    </ResponsiveContainer>
+                    </ChartContainer>
                 </CardContent>
             </Card>
             <Card>
@@ -147,31 +154,21 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
                     <CardTitle className="flex items-center"><PieChart className="mr-2"/> Lot Status</CardTitle>
                 </CardHeader>
                 <CardContent>
-                     <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                            <Pie
-                                data={lotStatusData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={100}
-                                fill="#8884d8"
-                                dataKey="value"
-                            >
-                                {lotStatusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: "hsl(var(--background))",
-                                    borderColor: "hsl(var(--border))",
-                                }}
-                            />
-                            <Legend />
+                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                        <PieChart accessibilityLayer>
+                          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                          <Pie
+                            data={lotStatusData}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius={50}
+                          >
+                             <Cell key="cell-0" fill="var(--color-sold)" />
+                             <Cell key="cell-1" fill="var(--color-unsold)" />
+                          </Pie>
+                           <ChartLegend content={<ChartLegendContent nameKey="name" />} />
                         </PieChart>
-                    </ResponsiveContainer>
+                      </ChartContainer>
                 </CardContent>
             </Card>
         </div>
@@ -179,3 +176,5 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
     </div>
   );
 }
+
+    

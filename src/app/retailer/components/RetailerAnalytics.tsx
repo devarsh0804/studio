@@ -5,12 +5,30 @@ import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeIndianRupee, Box, PackageCheck, PieChart, ShoppingBag, Store, Truck, Wheat } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig } from "@/components/ui/chart";
 
 interface RetailerAnalyticsProps {
   retailerId: string;
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+const chartConfig = {
+  value: {
+    label: "Weight (q)",
+    color: "hsl(var(--chart-1))",
+  },
+  inTransit: {
+    label: "In Transit",
+    color: "hsl(var(--chart-2))",
+  },
+  delivered: {
+    label: "Delivered",
+    color: "hsl(var(--chart-3))",
+  },
+  stocked: {
+    label: "Stocked",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
 
 export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
     const { getAllLots } = useAgriChainStore();
@@ -31,9 +49,9 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
     }, [] as { name: string, value: number }[]);
 
     const lotStatusData = [
-        { name: 'In Transit', value: lotsInTransit },
-        { name: 'Delivered', value: inventoryLots.filter(lot => lot.status === 'Delivered').length },
-        { name: 'Stocked', value: lotsOnShelf },
+        { name: 'In Transit', value: lotsInTransit, fill: 'var(--color-inTransit)' },
+        { name: 'Delivered', value: inventoryLots.filter(lot => lot.status === 'Delivered').length, fill: 'var(--color-delivered)' },
+        { name: 'Stocked', value: lotsOnShelf, fill: 'var(--color-stocked)' },
     ].filter(item => item.value > 0);
 
 
@@ -43,27 +61,33 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Lots in Inventory</CardTitle>
-                    <Box className="h-4 w-4 text-muted-foreground" />
+                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <Box className="h-5 w-5" />
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{inventoryLots.length}</div>
-                    <p className="text-xs text-muted-foreground">Total lots assigned to your store</p>
+                    <p className="text-xs text-muted-foreground">Total lots assigned to you</p>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Value of Inventory</CardTitle>
-                    <BadgeIndianRupee className="h-4 w-4 text-muted-foreground" />
+                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-green-500/10 text-green-500">
+                        <BadgeIndianRupee className="h-5 w-5" />
+                    </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{inventoryValue.toLocaleString()}</div>
+                    <div className="text-2xl font-bold">₹{inventoryValue.toLocaleString()}</div>
                     <p className="text-xs text-muted-foreground">Based on purchase price</p>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Lots In Transit</CardTitle>
-                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+                        <Truck className="h-5 w-5" />
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{lotsInTransit}</div>
@@ -73,7 +97,9 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Lots on Shelf</CardTitle>
-                    <Store className="h-4 w-4 text-muted-foreground" />
+                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500/10 text-blue-500">
+                        <Store className="h-5 w-5" />
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{lotsOnShelf}</div>
@@ -88,21 +114,18 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
                     <CardTitle className="flex items-center"><Wheat className="mr-2"/> Inventory by Crop</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={inventoryByCrop}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
-                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} q`}/>
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: "hsl(var(--background))",
-                                    borderColor: "hsl(var(--border))",
-                                }}
+                    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                        <BarChart accessibilityLayer data={inventoryByCrop}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
+                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `${value} q`}/>
+                            <ChartTooltip
+                                cursor={false}
+                                content={<ChartTooltipContent indicator="dot" />}
                             />
-                            <Legend />
-                            <Bar dataKey="value" fill="hsl(var(--primary))" name="Weight (quintals)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="value" fill="var(--color-value)" radius={4} />
                         </BarChart>
-                    </ResponsiveContainer>
+                    </ChartContainer>
                 </CardContent>
             </Card>
             <Card>
@@ -110,34 +133,22 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
                     <CardTitle className="flex items-center"><PieChart className="mr-2"/> Inventory Status</CardTitle>
                 </CardHeader>
                 <CardContent>
-                     <ResponsiveContainer width="100%" height={300}>
+                    <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
                         <PieChart>
-                            <Pie
-                                data={lotStatusData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={100}
-                                fill="#8884d8"
-                                dataKey="value"
-                            >
-                                {lotStatusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: "hsl(var(--background))",
-                                    borderColor: "hsl(var(--border))",
-                                }}
-                            />
-                            <Legend />
+                          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                          <Pie data={lotStatusData} dataKey="value" nameKey="name" innerRadius={50}>
+                             {lotStatusData.map((entry) => (
+                                <Cell key={entry.name} fill={entry.fill} />
+                             ))}
+                          </Pie>
+                          <ChartLegend content={<ChartLegendContent nameKey="name" />} />
                         </PieChart>
-                    </ResponsiveContainer>
+                    </ChartContainer>
                 </CardContent>
             </Card>
         </div>
     </div>
   );
 }
+
+    
