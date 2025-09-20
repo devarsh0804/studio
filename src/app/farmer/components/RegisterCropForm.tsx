@@ -118,9 +118,9 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column */}
-                <div className="md:col-span-1 space-y-4">
+                <div className="space-y-4">
                      <div className="space-y-2">
                         <FormLabel>Crop Photo</FormLabel>
                         <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
@@ -165,7 +165,7 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                 </div>
 
                 {/* Right Column */}
-                <div className="md:col-span-2 space-y-4">
+                <div className="space-y-4">
                     <FormField
                     control={form.control}
                     name="farmerName"
