@@ -72,7 +72,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="mt-16 border-t pt-8">
+          <div className="mt-32 border-t pt-8">
             <h3 className="text-lg font-semibold text-muted-foreground text-center">Developer Options</h3>
             <div className="mt-4 text-center">
               <Button variant="destructive" onClick={() => setIsResetDialogOpen(true)}>
