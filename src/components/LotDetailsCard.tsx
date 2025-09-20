@@ -22,7 +22,7 @@ export function LotDetailsCard({ lot, children, showImage = true }: LotDetailsCa
     <>
       <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
         {showImage && (
-          <div className="relative aspect-[4/3] w-full">
+          <div className="relative aspect-[5/3] w-full">
             <Image
               src={lot.photoUrl}
               alt={lot.cropName}
