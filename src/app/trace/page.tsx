@@ -16,7 +16,6 @@ import { Loader2, ScanLine, Search, XCircle, Award, Droplets, Microscope, Palett
 import { format, isValid } from 'date-fns';
 import { Timeline } from '@/components/Timeline';
 import { Separator } from '@/components/ui/separator';
-import { PageHeader } from '@/components/PageHeader';
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -158,10 +157,6 @@ export default function TracePage() {
 
   return (
     <>
-      <PageHeader 
-        title="Scan Product"
-        description="Scan a product's QR code to see its complete journey."
-      />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         <div className="max-w-2xl mx-auto space-y-8">
             <Card>

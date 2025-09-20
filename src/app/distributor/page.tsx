@@ -2,7 +2,6 @@
 
 import { DistributorView } from "./components/DistributorView";
 import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
-import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/hooks/use-toast";
 import { useUserStore } from "@/hooks/use-user-store";
 
@@ -44,17 +43,11 @@ export default function DistributorPage() {
 
   return (
     <>
-      <PageHeader 
-        title={distributor ? `Welcome, ${distributor.name}` : "Distributor Dashboard"}
-        description={distributor ? "Purchase lots, split them, and add transport details." : "Please log in to continue."}
-      />
-      <main className="flex-grow container mx-auto p-4 md:p-8">
-        {!distributor ? (
-          <DistributorLogin onLogin={handleLogin} />
-        ) : (
-          <DistributorView distributorId={distributor.name} onLogout={handleLogout} />
-        )}
-      </main>
+      {!distributor ? (
+        <DistributorLogin onLogin={handleLogin} />
+      ) : (
+        <DistributorView distributorId={distributor.name} onLogout={handleLogout} />
+      )}
     </>
   );
 }

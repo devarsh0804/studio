@@ -1,4 +1,5 @@
 import { MainNav } from "./components/MainNav";
+import { PageHeader } from "@/components/PageHeader";
 import { UserProfile } from "./components/UserProfile";
 
 export default function RolesLayout({
@@ -14,6 +15,7 @@ export default function RolesLayout({
                     <UserProfile />
                 </div>
             </div>
+            <PageHeader />
             <div className="flex-1 space-y-4 p-8 pt-6">
                 {children}
             </div>

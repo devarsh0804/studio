@@ -51,7 +51,7 @@ export default function Home() {
   const handleResetData = () => {
     try {
       localStorage.removeItem('agrichain-storage');
-      localStorage.removeItem('graded-lots-storage');
+      localStorage.removeItem('user-session-storage');
       toast({
         title: "Application Data Cleared",
         description: "All entered data has been removed. The page will now reload.",

@@ -1,6 +1,5 @@
 "use client";
 
-import { PageHeader } from "@/components/PageHeader";
 import { FarmerView } from "./components/FarmerView";
 import { FarmerLogin, type FarmerLoginCredentials } from "./components/FarmerLogin";
 import { useToast } from "@/hooks/use-toast";
@@ -49,17 +48,11 @@ export default function FarmerPage() {
 
   return (
     <>
-      <PageHeader 
-        title={farmerUser ? `Welcome, ${farmerUser.farmerName}` : "Farmer"}
-        description={farmerUser ? "Register your new crop lot and generate a unique tracking QR code." : "Please log in to continue."}
-      />
-      <main className="flex-grow container mx-auto p-4 md:p-8">
-        {!farmerUser ? (
-          <FarmerLogin onLogin={handleLogin} />
-        ) : (
-          <FarmerView onLogout={handleLogout} farmerName={farmerUser.farmerName}/>
-        )}
-      </main>
+      {!farmerUser ? (
+        <FarmerLogin onLogin={handleLogin} />
+      ) : (
+        <FarmerView onLogout={handleLogout} farmerName={farmerUser.farmerName}/>
+      )}
     </>
   );
 }

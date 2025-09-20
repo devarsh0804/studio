@@ -2,7 +2,6 @@
 
 import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
-import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/hooks/use-toast";
 import { useUserStore } from "@/hooks/use-user-store";
 
@@ -44,17 +43,11 @@ export default function RetailerPage() {
 
   return (
     <>
-      <PageHeader 
-        title={retailer ? `Welcome, ${retailer.storeName}` : "Retailer"}
-        description={retailer ? "Scan a lot to view its history and manage retail inventory." : "Please log in to continue."}
-      />
-      <main className="flex-grow container mx-auto p-4 md:p-8">
-        {!retailer ? (
-          <RetailerLogin onLogin={handleLogin} />
-        ) : (
-          <RetailerView retailerId={retailer.storeName} onLogout={handleLogout} />
-        )}
-      </main>
+      {!retailer ? (
+        <RetailerLogin onLogin={handleLogin} />
+      ) : (
+        <RetailerView retailerId={retailer.storeName} onLogout={handleLogout} />
+      )}
     </>
   );
 }
