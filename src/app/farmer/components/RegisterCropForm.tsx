@@ -171,41 +171,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         </FormItem>
                     )}
                     />
-                     <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                        control={form.control}
-                        name="weight"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Weight (quintals)</FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                    <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input type="number" placeholder="e.g., 5" {...field} className="pl-10"/>
-                                </div>
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                         <FormField
-                        control={form.control}
-                        name="price"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Price (per quintal)</FormLabel>
-                                <FormControl>
-                                    <div className="relative">
-                                        <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
-                                    </div>
-                                </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                    </div>
-                     <FormField
+                    <FormField
                         control={form.control}
                         name="harvestDate"
                         render={({ field }) => (
@@ -289,6 +255,40 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         <FormDescription>
                             For demo purposes, a placeholder image is used.
                         </FormDescription>
+                    </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                        control={form.control}
+                        name="weight"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Weight (quintals)</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input type="number" placeholder="e.g., 5" {...field} className="pl-10"/>
+                                </div>
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                         <FormField
+                        control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Price (per quintal)</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
+                                    </div>
+                                </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                     </div>
                     <div className="space-y-2">
                         <Button type="button" variant="outline" className="w-full">
