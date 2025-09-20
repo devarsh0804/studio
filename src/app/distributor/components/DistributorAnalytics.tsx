@@ -3,9 +3,9 @@
 
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BadgeIndianRupee, LineChart, PackageCheck, ShoppingBag, Spline } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Line, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig } from "@/components/ui/chart";
+import { BadgeIndianRupee, LineChart as LineChartIcon, PackageCheck, ShoppingBag, Spline } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
 import { Wheat } from "lucide-react";
 import { format } from "date-fns";
 
@@ -145,7 +145,7 @@ export function DistributorAnalytics({ distributorId }: DistributorAnalyticsProp
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center"><LineChart className="mr-2"/> Purchases Over Time</CardTitle>
+                    <CardTitle className="flex items-center"><LineChartIcon className="mr-2"/> Purchases Over Time</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">

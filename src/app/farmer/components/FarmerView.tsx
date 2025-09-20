@@ -8,7 +8,7 @@ import { useAgriChainStore }from "@/hooks/use-agrichain-store";
 import { RegisterCropForm } from "./RegisterCropForm";
 import { RegisteredLotsList } from "./RegisteredLotsList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileCheck2, List, User, LineChart } from "lucide-react";
+import { FileCheck2, List, User, LineChart as LineChartIcon } from "lucide-react";
 import { FarmerAnalytics } from "./FarmerAnalytics";
 
 
@@ -43,7 +43,7 @@ export function FarmerView({ farmerName }: FarmerViewProps) {
                     <List className="mr-2"/> Your Registered Lots
                 </TabsTrigger>
                 <TabsTrigger value="analytics">
-                    <LineChart className="mr-2"/> Analytics
+                    <LineChartIcon className="mr-2"/> Analytics
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="register">

@@ -3,9 +3,9 @@
 
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BadgeIndianRupee, List, LineChart, Star, Wheat } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Line, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig } from "@/components/ui/chart";
+import { BadgeIndianRupee, List, LineChart as LineChartIcon, Star, Wheat } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
 import { format } from "date-fns";
 
 interface FarmerAnalyticsProps {
@@ -45,7 +45,7 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
         return acc;
     }, 0);
 
-    const totalLotsRegistered = farmerLots.length;
+    const totalLotsRegistered = farmerLots.filter(l => !l.parentLotId).length;
 
     const cropSales = farmerLots.reduce((acc, lot) => {
         if (lot.owner !== farmerName) {
@@ -116,7 +116,7 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{totalLotsRegistered}</div>
-                    <p className="text-xs text-muted-foreground">Total crops on the platform</p>
+                    <p className="text-xs text-muted-foreground">Total primary lots</p>
                 </CardContent>
             </Card>
             <Card>
@@ -155,7 +155,7 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center"><LineChart className="mr-2"/> Income Over Time</CardTitle>
+                    <CardTitle className="flex items-center"><LineChartIcon className="mr-2"/> Income Over Time</CardTitle>
                 </CardHeader>
                 <CardContent>
                      <ChartContainer config={chartConfig} className="min-h-[200px] w-full">

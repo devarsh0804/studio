@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText, Spline, Truck, LineChart } from "lucide-react";
+import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText, Spline, Truck, LineChart as LineChartIcon } from "lucide-react";
 import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
 import { Separator } from "@/components/ui/separator";
@@ -283,7 +283,7 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
                     <ShoppingBag className="mr-2"/> Your Inventory
                 </TabsTrigger>
                  <TabsTrigger value="analytics">
-                    <LineChart className="mr-2"/> Analytics
+                    <LineChartIcon className="mr-2"/> Analytics
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="marketplace" className="mt-0">

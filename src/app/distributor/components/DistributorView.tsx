@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent, FileText, LineChart } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent, FileText, LineChart as LineChartIcon } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -298,7 +298,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                   Dispatched Lots
                 </TabsTrigger>
                 <TabsTrigger value="analytics">
-                    <LineChart className="mr-2"/> Analytics
+                    <LineChartIcon className="mr-2"/> Analytics
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="scan-lot" className="mt-0">

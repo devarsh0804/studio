@@ -3,8 +3,8 @@
 
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BadgeIndianRupee, Box, LineChart, Store, Truck, Wheat } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Line, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { BadgeIndianRupee, Box, LineChart as LineChartIcon, Store, Truck, Wheat } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
 import { format } from "date-fns";
 
@@ -144,7 +144,7 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center"><LineChart className="mr-2"/> Inventory Value Over Time</CardTitle>
+                    <CardTitle className="flex items-center"><LineChartIcon className="mr-2"/> Inventory Value Over Time</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
