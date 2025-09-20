@@ -1,12 +1,11 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { DistributorView } from "./components/DistributorView";
 import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
-import { useUserStore } from "@/hooks/use-user-store";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -15,18 +14,12 @@ const VALID_CREDENTIALS = {
 };
 
 export default function DistributorPage() {
-  const { user, setUser, clearUser } = useUserStore();
+  const [distributor, setDistributor] = useState<{ name: string; code: string } | null>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (user && user.role !== 'DISTRIBUTOR') {
-      clearUser();
-    }
-  }, [user, clearUser]);
 
   const handleLogin = (credentials: DistributorLoginCredentials) => {
     if (credentials.name === VALID_CREDENTIALS.name && credentials.code === VALID_CREDENTIALS.code) {
-      setUser({ name: credentials.name, id: credentials.code, role: 'DISTRIBUTOR' });
+      setDistributor(credentials);
       toast({
         title: "Login Successful",
         description: `Welcome back, ${credentials.name}!`,
@@ -40,15 +33,27 @@ export default function DistributorPage() {
     }
   };
 
-  const currentDistributor = user && user.role === 'DISTRIBUTOR' ? user : null;
+  const handleLogout = () => {
+    setDistributor(null);
+    toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+    });
+  };
 
   return (
-    <div className="flex-grow container mx-auto p-4 md:p-8">
-      {!currentDistributor ? (
-        <DistributorLogin onLogin={handleLogin} />
-      ) : (
-        <DistributorView distributorId={currentDistributor.name} />
-      )}
-    </div>
+    <>
+      <PageHeader
+        title="Distributor Dashboard"
+        description="Purchase lots, split them, and add transport details."
+      />
+      <main className="flex-grow container mx-auto p-4 md:p-8">
+        {!distributor ? (
+          <DistributorLogin onLogin={handleLogin} />
+        ) : (
+          <DistributorView distributorId={distributor.name} onLogout={handleLogout} />
+        )}
+      </main>
+    </>
   );
 }

@@ -1,12 +1,11 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
-import { useUserStore } from "@/hooks/use-user-store";
 
 
 // In a real app, this would come from a secure source
@@ -16,18 +15,12 @@ const VALID_CREDENTIALS = {
 };
 
 export default function RetailerPage() {
-  const { user, setUser, clearUser } = useUserStore();
+  const [retailer, setRetailer] = useState<{ storeName: string; storeCode: string } | null>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (user && user.role !== 'RETAILER') {
-      clearUser();
-    }
-  }, [user, clearUser]);
 
   const handleLogin = (credentials: RetailerLoginCredentials) => {
     if (credentials.storeName === VALID_CREDENTIALS.storeName && credentials.storeCode === VALID_CREDENTIALS.storeCode) {
-      setUser({name: credentials.storeName, id: credentials.storeCode, role: 'RETAILER'});
+      setRetailer(credentials);
       toast({
         title: "Login Successful",
         description: `Welcome to ${credentials.storeName}!`,
@@ -41,15 +34,27 @@ export default function RetailerPage() {
     }
   };
 
-  const currentRetailer = user && user.role === 'RETAILER' ? user : null;
+  const handleLogout = () => {
+    setRetailer(null);
+    toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+    });
+  };
 
   return (
-    <div className="flex-grow container mx-auto p-4 md:p-8">
-      {!currentRetailer ? (
-        <RetailerLogin onLogin={handleLogin} />
-      ) : (
-        <RetailerView retailerId={currentRetailer.name} />
-      )}
-    </div>
+    <>
+      <PageHeader
+        title="Retailer Dashboard"
+        description="Scan a lot to view its history and manage retail inventory."
+      />
+      <main className="flex-grow container mx-auto p-4 md:p-8">
+        {!retailer ? (
+          <RetailerLogin onLogin={handleLogin} />
+        ) : (
+          <RetailerView retailerId={retailer.storeName} onLogout={handleLogout} />
+        )}
+      </main>
+    </>
   );
 }

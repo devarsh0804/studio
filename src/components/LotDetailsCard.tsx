@@ -4,10 +4,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import type { Lot } from "@/lib/types";
-import { BadgeIndianRupee, Calendar, CheckCircle, Fingerprint, MapPin, Milestone, Package, ShieldCheck, Tractor, Waypoints } from "lucide-react";
+import { BadgeIndianRupee, Calendar, Fingerprint, MapPin, ShieldCheck, Tractor } from "lucide-react";
 import { CertificateDialog } from "./CertificateDialog";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 
 interface LotDetailsCardProps {
   lot: Lot;
@@ -21,42 +20,43 @@ export function LotDetailsCard({ lot, children }: LotDetailsCardProps) {
     <>
       <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
         <CardHeader className="pb-4">
-            <CardTitle className="flex items-center text-xl justify-between">
-              <span>{lot.cropName}</span>
-              <Badge variant="outline" className="font-mono text-sm">{lot.lotId.split('-').pop()}</Badge>
-            </CardTitle>
-            <CardDescription className="flex items-center gap-2"><Tractor className="w-4 h-4"/>{lot.farmer} - {lot.location}</CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-xl">{lot.cropName}</CardTitle>
+              <CardDescription className="flex items-center gap-2 pt-1"><Tractor className="w-4 h-4"/>{lot.farmer}</CardDescription>
+            </div>
+             <div className="text-right">
+                <p className="font-mono text-xs bg-muted text-muted-foreground rounded px-2 py-1">{lot.lotId}</p>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center justify-end gap-1"><MapPin className="w-3 h-3"/>{lot.location}</p>
+             </div>
+          </div>
         </CardHeader>
         <CardContent className="flex-grow space-y-3 text-sm">
-            <div className="flex items-center gap-2">
-                <Badge variant={lot.quality === 'Premium' ? 'default' : 'secondary'} className="text-sm">
-                    <ShieldCheck className="w-4 h-4 mr-2"/>
-                    {lot.quality} Grade
-                </Badge>
-                 <Badge variant="outline">AGMARK Digital <CheckCircle className="w-3 h-3 ml-1 text-primary"/></Badge>
+           <div className="border-t pt-4">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <p className="text-muted-foreground">Price per quintal</p>
+                        <p className="font-bold text-lg flex items-center"><BadgeIndianRupee className="w-4 h-4 mr-1"/>{lot.price.toLocaleString()}</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-muted-foreground">Total Weight</p>
+                        <p className="font-bold text-lg">{lot.weight} q</p>
+                    </div>
+                </div>
             </div>
-            <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
-                <span className="text-muted-foreground">Certified On:</span>
-                <span className="font-medium ml-2">{new Date(lot.gradingDate).toLocaleDateString()}</span>
+
+            <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
+                <p className="flex items-center gap-1"><Calendar className="w-4 h-4" /> Harvested: {lot.harvestDate}</p>
+                 <p className="flex items-center gap-1"><ShieldCheck className="w-4 h-4 text-primary"/> Grade: <span className="font-semibold text-primary">{lot.quality}</span></p>
             </div>
-            <div className="flex items-center text-lg font-bold">
-                <BadgeIndianRupee className="w-5 h-5 mr-2 text-muted-foreground" />
-                <span>{lot.price}/kg</span>
-            </div>
+            
         </CardContent>
         <CardFooter className="flex flex-col gap-2 pt-4 border-t mt-auto">
-          <div className="w-full flex gap-2">
+          {children || (
             <Button variant="secondary" className="w-full" onClick={() => setIsCertificateOpen(true)}>
-                <Fingerprint /> View Certificate
+                <Fingerprint className="mr-2" /> View Certificate
             </Button>
-            <Button variant="outline" className="w-full">
-                <Waypoints /> Track Journey
-            </Button>
-          </div>
-           <Button className="w-full mt-2">
-            <Package/> Reserve/Buy Lot
-          </Button>
+          )}
         </CardFooter>
       </Card>
 
