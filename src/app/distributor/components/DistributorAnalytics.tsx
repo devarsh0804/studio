@@ -3,9 +3,11 @@
 
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BadgeIndianRupee, Box, PackageCheck, PieChart, ShoppingBag, Spline, Wheat } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig, ChartLegendContent } from "@/components/ui/chart";
+import { BadgeIndianRupee, LineChart, PackageCheck, ShoppingBag, Spline } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Line, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig } from "@/components/ui/chart";
+import { Wheat } from "lucide-react";
+import { format } from "date-fns";
 
 
 interface DistributorAnalyticsProps {
@@ -16,6 +18,10 @@ const chartConfig = {
   weight: {
     label: "Weight (q)",
     color: "hsl(var(--chart-1))",
+  },
+  count: {
+    label: "Lots",
+    color: "hsl(var(--chart-2))",
   },
   purchased: {
     label: "Purchased",
@@ -52,11 +58,16 @@ export function DistributorAnalytics({ distributorId }: DistributorAnalyticsProp
         return acc;
     }, [] as { name: string, weight: number }[]);
 
-    const lotStatusData = [
-        { name: 'Purchased', value: purchasedLots.filter(lot => lot.weight > 0).length, fill: "var(--color-purchased)"},
-        { name: 'Split', value: subLotsCreated.length > 0 ? purchasedLots.filter(lot => lot.weight === 0).length : 0, fill: "var(--color-split)" },
-        { name: 'Dispatched', value: dispatchedLots.length, fill: "var(--color-dispatched)" }
-    ].filter(item => item.value > 0);
+    const purchasesOverTime = purchasedLots.reduce((acc, lot) => {
+        const month = format(new Date(lot.gradingDate), 'MMM yyyy');
+        const existing = acc.find(item => item.month === month);
+        if (existing) {
+            existing.count += 1;
+        } else {
+            acc.push({ month, count: 1 });
+        }
+        return acc;
+    }, [] as { month: string, count: number }[]).sort((a,b) => new Date(a.month).getTime() - new Date(b.month).getTime());
 
 
   return (
@@ -134,15 +145,17 @@ export function DistributorAnalytics({ distributorId }: DistributorAnalyticsProp
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center"><PieChart className="mr-2"/> Lot Status Overview</CardTitle>
+                    <CardTitle className="flex items-center"><LineChart className="mr-2"/> Purchases Over Time</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 pb-0">
-                    <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
-                        <PieChart>
-                          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                          <Pie data={lotStatusData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5} />
-                          <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-                        </PieChart>
+                <CardContent>
+                    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                        <LineChart accessibilityLayer data={purchasesOverTime}>
+                          <CartesianGrid vertical={false} />
+                           <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+                           <YAxis tickLine={false} axisLine={false} allowDecimals={false}/>
+                          <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                          <Line type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} dot={false} />
+                        </LineChart>
                     </ChartContainer>
                 </CardContent>
             </Card>

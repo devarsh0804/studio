@@ -3,9 +3,10 @@
 
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BadgeIndianRupee, List, PieChart, Star, Wheat } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Pie, Cell } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from "@/components/ui/chart";
+import { BadgeIndianRupee, List, LineChart, Star, Wheat } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Line, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig } from "@/components/ui/chart";
+import { format } from "date-fns";
 
 interface FarmerAnalyticsProps {
   farmerName: string;
@@ -64,17 +65,19 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
 
     const incomeByCropData = Object.entries(incomeByCrop).map(([name, income]) => ({ name, income }));
 
-    const lotStatusData = farmerLots.reduce((acc, lot) => {
-        const status = lot.owner === farmerName ? 'Unsold' : 'Sold';
-        const existing = acc.find(item => item.name === status);
-        if (existing) {
-            existing.value += 1;
-        } else {
-            const fill = status === 'Sold' ? 'var(--color-sold)' : 'var(--color-unsold)';
-            acc.push({ name: status, value: 1, fill });
+    const incomeOverTime = farmerLots.reduce((acc, lot) => {
+        if (lot.owner !== farmerName && !lot.parentLotId) {
+            const month = format(new Date(lot.harvestDate), 'MMM yyyy');
+            const income = lot.price * lot.weight;
+            const existing = acc.find(item => item.month === month);
+            if (existing) {
+                existing.income += income;
+            } else {
+                acc.push({ month, income });
+            }
         }
         return acc;
-    }, [] as { name: string; value: number; fill: string }[]);
+    }, [] as { month: string; income: number }[]).sort((a,b) => new Date(a.month).getTime() - new Date(b.month).getTime());
 
 
   return (
@@ -137,8 +140,10 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <BarChart accessibilityLayer data={incomeByCropData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                        <BarChart accessibilityLayer data={incomeByCropData}>
                             <CartesianGrid vertical={false} />
+                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
+                             <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
                             <ChartTooltip
                                 cursor={false}
                                 content={<ChartTooltipContent indicator="dot" />}
@@ -150,21 +155,17 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center"><PieChart className="mr-2"/> Lot Status</CardTitle>
+                    <CardTitle className="flex items-center"><LineChart className="mr-2"/> Income Over Time</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 pb-0">
-                     <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
-                        <PieChart>
-                          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                          <Pie
-                            data={lotStatusData}
-                            dataKey="value"
-                            nameKey="name"
-                            innerRadius={50}
-                            strokeWidth={5}
-                          />
-                           <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-                        </PieChart>
+                <CardContent>
+                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                        <LineChart accessibilityLayer data={incomeOverTime}>
+                           <CartesianGrid vertical={false} />
+                           <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+                           <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
+                           <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                           <Line dataKey="income" type="monotone" stroke="var(--color-income)" strokeWidth={2} dot={false} />
+                        </LineChart>
                       </ChartContainer>
                 </CardContent>
             </Card>

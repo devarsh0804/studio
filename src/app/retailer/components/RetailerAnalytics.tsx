@@ -3,9 +3,10 @@
 
 import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BadgeIndianRupee, Box, PackageCheck, PieChart, ShoppingBag, Store, Truck, Wheat } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartConfig, ChartLegendContent } from "@/components/ui/chart";
+import { BadgeIndianRupee, Box, LineChart, Store, Truck, Wheat } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Line, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
+import { format } from "date-fns";
 
 interface RetailerAnalyticsProps {
   retailerId: string;
@@ -15,6 +16,10 @@ const chartConfig = {
   value: {
     label: "Weight (q)",
     color: "hsl(var(--chart-1))",
+  },
+  inventoryValue: {
+      label: "Inventory Value",
+      color: "hsl(var(--chart-2))",
   },
   inTransit: {
     label: "In Transit",
@@ -31,7 +36,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
-    const { getAllLots } = useAgriChainStore();
+    const { getAllLots, findLot } = useAgriChainStore();
     const inventoryLots = getAllLots().filter(lot => lot.owner === retailerId);
 
     const inventoryValue = inventoryLots.reduce((acc, lot) => acc + (lot.price * lot.weight), 0);
@@ -48,11 +53,20 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
         return acc;
     }, [] as { name: string, value: number }[]);
 
-    const lotStatusData = [
-        { name: 'In Transit', value: lotsInTransit, fill: 'var(--color-inTransit)' },
-        { name: 'Delivered', value: inventoryLots.filter(lot => lot.status === 'Delivered').length, fill: 'var(--color-delivered)' },
-        { name: 'Stocked', value: lotsOnShelf, fill: 'var(--color-stocked)' },
-    ].filter(item => item.value > 0);
+    const inventoryValueOverTime = inventoryLots.reduce((acc, lot) => {
+        const parentLot = findLot(lot.parentLotId ?? "");
+        if (!parentLot) return acc;
+
+        const month = format(new Date(parentLot.gradingDate), 'MMM yyyy');
+        const value = lot.price * lot.weight;
+        const existing = acc.find(item => item.month === month);
+        if (existing) {
+            existing.inventoryValue += value;
+        } else {
+            acc.push({ month, inventoryValue: value });
+        }
+        return acc;
+    }, [] as { month: string, inventoryValue: number }[]).sort((a,b) => new Date(a.month).getTime() - new Date(b.month).getTime());
 
 
   return (
@@ -130,15 +144,17 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center"><PieChart className="mr-2"/> Inventory Status</CardTitle>
+                    <CardTitle className="flex items-center"><LineChart className="mr-2"/> Inventory Value Over Time</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 pb-0">
-                    <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
-                        <PieChart>
-                          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                          <Pie data={lotStatusData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5} />
-                          <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-                        </PieChart>
+                <CardContent>
+                    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                        <LineChart accessibilityLayer data={inventoryValueOverTime}>
+                           <CartesianGrid vertical={false} />
+                           <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+                           <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
+                          <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                          <Line type="monotone" dataKey="inventoryValue" stroke="var(--color-inventoryValue)" strokeWidth={2} dot={false} />
+                        </LineChart>
                     </ChartContainer>
                 </CardContent>
             </Card>
