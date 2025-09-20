@@ -59,7 +59,6 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
   });
 
   const cropImage = placeHolderImages.find(p => p.id === 'crop1');
-  const farmerImage = placeHolderImages.find(p => p.id === 'farmer1');
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -228,42 +227,25 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         )}
                         />
                     </div>
-                      <FormField
-                        control={form.control}
-                        name="price"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Set Your Price (per quintal)</FormLabel>
-                                <FormControl>
-                                    <div className="relative">
-                                        <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
-                                    </div>
-                                </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-
                 </div>
 
                 <div className="space-y-4 pt-4 border-t md:border-t-0 md:border-l md:pl-6 md:pt-0">
-                    <div className="space-y-2">
-                        <FormLabel>Crop Photo</FormLabel>
-                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden">
-                             {cropImage ? (
-                                <Image src={cropImage.imageUrl} alt={cropImage.description} fill objectFit="cover" data-ai-hint={cropImage.imageHint}/>
-                            ) : (
-                                <p className="text-muted-foreground text-sm">No Image</p>
-                            )}
-                        </div>
-                        <Button type="button" variant="outline" className="w-full">
-                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
-                        </Button>
-                        <FormDescription>
-                            For demo purposes, a placeholder image is used.
-                        </FormDescription>
-                    </div>
+                    <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Set Your Price (per quintal)</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
+                                </div>
+                            </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
                     <FormField
                         control={form.control}
                         name="quality"
@@ -289,6 +271,26 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                             </FormItem>
                         )}
                     />
+                     <div className="space-y-2">
+                        <FormLabel>Crop Photo</FormLabel>
+                        <div className="flex items-center gap-4">
+                            <div className="w-24 h-20 rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
+                                {cropImage ? (
+                                    <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
+                                ) : (
+                                    <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
+                                )}
+                            </div>
+                            <div className="flex-1 space-y-2">
+                                <Button type="button" variant="outline" className="w-full">
+                                    <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                                </Button>
+                                <FormDescription>
+                                    A placeholder image is used for this demo.
+                                </FormDescription>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
