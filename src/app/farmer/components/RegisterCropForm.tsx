@@ -120,7 +120,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 {/* Left Column */}
                 <div className="space-y-4">
                     <FormField
@@ -205,6 +205,19 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         )}
                         />
                     </div>
+                </div>
+                 {/* Right Column */}
+                <div className="space-y-4">
+                     <div className="space-y-2">
+                        <FormLabel>Crop Photo</FormLabel>
+                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
+                            {cropImage ? (
+                                <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
+                            ) : (
+                                <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
+                            )}
+                        </div>
+                    </div>
                     <FormField
                         control={form.control}
                         name="harvestDate"
@@ -246,6 +259,9 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                             </FormItem>
                         )}
                         />
+                     <Button type="button" variant="outline" className="w-full">
+                        <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                    </Button>
                     <FormField
                         control={form.control}
                         name="quality"
@@ -264,44 +280,15 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                                         <SelectItem value="Basic">Basic</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <FormDescription>
-                                    Select the quality grade determined by the manual inspection.
-                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
+                    <Button type="button" variant="outline" className="w-full">
+                        <FileText className="mr-2 h-4 w-4" /> Upload Certificate
+                    </Button>
                 </div>
-                 {/* Right Column */}
-                <div className="space-y-4">
-                     <div className="space-y-2">
-                        <FormLabel>Crop Photo</FormLabel>
-                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
-                            {cropImage ? (
-                                <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
-                            ) : (
-                                <p className="text-muted-foreground text-xs p-2 text-center">No Image</p>
-                            )}
-                        </div>
-                        <Button type="button" variant="outline" className="w-full">
-                            <Camera className="mr-2 h-4 w-4" /> Upload Photo
-                        </Button>
-                        <FormDescription>
-                            For demo purposes, a placeholder image is used.
-                        </FormDescription>
-                    </div>
-                    <div className="space-y-2">
-                        <Button type="button" variant="outline" className="w-full">
-                            <FileText className="mr-2 h-4 w-4" /> Upload Certificate
-                        </Button>
-                        <FormDescription>
-                            Optionally upload a PDF quality certificate from a grading authority.
-                        </FormDescription>
-                    </div>
-                </div>
-
             </div>
-            
             <div className="pt-4 border-t">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
