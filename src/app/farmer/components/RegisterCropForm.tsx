@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight, PoundSterling, Upload } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -39,16 +39,17 @@ const formSchema = z.object({
 
 interface RegisterCropFormProps {
   onRegister: (lot: Lot) => void;
+  farmerName: string;
 }
 
-export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
+export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      farmerName: "Ramesh Kumar",
+      farmerName: farmerName,
       cropName: "Wheat",
       location: "Bhubaneswar, Odisha",
       weight: 10,
@@ -118,8 +119,8 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Right Column */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                {/* Left Column */}
                 <div className="space-y-4">
                     <FormField
                     control={form.control}
@@ -245,11 +246,11 @@ export function RegisterCropForm({ onRegister }: RegisterCropFormProps) {
                         )}
                         />
                 </div>
-                 {/* Left Column */}
+                 {/* Right Column */}
                 <div className="space-y-4">
                      <div className="space-y-2">
                         <FormLabel>Crop Photo</FormLabel>
-                        <div className="w-full aspect-video rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
+                        <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
                             {cropImage ? (
                                 <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
                             ) : (

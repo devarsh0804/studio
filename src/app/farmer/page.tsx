@@ -55,7 +55,7 @@ export default function FarmerPage() {
         {!farmerUser ? (
           <FarmerLogin onLogin={handleLogin} />
         ) : (
-          <FarmerView onLogout={handleLogout} />
+          <FarmerView onLogout={handleLogout} farmerName={farmerUser.farmerName}/>
         )}
       </main>
     </>
