@@ -50,7 +50,7 @@ export function FarmerView({ farmerName }: FarmerViewProps) {
                  <RegisterCropForm onRegister={handleRegister} farmerName={farmerName} />
             </TabsContent>
             <TabsContent value="lots">
-                <RegisteredLotsList />
+                <RegisteredLotsList farmerName={farmerName} />
             </TabsContent>
             <TabsContent value="analytics">
                 <FarmerAnalytics farmerName={farmerName} />

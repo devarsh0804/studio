@@ -5,11 +5,15 @@ import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-export function RegisteredLotsList() {
+interface RegisteredLotsListProps {
+    farmerName: string;
+}
+
+export function RegisteredLotsList({ farmerName }: RegisteredLotsListProps) {
     const { getAllLots } = useAgriChainStore(
         (state) => ({ getAllLots: state.getAllLots })
     );
-    const registeredLots = getAllLots();
+    const registeredLots = getAllLots().filter(lot => lot.farmer === farmerName);
 
     return (
         <Card>
@@ -35,5 +39,3 @@ export function RegisteredLotsList() {
         </Card>
     );
 }
-
-    
