@@ -344,7 +344,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <CardDescription>Browse crops currently available directly from farmers.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {availableLots.length > 0 ? (
                     availableLots.map((lot) => (
                     <LotDetailsCard key={lot.lotId} lot={lot}>
@@ -355,7 +355,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                     </LotDetailsCard>
                     ))
                 ) : (
-                    <p className="text-muted-foreground text-center py-4 col-span-2">There are no lots currently available for purchase.</p>
+                    <p className="text-muted-foreground text-center py-4 col-span-3">There are no lots currently available for purchase.</p>
                 )}
                 </div>
             </CardContent>
@@ -370,7 +370,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <CardDescription>These are lots you own. Select a lot to create sub-lots for retailers.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {purchasedLots.length > 0 ? (
                         purchasedLots.map((lot) => (
                         <LotDetailsCard key={lot.lotId} lot={lot}>
@@ -380,7 +380,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                         </LotDetailsCard>
                         ))
                     ) : (
-                        <p className="text-muted-foreground text-center py-4 col-span-2">You have not purchased any lots yet. Go to the "Available Crops" tab to buy one.</p>
+                        <p className="text-muted-foreground text-center py-4 col-span-3">You have not purchased any lots yet. Go to the "Available Crops" tab to buy one.</p>
                     )}
                 </div>
             </CardContent>
@@ -395,7 +395,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
               <CardDescription>These lots have had their advance paid by a retailer and are ready for transport assignment.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {dispatchedLots.length > 0 ? (
                   dispatchedLots.map((lot) => (
                     <Card key={lot.lotId} className="flex flex-col">
@@ -452,7 +452,7 @@ export function DistributorView({ distributorId, onLogout }: DistributorViewProp
                     </Card>
                   ))
                 ) : (
-                  <p className="text-muted-foreground text-center py-4 col-span-2">No lots have been dispatched yet.</p>
+                  <p className="text-muted-foreground text-center py-4 col-span-3">No lots have been dispatched yet.</p>
                 )}
               </div>
             </CardContent>
