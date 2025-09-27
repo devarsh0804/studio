@@ -1,37 +1,10 @@
 
 "use client";
 
-import { useState } from "react";
 import { RoleCard } from '@/components/RoleCard';
-import { Tractor, Truck, Store, ScanLine, Trash2 } from 'lucide-react';
-import { useAgriChainStore } from "@/hooks/use-agrichain-store";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Tractor, Truck, Store, ScanLine } from 'lucide-react';
 
 export default function Home() {
-  const { clearStore } = useAgriChainStore();
-  const { toast } = useToast();
-  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
-
-  const handleResetData = () => {
-    clearStore();
-    setIsResetDialogOpen(false);
-    toast({
-      title: "Data Cleared",
-      description: "All application data has been reset.",
-    });
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <main className="flex-grow flex flex-col items-center justify-center w-full container mx-auto px-4 py-12 md:py-16">
@@ -73,36 +46,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-
-      <footer className="w-full py-8">
-        <div className="container mx-auto px-4">
-            <div className="border-t pt-8">
-              <h3 className="text-lg font-semibold text-muted-foreground text-center">Developer Options</h3>
-              <div className="mt-4 text-center">
-                <Button variant="destructive" onClick={() => setIsResetDialogOpen(true)}>
-                  <Trash2 className="mr-2 h-4 w-4" /> Reset All Data
-                </Button>
-              </div>
-            </div>
-        </div>
-      </footer>
-
-      <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to reset all data?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete all lots, transactions, and other data you have created.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleResetData} className="bg-destructive hover:bg-destructive/90">
-              Yes, Reset Data
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
