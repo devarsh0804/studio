@@ -6,7 +6,7 @@ import { Tractor, Truck, Store, ScanLine } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen home-bg-pattern">
       <main className="flex-grow flex flex-col items-center justify-center w-full container mx-auto px-4 py-12 md:py-16">
         <section className="w-full">
           <div className="text-center">

@@ -82,3 +82,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+.home-bg-pattern {
+    background-color: hsl(var(--background));
+    background-image:  radial-gradient(hsl(var(--border)) 1px, transparent 1px);
+    background-size: 1.5rem 1.5rem;
+}
+
+.dark .home-bg-pattern {
+    background-image:  radial-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px);
+}
