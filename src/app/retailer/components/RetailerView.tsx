@@ -46,7 +46,7 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState('marketplace');
+  const [activeTab, setActiveTab] = useState('scan-lot');
 
 
   const { getLotHistory, addRetailEvent, updateLot, findLot, getAllLots } = useAgriChainStore();
@@ -155,6 +155,7 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
     setError(null);
     scanForm.reset();
     retailerForm.reset();
+    setActiveTab('scan-lot');
   }
   
   const getTimelineEvents = () => {
@@ -277,7 +278,10 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
     return (
       <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-12">
+            <TabsList className="grid w-full grid-cols-4 h-12">
+                <TabsTrigger value="scan-lot">
+                    <ScanLine className="mr-2"/> Scan Lot
+                </TabsTrigger>
                 <TabsTrigger value="marketplace">
                     <ShoppingCart className="mr-2"/> Marketplace
                 </TabsTrigger>
@@ -288,6 +292,42 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
                     <LineChartIcon className="mr-2"/> Analytics
                 </TabsTrigger>
             </TabsList>
+            <TabsContent value="scan-lot" className="mt-0">
+                <Card className="rounded-t-none">
+                    <CardHeader>
+                        <CardTitle>Scan Lot to Confirm Delivery or View History</CardTitle>
+                        <CardDescription>Enter a Lot ID from your inventory to process it.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...scanForm}>
+                        <form onSubmit={scanForm.handleSubmit(handleScan)} className="flex gap-2">
+                            <FormField
+                            control={scanForm.control}
+                            name="lotId"
+                            render={({ field }) => (
+                                <FormItem className="flex-1">
+                                <FormControl>
+                                    <Input placeholder="e.g., LOT-20240101-001-SUB-001" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                            <Button type="submit" disabled={isLoading}>
+                            {isLoading ? <Loader2 className="animate-spin" /> : <Search />}
+                            </Button>
+                        </form>
+                        </Form>
+                        {error && (
+                        <Alert variant="destructive" className="mt-4">
+                            <XCircle className="h-4 w-4" />
+                            <AlertTitle>Error</AlertTitle>
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                        )}
+                    </CardContent>
+                </Card>
+            </TabsContent>
             <TabsContent value="marketplace" className="mt-0">
                 <Card className="rounded-t-none">
                     <CardHeader>
@@ -330,10 +370,7 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
                                         <Button 
                                             className="w-full" 
                                             onClick={() => handleScan({ lotId: lot.lotId })} 
-                                            disabled={
-                                                (lot.status === 'Dispatched' && !lot.logisticsInfo) || 
-                                                !['Dispatched', 'Delivered', 'Stocked'].includes(lot.status ?? '')
-                                            }
+                                            disabled={!lot.logisticsInfo && (lot.status === 'Dispatched')}
                                         >
                                             <History className="mr-2 h-4 w-4" /> 
                                             {lot.status === 'Dispatched' ? 'Confirm Delivery' : 'View Full History'}
@@ -489,5 +526,3 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
     </div>
   );
 }
-
-    
