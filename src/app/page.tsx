@@ -13,18 +13,6 @@ export default function Home() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background isolate">
-      {heroImage && (
-         <div className="absolute inset-0 -z-10 h-full w-full">
-            <Image
-              src={heroImage.imageUrl}
-              alt={heroImage.description}
-              layout="fill"
-              objectFit="cover"
-              className="opacity-20 blur-sm"
-              data-ai-hint={heroImage.imageHint}
-            />
-          </div>
-      )}
       <main className="flex-grow flex flex-col items-center justify-center w-full container mx-auto px-4 py-12 md:py-16">
         <section className="w-full">
           <div className="text-center">
