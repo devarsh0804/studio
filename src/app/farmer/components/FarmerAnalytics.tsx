@@ -140,16 +140,18 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <BarChart accessibilityLayer data={incomeByCropData}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
-                             <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
-                            <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent indicator="dot" />}
-                            />
-                            <Bar dataKey="income" fill="var(--color-income)" radius={4} />
-                        </BarChart>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart accessibilityLayer data={incomeByCropData}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
+                                 <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent indicator="dot" />}
+                                />
+                                <Bar dataKey="income" fill="var(--color-income)" radius={4} />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </ChartContainer>
                 </CardContent>
             </Card>
@@ -159,13 +161,15 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
                 </CardHeader>
                 <CardContent>
                      <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <LineChart accessibilityLayer data={incomeOverTime}>
-                           <CartesianGrid vertical={false} />
-                           <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
-                           <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
-                           <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
-                           <Line dataKey="income" type="monotone" stroke="var(--color-income)" strokeWidth={2} dot={false} />
-                        </LineChart>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <LineChart accessibilityLayer data={incomeOverTime}>
+                               <CartesianGrid vertical={false} />
+                               <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+                               <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
+                               <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                               <Line dataKey="income" type="monotone" stroke="var(--color-income)" strokeWidth={2} dot={false} />
+                            </LineChart>
+                        </ResponsiveContainer>
                       </ChartContainer>
                 </CardContent>
             </Card>

@@ -129,16 +129,18 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <BarChart accessibilityLayer data={inventoryByCrop}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
-                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `${value} q`}/>
-                            <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent indicator="dot" />}
-                            />
-                            <Bar dataKey="value" fill="var(--color-value)" radius={4} />
-                        </BarChart>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart accessibilityLayer data={inventoryByCrop}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
+                                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `${value} q`}/>
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent indicator="dot" />}
+                                />
+                                <Bar dataKey="value" fill="var(--color-value)" radius={4} />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </ChartContainer>
                 </CardContent>
             </Card>
@@ -148,13 +150,15 @@ export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <LineChart accessibilityLayer data={inventoryValueOverTime}>
-                           <CartesianGrid vertical={false} />
-                           <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
-                           <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
-                          <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
-                          <Line type="monotone" dataKey="inventoryValue" stroke="var(--color-inventoryValue)" strokeWidth={2} dot={false} />
-                        </LineChart>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <LineChart accessibilityLayer data={inventoryValueOverTime}>
+                               <CartesianGrid vertical={false} />
+                               <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+                               <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`}/>
+                              <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                              <Line type="monotone" dataKey="inventoryValue" stroke="var(--color-inventoryValue)" strokeWidth={2} dot={false} />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </ChartContainer>
                 </CardContent>
             </Card>

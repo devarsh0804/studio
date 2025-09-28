@@ -130,16 +130,18 @@ export function DistributorAnalytics({ distributorId }: DistributorAnalyticsProp
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <BarChart accessibilityLayer data={cropPurchaseData}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
-                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `${value} q`}/>
-                            <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent indicator="dot" />}
-                            />
-                            <Bar dataKey="weight" fill="var(--color-weight)" radius={4} />
-                        </BarChart>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart accessibilityLayer data={cropPurchaseData}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false}/>
+                                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `${value} q`}/>
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent indicator="dot" />}
+                                />
+                                <Bar dataKey="weight" fill="var(--color-weight)" radius={4} />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </ChartContainer>
                 </CardContent>
             </Card>
@@ -149,13 +151,15 @@ export function DistributorAnalytics({ distributorId }: DistributorAnalyticsProp
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <LineChart accessibilityLayer data={purchasesOverTime}>
-                          <CartesianGrid vertical={false} />
-                           <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
-                           <YAxis tickLine={false} axisLine={false} allowDecimals={false}/>
-                          <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
-                          <Line type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} dot={false} />
-                        </LineChart>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <LineChart accessibilityLayer data={purchasesOverTime}>
+                              <CartesianGrid vertical={false} />
+                               <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+                               <YAxis tickLine={false} axisLine={false} allowDecimals={false}/>
+                              <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                              <Line type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} dot={false} />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </ChartContainer>
                 </CardContent>
             </Card>
