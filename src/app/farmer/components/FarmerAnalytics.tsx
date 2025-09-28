@@ -31,12 +31,13 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
     const { getAllLots } = useAgriChainStore();
     const farmerLots = getAllLots().filter(lot => lot.farmer === farmerName);
     
-    // A sale is final. Once a lot's status is 'Purchased' or beyond, it's considered sold by the farmer.
+    // A sale is final. A lot is considered "sold" by the farmer if it's a primary lot
+    // and its ownership has been transferred to someone else (i.e., a distributor).
+    // This is a permanent historical fact.
     const soldLots = farmerLots.filter(lot => 
-        !lot.parentLotId && 
-        (lot.status === 'Purchased' || lot.status === 'Split' || lot.status === 'Dispatched' || lot.status === 'Delivered' || lot.status === 'Stocked')
+        !lot.parentLotId && lot.owner !== lot.farmer
     );
-     const unsoldLots = farmerLots.filter(lot => lot.owner === farmerName && !lot.parentLotId);
+    const unsoldLots = farmerLots.filter(lot => lot.owner === farmerName && !lot.parentLotId);
 
 
     const totalIncome = soldLots.reduce((acc, lot) => {
@@ -174,3 +175,5 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
     </div>
   );
 }
+
+    
