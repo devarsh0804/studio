@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText, Spline, Truck, LineChart as LineChartIcon } from "lucide-react";
+import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText, Spline, Truck, LineChart as LineChartIcon, Fingerprint } from "lucide-react";
 import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import QRCode from "qrcode.react";
 import { Badge } from "@/components/ui/badge";
 import { RetailerAnalytics } from "./RetailerAnalytics";
+import { CertificateDialog } from "@/components/CertificateDialog";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -39,6 +40,7 @@ interface RetailerViewProps {
 export function RetailerView({ retailerId }: RetailerViewProps) {
   const [history, setHistory] = useState<LotHistory | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
+  const [lotToShowCertificate, setLotToShowCertificate] = useState<Lot | null>(null);
   const [paymentType, setPaymentType] = useState<'advance' | 'balance'>('advance');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -297,9 +299,14 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
                             {marketplaceLots.length > 0 ? (
                                 marketplaceLots.map((lot) => (
                                     <LotDetailsCard key={lot.lotId} lot={lot}>
-                                        <Button className="w-full" onClick={() => { setLotToPay(lot); setPaymentType('advance'); }}>
-                                            <ShoppingCart className="mr-2" /> Buy Lot
-                                        </Button>
+                                        <div className='flex flex-col md:flex-row gap-2 w-full'>
+                                            <Button variant="secondary" className="w-full" onClick={() => setLotToShowCertificate(lot)}>
+                                                <Fingerprint /> View Certificate
+                                            </Button>
+                                            <Button className="w-full" onClick={() => { setLotToPay(lot); setPaymentType('advance'); }}>
+                                                <ShoppingCart /> Buy Lot
+                                            </Button>
+                                        </div>
                                     </LotDetailsCard>
                                 ))
                             ) : (
@@ -430,6 +437,14 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
             </DialogContent>
           </Dialog>
 
+          {lotToShowCertificate && (
+            <CertificateDialog
+                isOpen={!!lotToShowCertificate}
+                onOpenChange={() => setLotToShowCertificate(null)}
+                lot={lotToShowCertificate}
+            />
+          )}
+
       </div>
     );
   }
@@ -474,3 +489,5 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
     </div>
   );
 }
+
+    
