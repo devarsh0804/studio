@@ -64,7 +64,9 @@ export function LotDetailsCard({ lot, children, showImage = true }: LotDetailsCa
             
         </CardContent>
         <CardFooter className="flex flex-col gap-2 pt-4 border-t mt-auto">
-          {children || (
+          {children ? (
+             children
+          ) : (
             <Button variant="secondary" className="w-full" onClick={() => setIsCertificateOpen(true)}>
                 <Fingerprint className="mr-2" /> View Certificate
             </Button>

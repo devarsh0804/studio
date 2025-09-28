@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent, FileText, LineChart as LineChartIcon } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent, FileText, LineChart as LineChartIcon, Fingerprint } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { DistributorAnalytics } from './DistributorAnalytics';
+import { CertificateDialog } from '@/components/CertificateDialog';
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -47,6 +48,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
   const [lotToTransport, setLotToTransport] = useState<Lot | null>(null);
+  const [lotToShowCertificate, setLotToShowCertificate] = useState<Lot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
@@ -348,10 +350,14 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                       {availableLots.length > 0 ? (
                           availableLots.map((lot) => (
                           <LotDetailsCard key={lot.lotId} lot={lot}>
-                              <Button className="w-full" onClick={() => setLotToBuy(lot)}>
-                                  <ShoppingCart className="mr-2 h-4 w-4" /> Buy Lot for <BadgeIndianRupee className="w-4 h-4 mx-1" />
-                                  {lot.price * lot.weight}
-                              </Button>
+                              <div className='flex flex-col md:flex-row gap-2 w-full'>
+                                <Button variant="secondary" className="w-full" onClick={() => setLotToShowCertificate(lot)}>
+                                    <Fingerprint /> View Certificate
+                                </Button>
+                                <Button className="w-full" onClick={() => setLotToBuy(lot)}>
+                                    <ShoppingCart /> Buy Lot
+                                </Button>
+                              </div>
                           </LotDetailsCard>
                           ))
                       ) : (
@@ -606,7 +612,14 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                 )}
             </DialogContent>
         </Dialog>
-
+        
+        {lotToShowCertificate && (
+            <CertificateDialog
+                isOpen={!!lotToShowCertificate}
+                onOpenChange={() => setLotToShowCertificate(null)}
+                lot={lotToShowCertificate}
+            />
+        )}
     </div>
   );
 }
