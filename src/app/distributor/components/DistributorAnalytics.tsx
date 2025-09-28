@@ -42,9 +42,21 @@ export function DistributorAnalytics({ distributorId }: DistributorAnalyticsProp
     const { getAllLots, findLot } = useAgriChainStore();
     const allLots = getAllLots();
 
-    const purchasedLots = allLots.filter(lot => lot.owner === distributorId && !lot.parentLotId);
+    // A purchased lot is a primary lot that is no longer owned by the original farmer.
+    // This is a permanent historical fact, regardless of who owns it now.
+    const purchasedLots = allLots.filter(lot => 
+        !lot.parentLotId && lot.owner !== lot.farmer
+    );
+    
+    // Sub-lots are created from lots the distributor *currently* owns. This logic is correct.
     const subLotsCreated = allLots.filter(lot => lot.parentLotId && findLot(lot.parentLotId)?.owner === distributorId);
-    const dispatchedLots = subLotsCreated.filter(lot => lot.status === 'Dispatched' || lot.status === 'Delivered');
+
+    // Dispatched lots are sub-lots that this distributor created and have been sent out.
+    const dispatchedLots = allLots.filter(lot => 
+        (lot.status === 'Dispatched' || lot.status === 'Delivered') &&
+        lot.parentLotId &&
+        findLot(lot.parentLotId)?.owner === distributorId
+    );
     
     const valueOfPurchases = purchasedLots.reduce((acc, lot) => acc + (lot.price * lot.weight), 0);
 
@@ -106,7 +118,7 @@ export function DistributorAnalytics({ distributorId }: DistributorAnalyticsProp
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{subLotsCreated.length}</div>
-                    <p className="text-xs text-muted-foreground">From splitting primary lots</p>
+                    <p className="text-xs text-muted-foreground">From lots you currently own</p>
                 </CardContent>
             </Card>
             <Card>

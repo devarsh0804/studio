@@ -30,51 +30,47 @@ const chartConfig = {
 export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
     const { getAllLots } = useAgriChainStore();
     const farmerLots = getAllLots().filter(lot => lot.farmer === farmerName);
+    
+    // A sale is final. Once a lot's status is 'Purchased' or beyond, it's considered sold by the farmer.
+    const soldLots = farmerLots.filter(lot => 
+        !lot.parentLotId && 
+        (lot.status === 'Purchased' || lot.status === 'Split' || lot.status === 'Dispatched' || lot.status === 'Delivered' || lot.status === 'Stocked')
+    );
+     const unsoldLots = farmerLots.filter(lot => lot.owner === farmerName && !lot.parentLotId);
 
-    const totalIncome = farmerLots.reduce((acc, lot) => {
-        if (lot.owner !== farmerName && !lot.parentLotId) {
-            return acc + (lot.price * lot.weight);
-        }
-        return acc;
+
+    const totalIncome = soldLots.reduce((acc, lot) => {
+        return acc + (lot.price * lot.weight);
     }, 0);
 
-    const pendingPayments = farmerLots.reduce((acc, lot) => {
-        if (lot.owner === farmerName) {
-            return acc + (lot.price * lot.weight);
-        }
-        return acc;
+    const pendingPayments = unsoldLots.reduce((acc, lot) => {
+        return acc + (lot.price * lot.weight);
     }, 0);
 
     const totalLotsRegistered = farmerLots.filter(l => !l.parentLotId).length;
 
-    const cropSales = farmerLots.reduce((acc, lot) => {
-        if (lot.owner !== farmerName) {
-            acc[lot.cropName] = (acc[lot.cropName] || 0) + 1;
-        }
+    const cropSales = soldLots.reduce((acc, lot) => {
+        acc[lot.cropName] = (acc[lot.cropName] || 0) + 1;
         return acc;
     }, {} as Record<string, number>);
     
     const topSellingCrop = Object.keys(cropSales).length > 0 ? Object.entries(cropSales).sort((a, b) => b[1] - a[1])[0][0] : 'N/A';
 
-    const incomeByCrop = farmerLots.reduce((acc, lot) => {
-        if(lot.owner !== farmerName && !lot.parentLotId) {
-            acc[lot.cropName] = (acc[lot.cropName] || 0) + (lot.price * lot.weight);
-        }
+    const incomeByCrop = soldLots.reduce((acc, lot) => {
+        acc[lot.cropName] = (acc[lot.cropName] || 0) + (lot.price * lot.weight);
         return acc;
     }, {} as Record<string, number>);
 
     const incomeByCropData = Object.entries(incomeByCrop).map(([name, income]) => ({ name, income }));
 
-    const incomeOverTime = farmerLots.reduce((acc, lot) => {
-        if (lot.owner !== farmerName && !lot.parentLotId) {
-            const month = format(new Date(lot.harvestDate), 'MMM yyyy');
-            const income = lot.price * lot.weight;
-            const existing = acc.find(item => item.month === month);
-            if (existing) {
-                existing.income += income;
-            } else {
-                acc.push({ month, income });
-            }
+    const incomeOverTime = soldLots.reduce((acc, lot) => {
+        const month = format(new Date(lot.harvestDate), 'MMM yyyy');
+        const income = lot.price * lot.weight;
+        const existing = acc.find(item => item.month === month);
+        if (existing) {
+            existing.income += income;
+        } else {
+            acc.push({ month, income });
         }
         return acc;
     }, [] as { month: string; income: number }[]).sort((a,b) => new Date(a.month).getTime() - new Date(b.month).getTime());
@@ -97,14 +93,14 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
+                    <CardTitle className="text-sm font-medium">Value of Unsold Lots</CardTitle>
                      <div className="w-8 h-8 flex items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
                       <BadgeIndianRupee className="h-5 w-5" />
                     </div>
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">₹{pendingPayments.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">From unsold lots</p>
+                    <p className="text-xs text-muted-foreground">From lots waiting to be sold</p>
                 </CardContent>
             </Card>
             <Card>
