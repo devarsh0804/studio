@@ -85,10 +85,14 @@
 
 .home-bg-pattern {
     background-color: hsl(var(--background));
-    background-image:  radial-gradient(hsl(var(--border)) 1px, transparent 1px);
-    background-size: 1.5rem 1.5rem;
+    background-image:
+        linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+        linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 2rem 2rem;
 }
 
 .dark .home-bg-pattern {
-    background-image:  radial-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px);
+    background-image:
+        linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
+        linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
 }
