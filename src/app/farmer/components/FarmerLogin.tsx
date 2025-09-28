@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -95,6 +96,12 @@ export function FarmerLogin({ onLogin }: FarmerLoginProps) {
               </Button>
             </form>
           </Form>
+           <div className="mt-6 text-center text-sm">
+                Don't have an account?{' '}
+                <Button variant="link" className="p-0 h-auto">
+                    Register
+                </Button>
+            </div>
         </CardContent>
       </Card>
     </div>
