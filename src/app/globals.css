@@ -82,17 +82,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-.home-bg-pattern {
-    background-color: hsl(var(--background));
-    background-image:
-        linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-        linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
-    background-size: 2rem 2rem;
-}
-
-.dark .home-bg-pattern {
-    background-image:
-        linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
-        linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
-}
