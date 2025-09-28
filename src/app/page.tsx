@@ -3,6 +3,7 @@
 
 import { RoleCard } from '@/components/RoleCard';
 import { Tractor, Truck, Store, ScanLine } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 
 export default function Home() {
   return (
@@ -10,6 +11,9 @@ export default function Home() {
       <main className="flex-grow flex flex-col items-center justify-center w-full container mx-auto px-4 py-12 md:py-16">
         <section className="w-full">
           <div className="text-center">
+             <div className="flex justify-center items-center mb-4">
+                <Logo />
+             </div>
              <h1 className="text-4xl md:text-5xl font-extrabold font-headline tracking-tight">
                 AgriChain Trace
             </h1>
