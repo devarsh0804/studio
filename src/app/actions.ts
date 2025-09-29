@@ -5,7 +5,8 @@ import { gradeCrop, type GradeCropInput, type GradeCropOutput } from "@/ai/flows
 import { distributorUpdateConflictDetection, type DistributorUpdateConflictDetectionInput, type DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
 import type { Lot, RetailEvent } from "@/lib/types";
 import { db } from "@/lib/firebase";
-import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch, deleteDoc } from "firebase/firestore";
+import { seedLots } from "@/lib/seed-data";
 
 
 // Firestore Collection References
@@ -149,4 +150,31 @@ export async function detectConflictAction(
 ): Promise<DistributorUpdateConflictDetectionOutput> {
     const result = await distributorUpdateConflictDetection(input);
     return result;
+}
+
+export async function resetData(): Promise<void> {
+    // Delete all documents in the 'lots' collection
+    const lotsSnapshot = await getDocs(lotsCollection);
+    const deleteLotsBatch = writeBatch(db);
+    lotsSnapshot.forEach(doc => {
+        deleteLotsBatch.delete(doc.ref);
+    });
+    await deleteLotsBatch.commit();
+
+    // Delete all documents in the 'retailEvents' collection
+    const retailEventsSnapshot = await getDocs(retailEventsCollection);
+    const deleteRetailEventsBatch = writeBatch(db);
+    retailEventsSnapshot.forEach(doc => {
+        deleteRetailEventsBatch.delete(doc.ref);
+    });
+    await deleteRetailEventsBatch.commit();
+
+    // Add the seed data
+    const seedBatch = writeBatch(db);
+    seedLots.forEach(lot => {
+        const { lotId, ...lotData } = lot;
+        const lotRef = doc(db, "lots", lotId);
+        seedBatch.set(lotRef, lotData);
+    });
+    await seedBatch.commit();
 }
