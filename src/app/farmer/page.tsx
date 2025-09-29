@@ -19,7 +19,7 @@ export default function FarmerPage() {
   const handleLogin = async (credentials: FarmerLoginCredentials) => {
     const result = await loginUser({
       role: 'farmer',
-      name: credentials.farmerName,
+      email: credentials.email,
       accessCode: credentials.farmerCode
     });
     

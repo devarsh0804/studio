@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { RetailerView } from "./components/RetailerView";
-import { RetailerLogin, type RetailerRegisterCredentials } from "./components/RetailerLogin";
+import { RetailerLogin, type RetailerLoginCredentials, type RetailerRegisterCredentials } from "./components/RetailerLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/hooks/use-locale";
@@ -29,10 +29,10 @@ export default function RetailerPage() {
     fetchLots();
   }, []);
 
-  const handleLogin = async (credentials: Omit<RetailerRegisterCredentials, 'email' | 'mobile'>) => {
+  const handleLogin = async (credentials: RetailerLoginCredentials) => {
     const result = await loginUser({
       role: 'retailer',
-      name: credentials.storeName,
+      email: credentials.email,
       accessCode: credentials.storeCode,
     });
 

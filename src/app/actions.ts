@@ -166,37 +166,26 @@ export async function detectConflictAction(
 export async function registerUser(user: User): Promise<{ success: boolean; message: string }> {
     const q = query(
         usersCollection, 
-        where("name", "==", user.name),
+        where("email", "==", user.email),
         where("role", "==", user.role)
     );
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-        return { success: false, message: `A user with the name "${user.name}" already exists for the ${user.role} role.` };
+        return { success: false, message: `A user with the email "${user.email}" already exists for the ${user.role} role.` };
     }
 
     await addDoc(usersCollection, user);
     return { success: true, message: "Registration successful! You can now log in." };
 }
 
-export async function loginUser(credentials: Omit<User, 'id'>): Promise<{ success: boolean; message: string; user?: User }> {
-    let q;
-    if (credentials.role === 'farmer' && credentials.identifier) {
-         q = query(
-            usersCollection,
-            where("role", "==", credentials.role),
-            where("name", "==", credentials.name),
-            where("identifier", "==", credentials.identifier),
-            where("accessCode", "==", credentials.accessCode)
-        );
-    } else {
-         q = query(
-            usersCollection,
-            where("role", "==", credentials.role),
-            where("name", "==", credentials.name),
-            where("accessCode", "==", credentials.accessCode)
-        );
-    }
+export async function loginUser(credentials: Omit<User, 'id' | 'name'>): Promise<{ success: boolean; message: string; user?: User }> {
+    const q = query(
+        usersCollection,
+        where("role", "==", credentials.role),
+        where("email", "==", credentials.email),
+        where("accessCode", "==", credentials.accessCode)
+    );
     
     const querySnapshot = await getDocs(q);
 

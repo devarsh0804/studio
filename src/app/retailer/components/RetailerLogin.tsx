@@ -20,9 +20,9 @@ const registerSchema = z.object({
 });
 
 const loginSchema = z.object({
-  storeName: z.string().min(1, "Store name is required"),
+  email: z.string().email("Please enter a valid email address."),
   storeCode: z.string().min(4, "Code must be at least 4 characters"),
-  email: z.string().optional(),
+  storeName: z.string().optional(),
   mobile: z.string().optional(),
 });
 
@@ -72,16 +72,34 @@ export function RetailerLogin({ onLogin, onRegister }: RetailerLoginProps) {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
+              {isRegistering && (
+                <FormField
+                    control={form.control}
+                    name="storeName"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>{t('retailerLogin.nameLabel')}</FormLabel>
+                        <FormControl>
+                        <div className="relative">
+                            <Store className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder={t('retailerLogin.namePlaceholder')} {...field} className="pl-10" />
+                        </div>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              )}
+               <FormField
                 control={form.control}
-                name="storeName"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('retailerLogin.nameLabel')}</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Store className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder={t('retailerLogin.namePlaceholder')} {...field} className="pl-10" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type="email" placeholder="e.g., user@example.com" {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -90,22 +108,6 @@ export function RetailerLogin({ onLogin, onRegister }: RetailerLoginProps) {
               />
               {isRegistering && (
                 <>
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input type="email" placeholder="e.g., user@example.com" {...field} className="pl-10" />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   <FormField
                     control={form.control}
                     name="mobile"
