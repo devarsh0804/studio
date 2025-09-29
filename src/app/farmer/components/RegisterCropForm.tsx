@@ -26,7 +26,7 @@ import type { Lot } from "@/lib/types";
 import { placeHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useLocale } from "@/hooks/use-locale";
 import { addLot, gradeCropAction } from "@/app/actions";
 
