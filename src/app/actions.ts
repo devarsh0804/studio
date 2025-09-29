@@ -2,6 +2,7 @@
 'use server';
 
 import { gradeCrop, type GradeCropInput, type GradeCropOutput } from "@/ai/flows/grade-crop-flow";
+import { distributorUpdateConflictDetection, type DistributorUpdateConflictDetectionInput, type DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
 import type { Lot } from "@/lib/types";
 
 
@@ -23,5 +24,12 @@ export async function gradeCropAction(
     // No try-catch here, let the error propagate to the client component
     // so it can be handled there (e.g. show a toast notification).
     const result = await gradeCrop(input);
+    return result;
+}
+
+export async function detectConflictAction(
+    input: DistributorUpdateConflictDetectionInput
+): Promise<DistributorUpdateConflictDetectionOutput> {
+    const result = await distributorUpdateConflictDetection(input);
     return result;
 }

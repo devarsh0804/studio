@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
+import { detectConflictAction } from "@/app/actions";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -82,14 +83,31 @@ export function TransportView() {
 
     setIsSubmitting(true);
     
-    // AI conflict detection logic removed for now
-    
-    toast({
-        title: "Success!",
-        description: `Transport details for Lot ID ${scannedLot.lotId} have been added to the ledger.`,
-        variant: "default",
-    });
-    resetView();
+    try {
+        const result = await detectConflictAction({
+            ...data,
+            lotDetails: JSON.stringify(scannedLot, null, 2),
+        });
+
+        if (result.conflictDetected) {
+            setConflict(result);
+        } else {
+            toast({
+                title: "Success!",
+                description: `Transport details for Lot ID ${scannedLot.lotId} have been added to the ledger.`,
+                variant: "default",
+            });
+            resetView();
+        }
+    } catch (e) {
+        console.error(e);
+        toast({
+            title: "Error",
+            description: "An error occurred while checking for conflicts. Please try again.",
+            variant: "destructive",
+        });
+    }
+
 
     setIsSubmitting(false);
   };
