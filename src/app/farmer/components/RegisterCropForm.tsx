@@ -29,7 +29,7 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useRef, useEffect } from "react";
 import { useLocale } from "@/hooks/use-locale";
-import { addLot, gradeCropAction } from "@/app/actions";
+import { addLot } from "@/app/actions";
 
 const formSchema = z.object({
   farmerName: z.string().min(2, { message: "Farmer name must be at least 2 characters." }),
@@ -50,7 +50,6 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useLocale();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [photoData, setPhotoData] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const cropImage = placeHolderImages.find(p => p.id === 'crop1');
@@ -58,16 +57,6 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
   useEffect(() => {
     if (cropImage) {
       setPhotoPreview(cropImage.imageUrl);
-      // Convert URL to data URI for AI flow
-      fetch(cropImage.imageUrl)
-        .then(res => res.blob())
-        .then(blob => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setPhotoData(reader.result as string);
-          };
-          reader.readAsDataURL(blob);
-        });
     }
   }, [cropImage]);
 
@@ -77,7 +66,6 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
       const reader = new FileReader();
       reader.onloadend = () => {
         setPhotoPreview(reader.result as string);
-        setPhotoData(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -99,22 +87,17 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     
-    if (!photoData) {
+    if (!photoPreview) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "A crop photo is required for AI grading.",
+        description: "A crop photo is required.",
       });
       setIsSubmitting(false);
       return;
     }
 
     try {
-      const gradingResult = await gradeCropAction({
-        ...values,
-        photoDataUri: photoData
-      });
-
       const formattedDate = format(values.harvestDate, "yyyy-MM-dd");
       const lotId = `LOT-${format(new Date(), "yyyyMMdd")}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
       
@@ -128,13 +111,13 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
         price: values.price,
         owner: values.farmerName,
         photoUrl: photoPreview!,
-        quality: gradingResult.grade,
+        quality: 'Standard',
         gradingDate: new Date().toISOString(),
         status: 'Registered',
-        moisture: gradingResult.moisture,
-        impurities: gradingResult.impurities,
-        size: gradingResult.size,
-        color: gradingResult.color,
+        moisture: "11%",
+        impurities: "0.8%",
+        size: "Uniform Medium",
+        color: "Light Brown",
       };
 
       await addLot(newLot);
@@ -147,8 +130,8 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
         console.error(e);
         toast({
             variant: "destructive",
-            title: "AI Grading Failed",
-            description: "Failed to grade the crop. Please check the image and try again.",
+            title: "Registration Failed",
+            description: "An error occurred while registering the lot.",
         });
     } finally {
         setIsSubmitting(false);
@@ -162,7 +145,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
             <FileCheck2 className="mr-2"/> {t('farmerView.registerForm.title')}
         </CardTitle>
         <CardDescription>
-            {t('farmerView.registerForm.description')} The quality grade will be determined by AI analysis of the uploaded photo.
+            {t('farmerView.registerForm.description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -309,7 +292,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         </div>
                     </div>
                     <Input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handlePhotoUpload} />
-                    <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                    <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()} disabled>
                         <Camera className="mr-2 h-4 w-4" /> {t('farmerView.registerForm.buttons.uploadPhoto')}
                     </Button>
                     <Button type="button" variant="outline" className="w-full">
@@ -318,7 +301,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                 </div>
             </div>
             <div className="pt-6 border-t">
-              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || !photoData}>
+              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || !photoPreview}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {t('farmerView.registerForm.buttons.submit')}
               </Button>

@@ -1,7 +1,6 @@
 
 'use server';
 
-import { gradeCrop, type GradeCropInput, type GradeCropOutput } from "@/ai/flows/grade-crop-flow";
 import { distributorUpdateConflictDetection, type DistributorUpdateConflictDetectionInput, type DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
 import type { Lot, RetailEvent, User, UserRole } from "@/lib/types";
 import { db } from "@/lib/firebase";
@@ -136,25 +135,6 @@ export async function getLotHistory(lotId: string): Promise<{ lot: Lot, parentLo
 
 
 // AI Flow Actions
-export async function gradeCropAction(
-    formData: {
-        farmerName: string;
-        cropName: string;
-        location: string;
-        photoDataUri: string;
-    }
-): Promise<GradeCropOutput> {
-    const input: GradeCropInput = {
-        cropName: formData.cropName,
-        farmerName: formData.farmerName,
-        location: formData.location,
-        photoDataUri: formData.photoDataUri,
-    };
-
-    const result = await gradeCrop(input);
-    return result;
-}
-
 export async function detectConflictAction(
     input: DistributorUpdateConflictDetectionInput
 ): Promise<DistributorUpdateConflictDetectionOutput> {
