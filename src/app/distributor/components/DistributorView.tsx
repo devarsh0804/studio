@@ -154,7 +154,7 @@ export function DistributorView({ distributorId, allLots, onLotUpdate }: Distrib
     }
 
     await addLots(newSubLots);
-    await updateLot(scannedLot.lotId, { weight: 0 }); 
+    await updateLot(scannedLot.lotId, { status: 'Split' }); 
     await onLotUpdate();
     setSubLots(newSubLots);
 
@@ -209,7 +209,7 @@ export function DistributorView({ distributorId, allLots, onLotUpdate }: Distrib
 
   if (scannedLot) {
     const isOwnedByDistributor = scannedLot.owner === distributorId;
-    const canBeSplit = isOwnedByDistributor && scannedLot.weight > 0 && !scannedLot.parentLotId;
+    const canBeSplit = isOwnedByDistributor && scannedLot.status !== 'Split' && !scannedLot.parentLotId;
 
     return (
       <div className="max-w-4xl mx-auto space-y-6">
