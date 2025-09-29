@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -308,7 +309,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         </div>
                     </div>
                     <Input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handlePhotoUpload} />
-                    <Button type="button" variant="outline" className="w-full">
+                    <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
                         <Camera className="mr-2 h-4 w-4" /> {t('farmerView.registerForm.buttons.uploadPhoto')}
                     </Button>
                     <Button type="button" variant="outline" className="w-full">
@@ -317,7 +318,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                 </div>
             </div>
             <div className="pt-6 border-t">
-              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || !photoData}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {t('farmerView.registerForm.buttons.submit')}
               </Button>
