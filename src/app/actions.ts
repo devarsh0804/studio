@@ -44,7 +44,8 @@ export async function getLotsByOwner(ownerId: string): Promise<Lot[]> {
 export async function getLotsByFarmer(farmerName: string): Promise<Lot[]> {
     const q = query(lotsCollection, where("farmer", "==", farmerName));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(docToLot);
+    // Filter out sub-lots, so farmers only see their primary registered lots.
+    return querySnapshot.docs.map(docToLot).filter(lot => !lot.parentLotId);
 }
 
 export async function getAvailableLotsForPurchase(): Promise<Lot[]> {
