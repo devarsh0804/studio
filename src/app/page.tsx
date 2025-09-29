@@ -6,6 +6,7 @@ import { RoleCard } from '@/components/RoleCard';
 import { Tractor, Truck, Store, ScanLine } from 'lucide-react';
 import Image from 'next/image';
 import { placeHolderImages } from '@/lib/placeholder-images';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 export default function Home() {
 
@@ -13,6 +14,9 @@ export default function Home() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background isolate">
+       <div className="absolute top-4 right-4 z-10">
+          <LanguageSwitcher />
+        </div>
       <main className="flex-grow flex flex-col items-center justify-center w-full container mx-auto px-4 py-12 md:py-16">
         <section className="w-full">
           <div className="text-center">

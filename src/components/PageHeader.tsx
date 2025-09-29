@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Home, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 interface PageHeaderProps {
     title: string;
@@ -28,6 +29,7 @@ export function PageHeader({ title, description, isLoggedIn, onLogout }: PageHea
                     <p className="text-muted-foreground mt-1">{description}</p>
                 </div>
                 <div className="flex items-center gap-2">
+                    <LanguageSwitcher />
                     {isLoggedIn && onLogout && (
                          <Button onClick={onLogout} variant="outline">
                             <LogOut className="mr-2" /> Logout
