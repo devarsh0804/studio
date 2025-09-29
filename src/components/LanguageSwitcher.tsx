@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,24 +9,25 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useLocale } from "@/hooks/use-locale";
 import { Languages } from "lucide-react";
 
 export function LanguageSwitcher() {
-  const [language, setLanguage] = useState("en");
+  const { locale, setLocale, t } = useLocale();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
           <Languages className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Select language</span>
+          <span className="sr-only">{t('languageSwitcher.tooltip')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuRadioGroup value={language} onValueChange={setLanguage}>
-          <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="hi">हिंदी (Hindi)</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="or">ଓଡ଼ିଆ (Odia)</DropdownMenuRadioItem>
+        <DropdownMenuRadioGroup value={locale} onValueChange={(value) => setLocale(value as 'en' | 'hi' | 'or')}>
+          <DropdownMenuRadioItem value="en">{t('languages.en')}</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="hi">{t('languages.hi')}</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="or">{t('languages.or')}</DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
+import { useLocale } from '@/hooks/use-locale';
 
 interface RoleCardProps {
   title: string;
@@ -13,6 +14,7 @@ interface RoleCardProps {
 }
 
 export function RoleCard({ title, icon, href, description }: RoleCardProps) {
+  const { t } = useLocale();
   return (
     <Link href={href} className="group">
       <Card className="h-full bg-card/80 backdrop-blur-sm hover:bg-card hover:shadow-primary/20 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-primary/50">
@@ -25,7 +27,7 @@ export function RoleCard({ title, icon, href, description }: RoleCardProps) {
         <CardContent className="text-center">
           <CardDescription>{description}</CardDescription>
           <div className="mt-6 flex items-center justify-center text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-            Proceed <ArrowRight className="w-4 h-4 ml-2" />
+            {t('roleCard.proceed')} <ArrowRight className="w-4 h-4 ml-2" />
           </div>
         </CardContent>
       </Card>

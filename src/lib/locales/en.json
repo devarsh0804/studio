@@ -1,0 +1,36 @@
+
+{
+    "home": {
+        "title": "AgriChain Trace",
+        "description": "Bringing transparency and trust to the agricultural supply chain, from farm to fork."
+    },
+    "roles": {
+        "farmer": {
+            "title": "Farmer",
+            "description": "Register your crop, get a digital certificate, and sell your produce."
+        },
+        "distributor": {
+            "title": "Distributor",
+            "description": "Purchase from farmers, manage logistics, and distribute to retailers."
+        },
+        "retailer": {
+            "title": "Retailer",
+            "description": "Track your inventory, verify authenticity, and manage stock."
+        },
+        "consumer": {
+            "title": "Scan Product",
+            "description": "Scan a product's QR code to view its entire journey from farm to shelf."
+        }
+    },
+    "roleCard": {
+        "proceed": "Proceed"
+    },
+    "languageSwitcher": {
+        "tooltip": "Select language"
+    },
+    "languages": {
+        "en": "English",
+        "hi": "हिंदी (Hindi)",
+        "or": "ଓଡ଼ିଆ (Odia)"
+    }
+}
