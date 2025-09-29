@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText, Spline, Truck, LineChart as LineChartIcon, Fingerprint } from "lucide-react";
+import { Award, Droplets, History, Loader2, LogOut, Microscope, Palette, Ruler, ScanLine, Search, Store, XCircle, BadgeIndianRupee, QrCode, Landmark, CreditCard, Rocket, Percent, ShoppingBag, ShoppingCart, FileText, Spline, Truck, LineChart as LineChartIcon, Fingerprint, Camera } from "lucide-react";
 import { format, isValid } from 'date-fns';
 import { Timeline } from "@/components/Timeline";
 import { Separator } from "@/components/ui/separator";
@@ -52,6 +52,14 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
 
   const { getLotHistory, addRetailEvent, updateLot, findLot, getAllLots } = useAgriChainStore();
   const { toast } = useToast();
+  
+  const [showCamera, setShowCamera] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  let barcodeDetector: any;
+  if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
+      barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+  }
 
   const scanForm = useForm<ScanFormValues>({ 
     resolver: zodResolver(scanSchema),
@@ -59,10 +67,73 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
   });
   const retailerForm = useForm<RetailerFormValues>({ resolver: zodResolver(retailerSchema), defaultValues: { shelfDate: "" } });
 
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    let intervalId: NodeJS.Timeout | null = null;
+
+    const startScan = async () => {
+        try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                 setHasCameraPermission(false);
+                 return;
+            }
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            setHasCameraPermission(true);
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+
+            const detectBarcode = async () => {
+                if (videoRef.current && barcodeDetector && videoRef.current.readyState === 4) {
+                    const barcodes = await barcodeDetector.detect(videoRef.current);
+                    if (barcodes.length > 0) {
+                        const scannedValue = barcodes[0].rawValue;
+                        scanForm.setValue('lotId', scannedValue);
+                        handleScan({ lotId: scannedValue });
+                        stopScan();
+                    }
+                }
+            };
+
+            intervalId = setInterval(detectBarcode, 500);
+
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            setHasCameraPermission(false);
+            toast({
+                variant: 'destructive',
+                title: 'Camera Access Denied',
+                description: 'Please enable camera permissions in your browser settings.',
+            });
+        }
+    };
+
+    const stopScan = () => {
+        if (intervalId) clearInterval(intervalId);
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+        setShowCamera(false);
+    };
+    
+    if (showCamera) {
+        startScan();
+    }
+
+    return () => {
+        stopScan();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCamera]);
+
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
     setError(null);
     setHistory(null);
+    setShowCamera(false);
     const scannedLot = findLot(data.lotId);
 
     setTimeout(() => {
@@ -314,6 +385,7 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
                                 </FormItem>
                             )}
                             />
+                            <Button type="button" variant="outline" size="icon" onClick={() => setShowCamera(true)}><Camera/></Button>
                             <Button type="submit" disabled={isLoading}>
                             {isLoading ? <Loader2 className="animate-spin" /> : <Search />}
                             </Button>
@@ -483,6 +555,29 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
             />
           )}
 
+          <Dialog open={showCamera} onOpenChange={setShowCamera}>
+            <DialogContent size="lg">
+                <DialogHeader>
+                    <DialogTitle>Scan Lot QR Code</DialogTitle>
+                    <DialogDescription>
+                        Point your camera at the QR code.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="relative w-full aspect-video rounded-md overflow-hidden bg-black flex items-center justify-center">
+                    <video ref={videoRef} className="w-full aspect-video" autoPlay muted playsInline />
+                    {hasCameraPermission === false && (
+                        <Alert variant="destructive" className="w-auto">
+                            <Camera className="h-4 w-4"/>
+                            <AlertTitle>Camera Access Denied</AlertTitle>
+                            <AlertDescription>
+                                Please allow camera access to use this feature.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    {hasCameraPermission === undefined && <Loader2 className="h-8 w-8 animate-spin text-white"/>}
+                </div>
+            </DialogContent>
+        </Dialog>
       </div>
     );
   }
