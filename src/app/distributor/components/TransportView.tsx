@@ -18,7 +18,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -41,76 +40,6 @@ export function TransportView() {
   const { findLot } = useAgriChainStore();
   const { toast } = useToast();
   
-  const [showCamera, setShowCamera] = useState(false);
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-    let stream: MediaStream | null = null;
-    let barcodeDetector: any;
-    if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
-        barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-    }
-
-    const startScan = async () => {
-        try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !barcodeDetector) {
-                 setHasCameraPermission(false);
-                 return;
-            }
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-            setHasCameraPermission(true);
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
-
-            const detectBarcode = async () => {
-                if (videoRef.current && videoRef.current.readyState === 4) {
-                    const barcodes = await barcodeDetector.detect(videoRef.current);
-                    if (barcodes.length > 0) {
-                        const scannedValue = barcodes[0].rawValue;
-                        scanForm.setValue('lotId', scannedValue);
-                        handleScan({ lotId: scannedValue });
-                        stopScan();
-                    }
-                }
-            };
-            intervalId = setInterval(detectBarcode, 500);
-
-        } catch (err) {
-            console.error("Error accessing camera:", err);
-            setHasCameraPermission(false);
-            toast({
-                variant: 'destructive',
-                title: 'Camera Access Denied',
-                description: 'Please enable camera permissions in your browser settings.',
-            });
-        }
-    };
-
-    const stopScan = () => {
-        if (intervalId) clearInterval(intervalId);
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
-        }
-        setShowCamera(false);
-    };
-    
-    if (showCamera) {
-        startScan();
-    }
-
-    return () => {
-        stopScan();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showCamera, scanForm]);
-
-  
   const scanForm = useForm<ScanFormValues>({ 
     resolver: zodResolver(scanSchema),
     defaultValues: { lotId: "" },
@@ -129,7 +58,6 @@ export function TransportView() {
     setIsLoading(true);
     setError(null);
     setScannedLot(null); // Reset previous lot
-    setShowCamera(false);
     
     // Simulate network delay
     setTimeout(() => {
@@ -272,7 +200,7 @@ export function TransportView() {
                     </FormItem>
                     )}
                 />
-                <Button type="button" variant="outline" size="icon" onClick={() => setShowCamera(true)}><Camera/></Button>
+                <Button type="button" variant="outline" size="icon" disabled><Camera/></Button>
                 <Button type="submit" disabled={isLoading}>
                     {isLoading ? <Loader2 className="animate-spin" /> : <Search />}
                 </Button>
@@ -287,32 +215,6 @@ export function TransportView() {
             )}
             </CardContent>
         </Card>
-        
-        <Dialog open={showCamera} onOpenChange={setShowCamera}>
-            <DialogContent size="lg">
-                <DialogHeader>
-                    <DialogTitle>Scan Lot QR Code</DialogTitle>
-                    <DialogDescription>
-                        Point your camera at the QR code on the lot.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="relative w-full aspect-video rounded-md overflow-hidden bg-black flex items-center justify-center">
-                    <video ref={videoRef} className="w-full aspect-video" autoPlay muted playsInline />
-                    {hasCameraPermission === false && (
-                        <Alert variant="destructive" className="w-auto">
-                            <Camera className="h-4 w-4"/>
-                            <AlertTitle>Camera Access Denied</AlertTitle>
-                            <AlertDescription>
-                                Please allow camera access to use this feature.
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                    {hasCameraPermission === undefined && <Loader2 className="h-8 w-8 animate-spin text-white"/>}
-                </div>
-            </DialogContent>
-        </Dialog>
     </div>
   );
 }
-
-    
