@@ -45,7 +45,9 @@ export default function FarmerPage() {
       role: 'farmer',
       name: credentials.farmerName,
       identifier: credentials.farmerId,
-      accessCode: credentials.farmerCode
+      accessCode: credentials.farmerCode,
+      email: credentials.email,
+      mobile: credentials.mobile,
     });
     
     toast({

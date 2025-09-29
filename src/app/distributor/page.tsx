@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { DistributorView } from "./components/DistributorView";
-import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
+import { DistributorLogin, type DistributorRegisterCredentials } from "./components/DistributorLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/hooks/use-locale";
@@ -28,7 +28,7 @@ export default function DistributorPage() {
     fetchLots();
   }, []);
 
-  const handleLogin = async (credentials: DistributorLoginCredentials) => {
+  const handleLogin = async (credentials: Omit<DistributorRegisterCredentials, 'email' | 'mobile'>) => {
     const result = await loginUser({
       role: 'distributor',
       name: credentials.name,
@@ -50,11 +50,13 @@ export default function DistributorPage() {
     }
   };
 
-  const handleRegister = async (credentials: DistributorLoginCredentials) => {
+  const handleRegister = async (credentials: DistributorRegisterCredentials) => {
       const result = await registerUser({
           role: 'distributor',
           name: credentials.name,
-          accessCode: credentials.code
+          accessCode: credentials.code,
+          email: credentials.email,
+          mobile: credentials.mobile,
       });
 
       toast({

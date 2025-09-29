@@ -1,6 +1,7 @@
 
 
 
+
 export interface Lot {
   lotId: string;
   farmer: string;
@@ -60,4 +61,6 @@ export interface User {
   name: string; // For farmer, or storeName for retailer
   identifier?: string; // farmerId for farmer, null for others
   accessCode: string; // The "password"
+  email?: string;
+  mobile?: string;
 }

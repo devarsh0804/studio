@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { RetailerView } from "./components/RetailerView";
-import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
+import { RetailerLogin, type RetailerRegisterCredentials } from "./components/RetailerLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/hooks/use-locale";
@@ -29,7 +29,7 @@ export default function RetailerPage() {
     fetchLots();
   }, []);
 
-  const handleLogin = async (credentials: RetailerLoginCredentials) => {
+  const handleLogin = async (credentials: Omit<RetailerRegisterCredentials, 'email' | 'mobile'>) => {
     const result = await loginUser({
       role: 'retailer',
       name: credentials.storeName,
@@ -51,11 +51,13 @@ export default function RetailerPage() {
     }
   };
 
-  const handleRegister = async (credentials: RetailerLoginCredentials) => {
+  const handleRegister = async (credentials: RetailerRegisterCredentials) => {
     const result = await registerUser({
       role: 'retailer',
       name: credentials.storeName,
       accessCode: credentials.storeCode,
+      email: credentials.email,
+      mobile: credentials.mobile,
     });
 
     toast({
