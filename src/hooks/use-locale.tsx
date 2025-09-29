@@ -13,7 +13,7 @@ const translations = { en, hi, or };
 interface LocaleContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
@@ -24,7 +24,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     const browserLang = navigator.language.split('-')[0];
     if (browserLang === 'hi' || browserLang === 'or') {
-        setLocaleState(browserLang);
+        setLocaleState(browserLang as Locale);
     }
   }, []);
 
@@ -32,23 +32,37 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setLocaleState(newLocale);
   };
 
-  const t = useCallback((key: string): string => {
+  const t = useCallback((key: string, values?: Record<string, string | number>): string => {
     const keys = key.split('.');
-    let result: any = translations[locale];
-    for (const k of keys) {
-      result = result?.[k];
-      if (result === undefined) {
-        // Fallback to English if translation is missing
-        let fallbackResult: any = translations.en;
-        for (const fk of keys) {
-            fallbackResult = fallbackResult?.[fk];
-            if(fallbackResult === undefined) return key;
+    
+    const findTranslation = (localeToTry: Locale): string | undefined => {
+        let result: any = translations[localeToTry];
+        for (const k of keys) {
+            result = result?.[k];
+            if (result === undefined) return undefined;
         }
-        return fallbackResult;
-      }
+        return typeof result === 'string' ? result : undefined;
+    };
+
+    let translation = findTranslation(locale);
+
+    if (translation === undefined) {
+        translation = findTranslation('en');
     }
-    return result || key;
-  }, [locale]);
+    
+    if (translation === undefined) {
+        return key;
+    }
+
+    if (values) {
+        return translation.replace(/\{(\w+)\}/g, (placeholder, placeholderKey) => {
+            return values[placeholderKey] !== undefined ? String(values[placeholderKey]) : placeholder;
+        });
+    }
+
+    return translation;
+}, [locale]);
+
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale, t }}>
