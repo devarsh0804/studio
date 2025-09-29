@@ -5,7 +5,6 @@ import { useState, useRef, useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import type { Lot } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, ScanLine, Search, Sparkles, Truck, XCircle, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
-import { detectConflictAction } from "@/app/actions";
+import { detectConflictAction, getLot } from "@/app/actions";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -38,7 +37,6 @@ export function TransportView() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [conflict, setConflict] = useState<DistributorUpdateConflictDetectionOutput | null>(null);
   
-  const { findLot } = useAgriChainStore();
   const { toast } = useToast();
   
   const scanForm = useForm<ScanFormValues>({ 
@@ -55,27 +53,24 @@ export function TransportView() {
   });
 
   
-  const handleScan: SubmitHandler<ScanFormValues> = (data) => {
+  const handleScan: SubmitHandler<ScanFormValues> = async (data) => {
     setIsLoading(true);
     setError(null);
     setScannedLot(null); // Reset previous lot
     
-    // Simulate network delay
-    setTimeout(() => {
-      const lot = findLot(data.lotId);
-      if (lot) {
-        setScannedLot(lot);
-        transportForm.reset({
-            vehicleNumber: "",
-            transportCondition: "Normal",
-            warehouseEntryDateTime: "",
-        });
-      } else {
-        setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
-        setScannedLot(null);
-      }
-      setIsLoading(false);
-    }, 500); 
+    const lot = await getLot(data.lotId);
+    if (lot) {
+      setScannedLot(lot);
+      transportForm.reset({
+          vehicleNumber: "",
+          transportCondition: "Normal",
+          warehouseEntryDateTime: "",
+      });
+    } else {
+      setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
+      setScannedLot(null);
+    }
+    setIsLoading(false);
   };
 
   const handleFormSubmit: SubmitHandler<TransportFormValues> = async (data) => {

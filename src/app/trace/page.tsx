@@ -5,7 +5,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAgriChainStore } from '@/hooks/use-agrichain-store';
 import type { Lot, LotHistory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,47 +19,48 @@ import { PageHeader } from '@/components/PageHeader';
 import { useLocale } from '@/hooks/use-locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { getLotHistory } from '../actions';
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
 type ScanFormValues = z.infer<typeof scanSchema>;
 
+type FullHistory = NonNullable<Awaited<ReturnType<typeof getLotHistory>>>;
+
 export default function TracePage() {
-  const [history, setHistory] = useState<LotHistory | null>(null);
+  const [history, setHistory] = useState<FullHistory | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useLocale();
-
-  const { getLotHistory } = useAgriChainStore();
 
   const scanForm = useForm<ScanFormValues>({
     resolver: zodResolver(scanSchema),
     defaultValues: { lotId: '' },
   });
 
-  const handleScan: SubmitHandler<ScanFormValues> = (data) => {
+  const handleScan: SubmitHandler<ScanFormValues> = async (data) => {
     setIsLoading(true);
     setError(null);
     setHistory(null);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      const historyResult = getLotHistory(data.lotId);
-      if (historyResult) {
-        setHistory(historyResult);
-        scanForm.setValue('lotId', data.lotId);
-      } else {
-        setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
-        setHistory(null);
-      }
-    }, 500);
+    const historyResult = await getLotHistory(data.lotId);
+    if (historyResult) {
+      setHistory(historyResult);
+      scanForm.setValue('lotId', data.lotId);
+    } else {
+      setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
+      setHistory(null);
+    }
+    setIsLoading(false);
   };
   
 
   const getTimelineEvents = () => {
-    if (!history || !history.parentLot) return [];
+    if (!history) return [];
     
     const events = [];
     const {lot: currentLot, parentLot, childLots} = history;
+
+    if (!parentLot) return []; // Cannot build history without the original lot
 
     // 1. Farmer Event
     const gradingDate = parentLot.gradingDate ? new Date(parentLot.gradingDate) : null;

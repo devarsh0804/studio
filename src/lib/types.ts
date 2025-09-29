@@ -1,4 +1,5 @@
 
+
 export interface Lot {
   lotId: string;
   farmer: string;
@@ -30,6 +31,7 @@ export interface GradedLot extends Omit<Lot, 'price' | 'owner'> {}
 
 
 export interface RetailEvent {
+  id?: string; // Firestore document ID
   storeId: string;
   shelfDate: string;
   timestamp: string;

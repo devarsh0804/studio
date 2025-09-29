@@ -1,17 +1,18 @@
 
 "use client";
 
-import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeIndianRupee, LineChart as LineChartIcon, PackageCheck, ShoppingBag, Spline } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
 import { Wheat } from "lucide-react";
 import { format } from "date-fns";
+import type { Lot } from "@/lib/types";
 
 
 interface DistributorAnalyticsProps {
   distributorId: string;
+  allLots: Lot[];
 }
 
 const chartConfig = {
@@ -38,10 +39,10 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 
-export function DistributorAnalytics({ distributorId }: DistributorAnalyticsProps) {
-    const { getAllLots, findLot } = useAgriChainStore();
-    const allLots = getAllLots();
+export function DistributorAnalytics({ distributorId, allLots }: DistributorAnalyticsProps) {
 
+    const findLot = (lotId: string) => allLots.find(l => l.lotId === lotId);
+    
     // A purchased lot is a primary lot that is no longer owned by the original farmer.
     // This is a permanent historical fact, regardless of who owns it now.
     const purchasedLots = allLots.filter(lot => 
@@ -179,5 +180,3 @@ export function DistributorAnalytics({ distributorId }: DistributorAnalyticsProp
     </div>
   );
 }
-
-    

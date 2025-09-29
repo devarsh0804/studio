@@ -1,11 +1,10 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAgriChainStore } from '@/hooks/use-agrichain-store';
 import type { Lot } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { DistributorAnalytics } from './DistributorAnalytics';
 import { CertificateDialog } from '@/components/CertificateDialog';
 import { useLocale } from '@/hooks/use-locale';
+import { getLot, updateLot, addLots } from '@/app/actions';
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -42,9 +42,11 @@ type TransportFormValues = z.infer<typeof transportSchema>;
 
 interface DistributorViewProps {
   distributorId: string;
+  allLots: Lot[];
+  onLotUpdate: () => Promise<void>;
 }
 
-export function DistributorView({ distributorId }: DistributorViewProps) {
+export function DistributorView({ distributorId, allLots, onLotUpdate }: DistributorViewProps) {
   const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema), defaultValues: { lotId: "" } });
   const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
   const transportForm = useForm<TransportFormValues>({ 
@@ -66,60 +68,59 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
   const [subLots, setSubLots] = useState<Lot[]>([]);
   const [activeTab, setActiveTab] = useState('scan-lot');
 
-  const { findLot, updateLot, getAllLots, addLots } = useAgriChainStore();
   const { toast } = useToast();
   const { t } = useLocale();
 
-  const handleScan: SubmitHandler<ScanFormValues> = (data) => {
+  const handleScan: SubmitHandler<ScanFormValues> = async (data) => {
     setIsLoading(true);
     setError(null);
     setSubLots([]);
     
-    const lot = findLot(data.lotId);
-    setTimeout(() => {
-      if (lot) {
-        setScannedLot(lot);
-        const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId && l.paymentStatus === 'Unpaid');
-        setSubLots(childLots);
-        subLotForm.reset({subLotCount: 2});
-      } else {
-        setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
-        setScannedLot(null);
-      }
-      setIsLoading(false);
-    }, 500); // Simulate network delay
+    const lot = await getLot(data.lotId);
+
+    if (lot) {
+      setScannedLot(lot);
+      const childLots = allLots.filter((l) => l.parentLotId === lot.lotId && l.paymentStatus === 'Unpaid');
+      setSubLots(childLots);
+      subLotForm.reset({subLotCount: 2});
+    } else {
+      setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
+      setScannedLot(null);
+    }
+    setIsLoading(false);
   };
   
   useEffect(() => {
     if (scannedLot) {
-      const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId && l.paymentStatus === 'Unpaid');
+      const childLots = allLots.filter((l) => l.parentLotId === scannedLot.lotId && l.paymentStatus === 'Unpaid');
       if (childLots.length > 0) {
         setSubLots(childLots);
       }
     }
-  }, [scannedLot, getAllLots]);
+  }, [scannedLot, allLots]);
   
-  const allLots = getAllLots();
-  const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
+  const availableLots = allLots.filter((lot) => lot.owner === lot.farmer && !lot.parentLotId);
   const purchasedLots = allLots.filter((lot) => !lot.parentLotId && lot.owner !== lot.farmer);
   const dispatchedLots = allLots.filter(
-    (lot) => (lot.paymentStatus === 'Advance Paid' || lot.paymentStatus === 'Fully Paid') && lot.parentLotId && findLot(lot.parentLotId!)?.owner === distributorId
+    (lot) => (lot.paymentStatus === 'Advance Paid' || lot.paymentStatus === 'Fully Paid') && lot.parentLotId && allLots.find(l => l.lotId === lot.parentLotId)?.owner === distributorId
   );
 
-  const handleConfirmPurchase = () => {
+  const handleConfirmPurchase = async () => {
     if (!lotToBuy) return;
-    updateLot(lotToBuy.lotId, { owner: distributorId, status: 'Purchased' });
+    await updateLot(lotToBuy.lotId, { owner: distributorId, status: 'Purchased' });
     setLotToPay(lotToBuy);
     setLotToBuy(null);
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!lotToPay) return;
 
     setPaymentStatus('processing');
+    
+    await updateLot(lotToPay.lotId, { status: 'Purchased' });
+    await onLotUpdate();
 
     setTimeout(() => {
-      updateLot(lotToPay.lotId, { status: 'Purchased' });
       setPaymentStatus('success');
     }, 1500);
   };
@@ -130,7 +131,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
     setActiveTab('purchased-lots');
   };
 
-  const handleSubLotSubmit: SubmitHandler<SubLotFormValues> = (data) => {
+  const handleSubLotSubmit: SubmitHandler<SubLotFormValues> = async (data) => {
     if (!scannedLot) return;
 
     const newSubLots: Lot[] = [];
@@ -152,8 +153,9 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
       newSubLots.push(newLot);
     }
 
-    addLots(newSubLots);
-    updateLot(scannedLot.lotId, { weight: 0 }); 
+    await addLots(newSubLots);
+    await updateLot(scannedLot.lotId, { weight: 0 }); 
+    await onLotUpdate();
     setSubLots(newSubLots);
 
     toast({
@@ -173,10 +175,10 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
     }
   };
 
-  const handleTransportSubmit: SubmitHandler<TransportFormValues> = (data) => {
+  const handleTransportSubmit: SubmitHandler<TransportFormValues> = async (data) => {
     if (!lotToTransport) return;
 
-    updateLot(lotToTransport.lotId, { 
+    await updateLot(lotToTransport.lotId, { 
       logisticsInfo: {
         vehicleNumber: data.vehicleNumber,
         dispatchDate: data.dispatchDate,
@@ -184,6 +186,8 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
       status: 'Dispatched'
     });
     
+    await onLotUpdate();
+
     toast({
       title: t('distributorView.toasts.transportAssignedTitle'),
       description: t('distributorView.toasts.transportAssignedDescription', {lotId: lotToTransport.lotId}),
@@ -466,7 +470,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                 </Card>
               </TabsContent>
                <TabsContent value="analytics" className="mt-0">
-                    <DistributorAnalytics distributorId={distributorId} />
+                    <DistributorAnalytics distributorId={distributorId} allLots={allLots} />
               </TabsContent>
             </Tabs>
 

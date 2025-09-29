@@ -1,15 +1,16 @@
 
 "use client";
 
-import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeIndianRupee, List, LineChart as LineChartIcon, Star, Wheat } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
 import { format } from "date-fns";
+import type { Lot } from "@/lib/types";
 
 interface FarmerAnalyticsProps {
   farmerName: string;
+  lots: Lot[];
 }
 
 const chartConfig = {
@@ -27,9 +28,7 @@ const chartConfig = {
   }
 } satisfies ChartConfig;
 
-export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
-    const { getAllLots } = useAgriChainStore();
-    const farmerLots = getAllLots().filter(lot => lot.farmer === farmerName);
+export function FarmerAnalytics({ farmerName, lots: farmerLots }: FarmerAnalyticsProps) {
     
     // A sale is final. A lot is considered "sold" by the farmer if it's a primary lot
     // and its ownership has been transferred to someone else (i.e., a distributor).
@@ -175,5 +174,3 @@ export function FarmerAnalytics({ farmerName }: FarmerAnalyticsProps) {
     </div>
   );
 }
-
-    

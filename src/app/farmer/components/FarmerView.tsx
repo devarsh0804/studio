@@ -4,7 +4,6 @@
 import { useState } from "react";
 import type { Lot } from "@/lib/types";
 import { QrCodeDialog } from "./QrCodeDisplay";
-import { useAgriChainStore }from "@/hooks/use-agrichain-store";
 import { RegisterCropForm } from "./RegisterCropForm";
 import { RegisteredLotsList } from "./RegisteredLotsList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,16 +14,17 @@ import { useLocale } from "@/hooks/use-locale";
 
 interface FarmerViewProps {
   farmerName: string;
+  registeredLots: Lot[];
+  onLotRegistered: (lot: Lot) => void;
 }
 
-export function FarmerView({ farmerName }: FarmerViewProps) {
+export function FarmerView({ farmerName, registeredLots, onLotRegistered }: FarmerViewProps) {
   const [registeredLot, setRegisteredLot] = useState<Lot | null>(null);
-  const { addLot } = useAgriChainStore();
   const [activeTab, setActiveTab] = useState("register");
   const { t } = useLocale();
 
   const handleRegister = (lot: Lot) => {
-    addLot(lot);
+    onLotRegistered(lot);
     setRegisteredLot(lot);
   };
 
@@ -52,10 +52,10 @@ export function FarmerView({ farmerName }: FarmerViewProps) {
                  <RegisterCropForm onRegister={handleRegister} farmerName={farmerName} />
             </TabsContent>
             <TabsContent value="lots">
-                <RegisteredLotsList farmerName={farmerName} />
+                <RegisteredLotsList lots={registeredLots} />
             </TabsContent>
             <TabsContent value="analytics">
-                <FarmerAnalytics farmerName={farmerName} />
+                <FarmerAnalytics farmerName={farmerName} lots={registeredLots} />
             </TabsContent>
         </Tabs>
       

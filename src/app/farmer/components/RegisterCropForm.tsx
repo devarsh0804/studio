@@ -28,6 +28,7 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useLocale } from "@/hooks/use-locale";
+import { addLot } from "@/app/actions";
 
 const formSchema = z.object({
   farmerName: z.string().min(2, { message: "Farmer name must be at least 2 characters." }),
@@ -64,7 +65,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
 
   const cropImage = placeHolderImages.find(p => p.id === 'crop1');
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     
     if (!cropImage) {
@@ -99,14 +100,23 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
       color: ['Golden Brown', 'Light Yellow', 'Pale White'][Math.floor(Math.random() * 3)],
     };
 
-    setTimeout(() => {
+    try {
+        await addLot(newLot);
         onRegister(newLot);
         toast({
           title: t('farmerView.registerForm.toast.successTitle'),
           description: t('farmerView.registerForm.toast.successDescription', { lotId }),
         });
+    } catch(e) {
+        console.error(e);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to register lot. Please try again.",
+        });
+    } finally {
         setIsSubmitting(false);
-    }, 500);
+    }
   }
 
   return (

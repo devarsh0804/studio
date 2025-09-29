@@ -5,7 +5,6 @@ import { useState, useRef, useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import type { Lot, LotHistory, RetailEvent } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { RetailerAnalytics } from "./RetailerAnalytics";
 import { CertificateDialog } from "@/components/CertificateDialog";
 import { useLocale } from "@/hooks/use-locale";
+import { getLotHistory, addRetailEvent, updateLot, getLot } from "@/app/actions";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -36,10 +36,14 @@ type RetailerFormValues = z.infer<typeof retailerSchema>;
 
 interface RetailerViewProps {
     retailerId: string;
+    allLots: Lot[];
+    onLotUpdate: () => Promise<void>;
 }
 
-export function RetailerView({ retailerId }: RetailerViewProps) {
-  const [history, setHistory] = useState<LotHistory | null>(null);
+type FullHistory = NonNullable<Awaited<ReturnType<typeof getLotHistory>>>;
+
+export function RetailerView({ retailerId, allLots, onLotUpdate }: RetailerViewProps) {
+  const [history, setHistory] = useState<FullHistory | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
   const [lotToShowCertificate, setLotToShowCertificate] = useState<Lot | null>(null);
   const [paymentType, setPaymentType] = useState<'advance' | 'balance'>('advance');
@@ -50,7 +54,6 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
   const [activeTab, setActiveTab] = useState('scan-lot');
   const { t } = useLocale();
 
-  const { getLotHistory, addRetailEvent, updateLot, findLot, getAllLots } = useAgriChainStore();
   const { toast } = useToast();
   
   const scanForm = useForm<ScanFormValues>({ 
@@ -60,55 +63,58 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
   const retailerForm = useForm<RetailerFormValues>({ resolver: zodResolver(retailerSchema), defaultValues: { shelfDate: "" } });
 
 
-  const handleScan: SubmitHandler<ScanFormValues> = (data) => {
+  const handleScan: SubmitHandler<ScanFormValues> = async (data) => {
     setIsLoading(true);
     setError(null);
     setHistory(null);
-    const scannedLot = findLot(data.lotId);
+    const scannedLot = await getLot(data.lotId);
 
-    setTimeout(() => {
+    if (!scannedLot) {
+        setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
+        setHistory(null);
         setIsLoading(false);
-        if (!scannedLot) {
-            setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
-            setHistory(null);
-            return;
-        }
+        return;
+    }
 
-        if (scannedLot.owner !== retailerId) {
-            setError(`This lot is not assigned to your store (${retailerId}). Current owner: ${scannedLot.owner}`);
-            return;
-        }
-        
-        let lotToProcess = scannedLot;
+    if (scannedLot.owner !== retailerId) {
+        setError(`This lot is not assigned to your store (${retailerId}). Current owner: ${scannedLot.owner}`);
+        setIsLoading(false);
+        return;
+    }
+    
+    let lotToProcess = scannedLot;
 
-        if (lotToProcess.paymentStatus === 'Advance Paid' && lotToProcess.status !== 'Fully Paid') {
-            if(lotToProcess.status !== 'Delivered') {
-                updateLot(lotToProcess.lotId, { status: 'Delivered' });
-                toast({
-                    title: "Lot Received!",
-                    description: `Lot ${lotToProcess.lotId} has been marked as 'Delivered'. Please complete the final payment.`,
-                });
-            }
-            setLotToPay(lotToProcess); 
-            setPaymentType('balance');
-        } else {
-            setHistory(getLotHistory(data.lotId));
+    if (lotToProcess.paymentStatus === 'Advance Paid' && lotToProcess.status !== 'Fully Paid') {
+        if(lotToProcess.status !== 'Delivered') {
+            await updateLot(lotToProcess.lotId, { status: 'Delivered' });
+            await onLotUpdate();
+            toast({
+                title: "Lot Received!",
+                description: `Lot ${lotToProcess.lotId} has been marked as 'Delivered'. Please complete the final payment.`,
+            });
         }
-
-    }, 500);
+        setLotToPay(lotToProcess); 
+        setPaymentType('balance');
+    } else {
+        const historyData = await getLotHistory(data.lotId);
+        if (historyData) {
+            setHistory(historyData);
+        }
+    }
+    setIsLoading(false);
   };
   
-  const handleRetailerSubmit: SubmitHandler<RetailerFormValues> = (data) => {
+  const handleRetailerSubmit: SubmitHandler<RetailerFormValues> = async (data) => {
     if (!history) return;
     setIsSubmitting(true);
     
-    const newEvent: RetailEvent = { ...data, storeId: retailerId, timestamp: new Date().toISOString(), lotId: history.lot.lotId };
-    addRetailEvent(history.lot.lotId, newEvent);
-    updateLot(history.lot.lotId, { status: 'Stocked' });
+    const newEvent: Omit<RetailEvent, 'id'> = { ...data, storeId: retailerId, timestamp: new Date().toISOString(), lotId: history.lot.lotId };
+    await addRetailEvent(newEvent);
+    await updateLot(history.lot.lotId, { status: 'Stocked' });
 
     toast({ title: "Success!", description: "Retailer details updated and lot marked as Stocked." });
     
-    const updatedHistory = getLotHistory(history.lot.lotId);
+    const updatedHistory = await getLotHistory(history.lot.lotId);
     if(updatedHistory) {
       setHistory(updatedHistory);
     }
@@ -117,36 +123,36 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
     retailerForm.reset();
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!lotToPay) return;
 
     setPaymentStatus('processing');
+    
+    if (paymentType === 'advance') {
+      await updateLot(lotToPay.lotId, { 
+          paymentStatus: 'Advance Paid',
+          owner: retailerId,
+       });
+    } else {
+      await updateLot(lotToPay.lotId, { paymentStatus: 'Fully Paid' });
+    }
+    await onLotUpdate();
+    
+    setPaymentStatus('success');
+    toast({
+      title: 'Payment Successful!',
+      description: `Payment for Lot ${lotToPay.lotId} has been sent.`,
+    });
 
-    setTimeout(() => {
-      if (paymentType === 'advance') {
-        updateLot(lotToPay.lotId, { 
-            paymentStatus: 'Advance Paid',
-            owner: retailerId,
-         });
-      } else {
-        updateLot(lotToPay.lotId, { paymentStatus: 'Fully Paid' });
-      }
-      
-      setPaymentStatus('success');
-      toast({
-        title: 'Payment Successful!',
-        description: `Payment for Lot ${lotToPay.lotId} has been sent.`,
-      });
-
-    }, 1500);
   };
   
-  const closePaymentDialog = () => {
+  const closePaymentDialog = async () => {
     const paidLotId = lotToPay?.lotId;
     setLotToPay(null);
     setPaymentStatus('idle'); 
     if (paymentType === 'balance' && paidLotId) {
-        setHistory(getLotHistory(paidLotId));
+        const historyData = await getLotHistory(paidLotId);
+        if (historyData) setHistory(historyData);
     } else {
         setActiveTab('inventory');
     }
@@ -271,7 +277,6 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
   
   const isStocked = history?.lot?.status === 'Stocked';
 
-  const allLots = getAllLots();
   const marketplaceLots = allLots.filter(lot => lot.parentLotId && lot.paymentStatus === 'Unpaid');
   const inventoryLots = allLots.filter(lot => lot.owner === retailerId);
 
@@ -388,7 +393,7 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
                 </Card>
             </TabsContent>
             <TabsContent value="analytics" className="mt-0">
-                <RetailerAnalytics retailerId={retailerId} />
+                <RetailerAnalytics retailerId={retailerId} allLots={allLots} />
             </TabsContent>
         </Tabs>
 

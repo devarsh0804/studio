@@ -1,15 +1,16 @@
 
 "use client";
 
-import { useAgriChainStore } from "@/hooks/use-agrichain-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeIndianRupee, Box, LineChart as LineChartIcon, Store, Truck, Wheat } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
 import { format } from "date-fns";
+import type { Lot } from "@/lib/types";
 
 interface RetailerAnalyticsProps {
   retailerId: string;
+  allLots: Lot[];
 }
 
 const chartConfig = {
@@ -35,9 +36,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function RetailerAnalytics({ retailerId }: RetailerAnalyticsProps) {
-    const { getAllLots, findLot } = useAgriChainStore();
-    const inventoryLots = getAllLots().filter(lot => lot.owner === retailerId);
+export function RetailerAnalytics({ retailerId, allLots }: RetailerAnalyticsProps) {
+    const findLot = (lotId: string) => allLots.find(l => l.lotId === lotId);
+    const inventoryLots = allLots.filter(lot => lot.owner === retailerId);
 
     const inventoryValue = inventoryLots.reduce((acc, lot) => acc + (lot.price * lot.weight), 0);
     const lotsInTransit = inventoryLots.filter(lot => lot.status === 'Dispatched').length;
