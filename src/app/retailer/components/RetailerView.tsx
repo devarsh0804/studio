@@ -24,6 +24,7 @@ import QRCode from "qrcode.react";
 import { Badge } from "@/components/ui/badge";
 import { RetailerAnalytics } from "./RetailerAnalytics";
 import { CertificateDialog } from "@/components/CertificateDialog";
+import { useLocale } from "@/hooks/use-locale";
 
 const scanSchema = z.object({ lotId: z.string().min(1, "Please enter a Lot ID") });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -47,7 +48,7 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('scan-lot');
-
+  const { t } = useLocale();
 
   const { getLotHistory, addRetailEvent, updateLot, findLot, getAllLots } = useAgriChainStore();
   const { toast } = useToast();
@@ -280,16 +281,16 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-4 h-12">
                 <TabsTrigger value="scan-lot">
-                    <ScanLine className="mr-2"/> Scan Lot
+                    <ScanLine className="mr-2"/> {t('retailerView.tabs.scan')}
                 </TabsTrigger>
                 <TabsTrigger value="marketplace">
-                    <ShoppingCart className="mr-2"/> Marketplace
+                    <ShoppingCart className="mr-2"/> {t('retailerView.tabs.marketplace')}
                 </TabsTrigger>
                 <TabsTrigger value="inventory">
-                    <ShoppingBag className="mr-2"/> Your Inventory
+                    <ShoppingBag className="mr-2"/> {t('retailerView.tabs.inventory')}
                 </TabsTrigger>
                  <TabsTrigger value="analytics">
-                    <LineChartIcon className="mr-2"/> Analytics
+                    <LineChartIcon className="mr-2"/> {t('retailerView.tabs.analytics')}
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="scan-lot" className="mt-0">

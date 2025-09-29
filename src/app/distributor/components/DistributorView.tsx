@@ -22,6 +22,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from '@/components/ui/badge';
 import { DistributorAnalytics } from './DistributorAnalytics';
 import { CertificateDialog } from '@/components/CertificateDialog';
+import { useLocale } from '@/hooks/use-locale';
 
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
@@ -57,6 +58,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
 
   const { findLot, updateLot, getAllLots, addLots } = useAgriChainStore();
   const { toast } = useToast();
+  const { t } = useLocale();
   const qrRef = useRef<HTMLDivElement>(null);
 
 
@@ -72,7 +74,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
 
   const allLots = getAllLots();
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
-  const purchasedLots = allLots.filter((lot) => lot.owner === distributorId && !lot.parentLotId);
+  const purchasedLots = allLots.filter((lot) => !lot.parentLotId && lot.owner !== lot.farmer);
   const dispatchedLots = allLots.filter(
     (lot) => (lot.paymentStatus === 'Advance Paid' || lot.paymentStatus === 'Fully Paid') && lot.parentLotId && findLot(lot.parentLotId!)?.owner === distributorId
   );
@@ -157,8 +159,8 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
     setSubLots(newSubLots);
 
     toast({
-      title: 'Sub-lots Created!',
-      description: `${data.subLotCount} new lots have been created and are available for retailers to purchase.`,
+      title: t('distributorView.toasts.subLotsCreatedTitle'),
+      description: t('distributorView.toasts.subLotsCreatedDescription', {count: data.subLotCount}),
     });
   };
 
@@ -185,8 +187,8 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
     });
     
     toast({
-      title: 'Transport Assigned!',
-      description: `Transport details added for Lot ${lotToTransport.lotId}.`,
+      title: t('distributorView.toasts.transportAssignedTitle'),
+      description: t('distributorView.toasts.transportAssignedDescription', {lotId: lotToTransport.lotId}),
     });
     
     transportForm.reset({ vehicleNumber: '', dispatchDate: new Date().toISOString().split('T')[0] });
@@ -210,9 +212,9 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold font-headline">Lot Details</h1>
+          <h1 className="text-2xl font-bold font-headline">{t('distributorView.lotDetails.title')}</h1>
           <Button variant="outline" onClick={resetView}>
-            Back to Dashboard
+            {t('general.backToDashboard')}
           </Button>
         </div>
         
@@ -223,9 +225,9 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
             <Card>
                 <CardHeader>
                 <CardTitle className="flex items-center">
-                    <Spline className="mr-2" /> Create or Manage Sub-lots
+                    <Spline className="mr-2" /> {t('distributorView.lotDetails.createSubLotsTitle')}
                 </CardTitle>
-                <CardDescription>{canBeSplit ? 'Split this lot into smaller quantities. These will be available for retailers to purchase.' : 'This lot has already been split, or it is a sub-lot itself.'}</CardDescription>
+                <CardDescription>{canBeSplit ? t('distributorView.lotDetails.createSubLotsDescription') : t('distributorView.lotDetails.splitDoneDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                 {canBeSplit && (
@@ -237,7 +239,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                         render={({ field }) => (
                             <FormItem className="flex-1">
                             <FormControl>
-                                <Input type="number" placeholder={`Split ${scannedLot.weight} quintal lot into...`} {...field} />
+                                <Input type="number" placeholder={t('distributorView.lotDetails.splitPlaceholder', {weight: scannedLot.weight})} {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -251,7 +253,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                 )}
                 {subLots.length > 0 && (
                     <div className="mt-6">
-                    <h4 className="font-semibold mb-4">Generated Sub-lots (Available to Retailers):</h4>
+                    <h4 className="font-semibold mb-4">{t('distributorView.lotDetails.generatedSubLotsTitle')}</h4>
                     <div className="grid md:grid-cols-2 gap-4">
                         {subLots.map((lot) => (
                         <Card key={lot.lotId} className="flex flex-col">
@@ -263,7 +265,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                                 <div className="p-2 bg-white rounded-lg">
                                     <QRCode value={lot.lotId} size={128} id={`qr-${lot.lotId}`} />
                                 </div>
-                                <p className="text-sm text-muted-foreground text-center">This lot is now available for retailers to buy.</p>
+                                <p className="text-sm text-muted-foreground text-center">{t('distributorView.lotDetails.subLotAvailability')}</p>
                             </CardContent>
                         </Card>
                         ))}
@@ -285,29 +287,29 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
               <TabsList className="grid w-full grid-cols-5 h-12">
                 <TabsTrigger value="scan-lot">
                   <ScanLine className="mr-2" />
-                  Scan Lot
+                  {t('distributorView.tabs.scan')}
                 </TabsTrigger>
                 <TabsTrigger value="available-crops">
                   <ShoppingCart className="mr-2" />
-                  Available Crops
+                  {t('distributorView.tabs.available')}
                 </TabsTrigger>
                 <TabsTrigger value="purchased-lots">
                   <ShoppingBag className="mr-2" />
-                  Purchased Lots
+                  {t('distributorView.tabs.purchased')}
                 </TabsTrigger>
                 <TabsTrigger value="dispatched-lots">
                   <PackageCheck className="mr-2" />
-                  Dispatched Lots
+                  {t('distributorView.tabs.dispatched')}
                 </TabsTrigger>
                 <TabsTrigger value="analytics">
-                    <LineChartIcon className="mr-2"/> Analytics
+                    <LineChartIcon className="mr-2"/> {t('distributorView.tabs.analytics')}
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="scan-lot" className="mt-0">
                 <Card className="rounded-t-none">
                     <CardHeader>
-                        <CardTitle>Scan or Manage Lot</CardTitle>
-                        <CardDescription>Enter a Lot ID to fetch its details for management.</CardDescription>
+                        <CardTitle>{t('distributorView.scanTab.title')}</CardTitle>
+                        <CardDescription>{t('distributorView.scanTab.description')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Form {...scanForm}>
@@ -318,7 +320,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                             render={({ field }) => (
                                 <FormItem className="flex-1">
                                 <FormControl>
-                                    <Input placeholder="e.g., LOT-20240101-001" {...field} />
+                                    <Input placeholder={t('distributorView.scanTab.placeholder')} {...field} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -332,7 +334,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                         {error && (
                         <Alert variant="destructive" className="mt-4">
                             <XCircle className="h-4 w-4" />
-                            <AlertTitle>Error</AlertTitle>
+                            <AlertTitle>{t('general.error')}</AlertTitle>
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
                         )}
@@ -342,8 +344,8 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
               <TabsContent value="available-crops" className="mt-0">
                 <Card className="rounded-t-none">
                   <CardHeader>
-                    <CardTitle>Available Crops for Purchase</CardTitle>
-                    <CardDescription>Browse crops currently available directly from farmers.</CardDescription>
+                    <CardTitle>{t('distributorView.availableTab.title')}</CardTitle>
+                    <CardDescription>{t('distributorView.availableTab.description')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -352,16 +354,16 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                           <LotDetailsCard key={lot.lotId} lot={lot}>
                               <div className='flex flex-col md:flex-row gap-2 w-full'>
                                 <Button variant="secondary" className="w-full" onClick={() => setLotToShowCertificate(lot)}>
-                                    <Fingerprint /> View Certificate
+                                    <Fingerprint /> {t('distributorView.buttons.viewCertificate')}
                                 </Button>
                                 <Button className="w-full" onClick={() => setLotToBuy(lot)}>
-                                    <ShoppingCart /> Buy Lot
+                                    <ShoppingCart /> {t('distributorView.buttons.buyLot')}
                                 </Button>
                               </div>
                           </LotDetailsCard>
                           ))
                       ) : (
-                          <p className="text-muted-foreground text-center py-4 col-span-3">There are no lots currently available for purchase.</p>
+                          <p className="text-muted-foreground text-center py-4 col-span-3">{t('distributorView.availableTab.noLots')}</p>
                       )}
                       </div>
                   </CardContent>
@@ -371,9 +373,9 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                 <Card className="rounded-t-none">
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <ShoppingBag className="mr-2" /> Your Purchased Lots
+                      <ShoppingBag className="mr-2" /> {t('distributorView.purchasedTab.title')}
                     </CardTitle>
-                    <CardDescription>These are lots you own. Select a lot to create sub-lots for retailers.</CardDescription>
+                    <CardDescription>{t('distributorView.purchasedTab.description')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -381,12 +383,12 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                               purchasedLots.map((lot) => (
                               <LotDetailsCard key={lot.lotId} lot={lot}>
                                   <Button variant="secondary" className="w-full" onClick={() => handleScan({ lotId: lot.lotId })}>
-                                      <Spline className="mr-2 h-4 w-4" /> Create Sub-Lots
+                                      <Spline className="mr-2 h-4 w-4" /> {t('distributorView.buttons.createSubLots')}
                                   </Button>
                               </LotDetailsCard>
                               ))
                           ) : (
-                              <p className="text-muted-foreground text-center py-4 col-span-3">You have not purchased any lots yet. Go to the "Available Crops" tab to buy one.</p>
+                              <p className="text-muted-foreground text-center py-4 col-span-3">{t('distributorView.purchasedTab.noLots')}</p>
                           )}
                       </div>
                   </CardContent>
@@ -396,9 +398,9 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                 <Card className="rounded-t-none">
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <PackageCheck className="mr-2" /> Your Dispatched Lots
+                      <PackageCheck className="mr-2" /> {t('distributorView.dispatchedTab.title')}
                     </CardTitle>
-                    <CardDescription>These lots have had their advance paid by a retailer and are ready for transport assignment.</CardDescription>
+                    <CardDescription>{t('distributorView.dispatchedTab.description')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -439,7 +441,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                                           <div className="mt-4 flex flex-col items-center gap-4">
                                               {!lot.logisticsInfo ? (
                                               <Button className="w-full" onClick={() => setLotToTransport(lot)}>
-                                                      <Truck className="mr-2 h-4 w-4"/> Add Transport
+                                                      <Truck className="mr-2 h-4 w-4"/> {t('distributorView.buttons.addTransport')}
                                                   </Button>
                                               ) : (
                                                   <>
@@ -447,7 +449,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                                                           <QRCode value={lot.lotId} size={128} id={`qr-${lot.lotId}`} />
                                                       </div>
                                                       <Button variant="secondary" className="w-full" onClick={() => downloadQR(lot.lotId)}>
-                                                          <Download className="mr-2 h-4 w-4"/> Download QR for Shipment
+                                                          <Download className="mr-2 h-4 w-4"/> {t('distributorView.buttons.downloadQR')}
                                                       </Button>
                                                   </>
                                               )}
@@ -458,7 +460,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                           </Card>
                         ))
                       ) : (
-                        <p className="text-muted-foreground text-center py-4 col-span-3">No lots have been dispatched yet.</p>
+                        <p className="text-muted-foreground text-center py-4 col-span-3">{t('distributorView.dispatchedTab.noLots')}</p>
                       )}
                     </div>
                   </CardContent>
@@ -472,15 +474,14 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
       <AlertDialog open={!!lotToBuy} onOpenChange={() => setLotToBuy(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Purchase</AlertDialogTitle>
+            <AlertDialogTitle>{t('distributorView.dialogs.confirmPurchaseTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to purchase Lot {lotToBuy?.lotId} for a total of <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
-              {lotToBuy ? lotToBuy.price * lotToBuy.weight : 0}? This action will be recorded on the ledger.
+              {t('distributorView.dialogs.confirmPurchaseDescription', {lotId: lotToBuy?.lotId, totalPrice: (lotToBuy ? lotToBuy.price * lotToBuy.weight : 0).toLocaleString()})}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmPurchase}>Confirm Purchase</AlertDialogAction>
+            <AlertDialogCancel>{t('general.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmPurchase}>{t('distributorView.dialogs.confirmPurchaseAction')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -490,52 +491,46 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
           {paymentStatus === 'success' ? (
               <div className="flex flex-col items-center justify-center text-center p-8 gap-4">
                   <Rocket className="w-16 h-16 text-primary animate-bounce"/>
-                  <h2 className="text-2xl font-bold font-headline">Purchase Successful!</h2>
-                  <p className="text-muted-foreground">
-                      You can now collect the crop from the mandi at: <br/>
-                      <span className="font-semibold text-foreground">{lotToPay?.location}</span>
-                  </p>
+                  <h2 className="text-2xl font-bold font-headline">{t('distributorView.dialogs.paymentSuccessTitle')}</h2>
+                  <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('distributorView.dialogs.paymentSuccessDescription', {location: lotToPay?.location}) }} />
                   <div className='flex items-center gap-2 mt-4 w-full'>
                     <Button variant="outline" className="w-full">
-                        <FileText className="mr-2" /> Download Receipt
+                        <FileText className="mr-2" /> {t('distributorView.dialogs.downloadReceipt')}
                     </Button>
-                    <Button onClick={closePaymentDialog} className="w-full">Done</Button>
+                    <Button onClick={closePaymentDialog} className="w-full">{t('distributorView.dialogs.done')}</Button>
                   </div>
               </div>
           ) : (
             <>
               <DialogHeader>
-                <DialogTitle>Finalize Payment</DialogTitle>
-                <DialogDescription>
-                  Proceed to pay the farmer for Lot {lotToPay?.lotId}. <br /> Total amount: <BadgeIndianRupee className="w-4 h-4 inline-block mx-1" />
-                  <span className="font-bold">{lotToPay ? lotToPay.price * lotToPay.weight : 0}</span>
-                </DialogDescription>
+                <DialogTitle>{t('distributorView.dialogs.finalizePaymentTitle')}</DialogTitle>
+                <DialogDescription dangerouslySetInnerHTML={{ __html: t('distributorView.dialogs.finalizePaymentDescription', { lotId: lotToPay?.lotId, totalPrice: (lotToPay ? lotToPay.price * lotToPay.weight : 0).toLocaleString() })}} />
               </DialogHeader>
               
               <Tabs defaultValue="upi" className="w-full pt-4">
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="upi"><QrCode className="mr-2"/> UPI</TabsTrigger>
-                    <TabsTrigger value="bank"><Landmark className="mr-2"/> Bank Transfer</TabsTrigger>
+                    <TabsTrigger value="upi"><QrCode className="mr-2"/> {t('distributorView.dialogs.payWithUPI')}</TabsTrigger>
+                    <TabsTrigger value="bank"><Landmark className="mr-2"/> {t('distributorView.dialogs.bankTransfer')}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="upi">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Pay with UPI</CardTitle>
-                        <CardDescription>Scan the QR code with your UPI app.</CardDescription>
+                        <CardTitle>{t('distributorView.dialogs.payWithUPI')}</CardTitle>
+                        <CardDescription>{t('distributorView.dialogs.upiDescription')}</CardDescription>
                       </CardHeader>
                       <CardContent className="flex flex-col items-center justify-center space-y-4">
                         <div className="p-4 bg-white rounded-lg">
                            <QRCode value={`upi://pay?pa=farmer@agrichain&pn=Farmer&am=${lotToPay ? lotToPay.price * lotToPay.weight : 0}&cu=INR&tn=Lot%20${lotToPay?.lotId}`} size={180} />
                         </div>
-                        <p className="text-sm text-muted-foreground">Or pay to UPI ID: <span className="font-mono">farmer@agrichain</span></p>
+                        <p className="text-sm text-muted-foreground">{t('distributorView.dialogs.upiId', {id: 'farmer@agrichain'})}</p>
                       </CardContent>
                     </Card>
                   </TabsContent>
                   <TabsContent value="bank">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Bank Transfer Details</CardTitle>
-                        <CardDescription>Use these details to make a bank transfer.</CardDescription>
+                        <CardTitle>{t('distributorView.dialogs.bankTransferDetailsTitle')}</CardTitle>
+                        <CardDescription>{t('distributorView.dialogs.bankTransferDetailsDescription')}</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-muted-foreground">Beneficiary:</span> <span className="font-medium">Ramesh Kumar</span></div>
@@ -549,7 +544,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
 
               <DialogFooter className="!mt-6">
                  <Button variant="outline" disabled={paymentStatus === 'processing'} onClick={() => setLotToPay(null)}>
-                  Cancel
+                  {t('general.cancel')}
                 </Button>
                 <Button onClick={handlePayment} disabled={paymentStatus === 'processing' || paymentStatus === 'success'} className="w-40">
                   {paymentStatus === 'processing' && <Loader2 className="animate-spin" />}
@@ -564,9 +559,9 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
       <Dialog open={!!lotToTransport} onOpenChange={() => setLotToTransport(null)}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Assign Transport for Lot {lotToTransport?.lotId}</DialogTitle>
+                    <DialogTitle>{t('distributorView.dialogs.assignTransportTitle', {lotId: lotToTransport?.lotId})}</DialogTitle>
                     <DialogDescription>
-                        Fill in the dispatch details for the retailer.
+                        {t('distributorView.dialogs.assignTransportDescription')}
                     </DialogDescription>
                 </DialogHeader>
                 {lotToTransport && (
@@ -578,11 +573,11 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                                   name="vehicleNumber"
                                   render={({ field }) => (
                                     <FormItem>
-                                      <FormLabel>Vehicle Number</FormLabel>
+                                      <FormLabel>{t('distributorView.dialogs.vehicleNumberLabel')}</FormLabel>
                                       <FormControl>
                                         <div className="relative">
                                           <Truck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                          <Input placeholder="e.g., MH-12-AB-3456" {...field} className="pl-10" />
+                                          <Input placeholder={t('distributorView.dialogs.vehicleNumberPlaceholder')} {...field} className="pl-10" />
                                         </div>
                                       </FormControl>
                                       <FormMessage />
@@ -594,7 +589,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                               name="dispatchDate"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Dispatch Date</FormLabel>
+                                  <FormLabel>{t('distributorView.dialogs.dispatchDateLabel')}</FormLabel>
                                   <FormControl>
                                     <Input type="date" {...field} />
                                   </FormControl>
@@ -603,8 +598,8 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
                               )}
                             />
                             <DialogFooter className="!mt-4">
-                                <Button variant="outline" type="button" onClick={() => setLotToTransport(null)}>Cancel</Button>
-                                <Button type="submit"><Truck className="mr-2"/> Assign Transport</Button>
+                                <Button variant="outline" type="button" onClick={() => setLotToTransport(null)}>{t('general.cancel')}</Button>
+                                <Button type="submit"><Truck className="mr-2"/> {t('distributorView.dialogs.assignTransportAction')}</Button>
                             </DialogFooter>
                           </form>
                         </Form>

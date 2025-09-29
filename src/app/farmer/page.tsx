@@ -6,6 +6,7 @@ import { FarmerView } from "./components/FarmerView";
 import { FarmerLogin, type FarmerLoginCredentials } from "./components/FarmerLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
+import { useLocale } from "@/hooks/use-locale";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -17,6 +18,7 @@ const VALID_CREDENTIALS = {
 export default function FarmerPage() {
   const [farmer, setFarmer] = useState<string | null>(null);
   const { toast } = useToast();
+  const { t } = useLocale();
 
   const handleLogin = (credentials: FarmerLoginCredentials) => {
     if (
@@ -26,14 +28,14 @@ export default function FarmerPage() {
     ) {
       setFarmer(credentials.farmerName);
       toast({
-        title: "Login Successful",
-        description: `Welcome back, ${credentials.farmerName}!`,
+        title: t('login.success'),
+        description: t('login.welcomeBack', { name: credentials.farmerName }),
       });
     } else {
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
+        title: t('login.failed'),
+        description: t('login.invalidCredentials'),
       });
     }
   };
@@ -41,16 +43,16 @@ export default function FarmerPage() {
   const handleLogout = () => {
     setFarmer(null);
     toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out."
+        title: t('login.logout'),
+        description: t('login.logoutSuccess')
     })
   }
 
   return (
     <>
       <PageHeader 
-        title="Farmer Portal"
-        description="Register crops, generate digital certificates, and track your sales."
+        title={t('pageHeaders.farmer.title')}
+        description={t('pageHeaders.farmer.description')}
         isLoggedIn={!!farmer}
         onLogout={handleLogout}
       />

@@ -15,7 +15,7 @@ export default function Home() {
   const { t } = useLocale();
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-background isolate home-bg-pattern">
+    <div className="relative flex flex-col min-h-screen bg-background">
        <div className="absolute top-4 right-4 z-10">
           <LanguageSwitcher />
         </div>

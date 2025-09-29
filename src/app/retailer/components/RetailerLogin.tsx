@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { KeyRound, LogIn, Store } from "lucide-react";
+import { useLocale } from "@/hooks/use-locale";
 
 const loginSchema = z.object({
   storeName: z.string().min(1, "Store name is required"),
@@ -21,6 +22,7 @@ interface RetailerLoginProps {
 }
 
 export function RetailerLogin({ onLogin }: RetailerLoginProps) {
+  const { t } = useLocale();
   const form = useForm<RetailerLoginCredentials>({
     resolver: zodResolver(loginSchema),
     defaultValues: { storeName: "retail", storeCode: "5678" },
@@ -35,9 +37,9 @@ export function RetailerLogin({ onLogin }: RetailerLoginProps) {
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center">
-            <Store className="mr-2" /> Retailer Login
+            <Store className="mr-2" /> {t('retailerLogin.title')}
           </CardTitle>
-          <CardDescription>Enter your credentials to access the retailer dashboard.</CardDescription>
+          <CardDescription>{t('retailerLogin.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -47,11 +49,11 @@ export function RetailerLogin({ onLogin }: RetailerLoginProps) {
                 name="storeName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Store Name</FormLabel>
+                    <FormLabel>{t('retailerLogin.nameLabel')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Store className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="e.g., retail" {...field} className="pl-10" />
+                        <Input placeholder={t('retailerLogin.namePlaceholder')} {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -63,11 +65,11 @@ export function RetailerLogin({ onLogin }: RetailerLoginProps) {
                 name="storeCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Access Code</FormLabel>
+                    <FormLabel>{t('retailerLogin.codeLabel')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input type="password" placeholder="e.g., 5678" {...field} className="pl-10" />
+                        <Input type="password" placeholder={t('retailerLogin.codePlaceholder')} {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -75,14 +77,14 @@ export function RetailerLogin({ onLogin }: RetailerLoginProps) {
                 )}
               />
               <Button type="submit" className="w-full" size="lg">
-                <LogIn className="mr-2" /> Login
+                <LogIn className="mr-2" /> {t('login.login')}
               </Button>
             </form>
           </Form>
            <div className="mt-6 text-center text-sm">
-                Don't have an account?{' '}
+                {t('login.dontHaveAccount')}{' '}
                 <Button variant="link" className="p-0 h-auto">
-                    Register
+                    {t('login.register')}
                 </Button>
             </div>
         </CardContent>

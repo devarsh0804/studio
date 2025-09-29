@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Home, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useLocale } from "@/hooks/use-locale";
 
 interface PageHeaderProps {
     title: string;
@@ -16,6 +17,8 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, isLoggedIn, onLogout }: PageHeaderProps) {
     const pathname = usePathname();
+    const { t } = useLocale();
+
     // Don't show header on the main homepage
     if (pathname === "/") {
         return null;
@@ -32,12 +35,12 @@ export function PageHeader({ title, description, isLoggedIn, onLogout }: PageHea
                     <LanguageSwitcher />
                     {isLoggedIn && onLogout && (
                          <Button onClick={onLogout} variant="outline">
-                            <LogOut className="mr-2" /> Logout
+                            <LogOut className="mr-2" /> {t('general.logout')}
                         </Button>
                     )}
                     <Button asChild variant="outline">
                         <Link href="/">
-                            <Home className="mr-2" /> Back to Home
+                            <Home className="mr-2" /> {t('general.backToHome')}
                         </Link>
                     </Button>
                 </div>

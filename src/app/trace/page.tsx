@@ -16,6 +16,8 @@ import { Loader2, ScanLine, Search, XCircle, Award, Droplets, Microscope, Palett
 import { format, isValid } from 'date-fns';
 import { Timeline } from '@/components/Timeline';
 import { Separator } from '@/components/ui/separator';
+import { PageHeader } from '@/components/PageHeader';
+import { useLocale } from '@/hooks/use-locale';
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -24,6 +26,7 @@ export default function TracePage() {
   const [history, setHistory] = useState<LotHistory | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useLocale();
 
   const { getLotHistory, findLot } = useAgriChainStore();
 
@@ -156,6 +159,11 @@ export default function TracePage() {
   }
 
   return (
+    <>
+      <PageHeader
+        title={t('pageHeaders.trace.title')}
+        description={t('pageHeaders.trace.description')}
+      />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         <div className="max-w-2xl mx-auto space-y-8">
             <Card>
@@ -189,5 +197,6 @@ export default function TracePage() {
             )}
         </div>
       </main>
+    </>
   );
 }

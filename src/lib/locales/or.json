@@ -32,5 +32,203 @@
         "en": "English",
         "hi": "हिंदी (Hindi)",
         "or": "ଓଡ଼ିଆ (Odia)"
+    },
+    "pageHeaders": {
+        "farmer": {
+            "title": "କୃଷକ ପୋର୍ଟାଲ୍",
+            "description": "ଫସଲ ପଞ୍ଜିକରଣ କରନ୍ତୁ, ଡିଜିଟାଲ୍ ପ୍ରମାଣପତ୍ର ସୃଷ୍ଟି କରନ୍ତୁ ଏବଂ ଆପଣଙ୍କର ବିକ୍ରୟ ଟ୍ରାକ୍ କରନ୍ତୁ।"
+        },
+        "distributor": {
+            "title": "ବିତରକ ପୋର୍ଟାଲ୍",
+            "description": "ଲଟ୍ କିଣନ୍ତୁ, ସବ୍-ଲଟ୍ ପରିଚାଳନା କରନ୍ତୁ, ଏବଂ ଲଜିଷ୍ଟିକ୍ସ ସମ୍ଭାଳନ୍ତୁ।"
+        },
+        "retailer": {
+            "title": "ଖୁଚୁରା ବ୍ୟବସାୟୀ ପୋର୍ଟାଲ୍",
+            "description": "ବିତରକମାନଙ୍କଠାରୁ ଲଟ୍ କିଣନ୍ତୁ, ଆପଣଙ୍କର ଇନଭେଣ୍ଟୋରୀ ପରିଚାଳନା କରନ୍ତୁ ଏବଂ ଉତ୍ପାଦ ଇତିହାସ ଦେଖନ୍ତୁ।"
+        },
+        "trace": {
+            "title": "ଉତ୍ପାଦ ଟ୍ରେସ୍ କରନ୍ତୁ",
+            "description": "ଏକ ଉତ୍ପାଦର ସମ୍ପୂର୍ଣ୍ଣ ଯାତ୍ରା ଦେଖିବା ପାଇଁ ଏହାର QR କୋଡ୍ ସ୍କାନ୍ କରନ୍ତୁ।"
+        }
+    },
+    "login": {
+        "welcomeBack": "ପୁଣି ସ୍ୱାଗତ, {name}!",
+        "success": "ଲଗଇନ୍ ସଫଳ",
+        "failed": "ଲଗଇନ୍ ବିଫଳ",
+        "invalidCredentials": "ଅବୈଧ ପ୍ରମାଣପତ୍ର। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।",
+        "logout": "ଲଗ୍ ଆଉଟ୍",
+        "logoutSuccess": "ଆପଣ ସଫଳତାର ସହିତ ଲଗ୍ ଆଉଟ୍ ହୋଇଛନ୍ତି।",
+        "dontHaveAccount": "ଖାତା ନାହିଁ?",
+        "register": "ପଞ୍ଜିକରଣ କରନ୍ତୁ",
+        "login": "ଲଗଇନ୍ କରନ୍ତୁ"
+    },
+    "farmerLogin": {
+        "title": "କୃଷକ ଲଗଇନ୍",
+        "description": "ଡ୍ୟାସବୋର୍ଡକୁ ପ୍ରବେଶ କରିବାକୁ ଆପଣଙ୍କର ପ୍ରମାଣପତ୍ର ପ୍ରବେଶ କରନ୍ତୁ।",
+        "nameLabel": "କୃଷକଙ୍କ ନାମ",
+        "namePlaceholder": "ଉଦା., ରମେଶ",
+        "idLabel": "କୃଷକ ID ନଂ",
+        "idPlaceholder": "ଉଦା., 123456789012",
+        "codeLabel": "ପ୍ରବେଶ କୋଡ୍",
+        "codePlaceholder": "ଉଦା., 7890"
+    },
+    "farmerView": {
+        "tabs": {
+            "register": "ନୂଆ ଲଟ୍ ପଞ୍ଜିକରଣ କରନ୍ତୁ",
+            "lots": "ଆପଣଙ୍କର ପଞ୍ଜିକୃତ ଲଟ୍",
+            "analytics": "ଆନାଲିଟିକ୍ସ"
+        },
+        "registerForm": {
+            "title": "ନୂଆ ଲଟ୍ ପଞ୍ଜିକରଣ କରନ୍ତୁ",
+            "description": "ଫସଲ ପଞ୍ଜିକରଣ କରିବା ଏବଂ ଯୋଗାଣ ଶୃଙ୍ଖଳା ପାଇଁ ଏକ QR କୋଡ୍ ସୃଷ୍ଟି କରିବାକୁ ନିମ୍ନରେ ଥିବା ବିବରଣୀ ପୂରଣ କରନ୍ତୁ।",
+            "labels": {
+                "farmerName": "କୃଷକଙ୍କ ନାମ",
+                "location": "ସ୍ଥାନ (ମଣ୍ଡି)",
+                "cropName": "ଫସଲର ନାମ",
+                "weight": "ଓଜନ (କ୍ୱିଣ୍ଟାଲ)",
+                "price": "ମୂଲ୍ୟ (ପ୍ରତି କ୍ୱିଣ୍ଟାଲ)",
+                "harvestDate": "ଅମଳ ତାରିଖ",
+                "quality": "ଗୁଣବତ୍ତା ଗ୍ରେଡ୍",
+                "photo": "ଫସଲର ଫଟୋ"
+            },
+            "placeholders": {
+                "farmerName": "ଉଦା., ରମେଶ କୁମାର",
+                "location": "ଉଦା., APMC, ପଞ୍ଜାବ",
+                "cropName": "ଉଦା., ଗହମ, ଚାଉଳ",
+                "weight": "ଉଦା., 5",
+                "price": "ଉଦା., 2000",
+                "quality": "ଫସଲ ପାଇଁ ଏକ ଗୁଣବତ୍ତା ଗ୍ରେଡ୍ ବାଛନ୍ତୁ"
+            },
+            "buttons": {
+                "uploadPhoto": "ଫଟୋ ଅପଲୋଡ୍ କରନ୍ତୁ",
+                "uploadCertificate": "ପ୍ରମାଣପତ୍ର ଅପଲୋଡ୍ କରନ୍ତୁ",
+                "submit": "ଲଟ୍ ପଞ୍ଜିକରଣ କରନ୍ତୁ ଏବଂ QR ସୃଷ୍ଟି କରନ୍ତୁ"
+            },
+            "toast": {
+                "successTitle": "ଲଟ୍ ସଫଳତାର ସହିତ ପଞ୍ଜିକୃତ ହେଲା!",
+                "successDescription": "ଲଟ୍ ID {lotId} ପାଇଁ QR କୋଡ୍ ଏବେ ପ୍ରସ୍ତୁତ।"
+            }
+        },
+        "qrDialog": {
+            "title": "ଲଟ୍ ସଫଳତାର ସହିତ ପଞ୍ଜିକୃତ ହେଲା!",
+            "description": "ଏହି QR କୋଡ୍ ଏବେ ଯୋଗାଣ ଶୃଙ୍ଖଳାର ପରବର୍ତ୍ତୀ ପର୍ଯ୍ୟାୟ ପାଇଁ ପ୍ରସ୍ତୁତ।",
+            "lotIdLabel": "ଲଟ୍ ID",
+            "buttons": {
+                "download": "QR ଡାଉନଲୋଡ୍ / ପ୍ରିଣ୍ଟ୍ କରନ୍ତୁ",
+                "done": "ସମାପ୍ତ"
+            }
+        },
+        "lotList": {
+            "title": "ପଞ୍ଜିକୃତ ଲଟ୍",
+            "description": "ନିମ୍ନରେ ଆପଣଙ୍କର ସମସ୍ତ ପଞ୍ଜିକୃତ ଫସଲ ଲଟ୍‌ର ବିବରଣୀ ଦେଖନ୍ତୁ।",
+            "noLots": "ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଲଟ୍ ପଞ୍ଜିକୃତ ହୋଇନାହିଁ।"
+        }
+    },
+    "distributorLogin": {
+        "title": "ବିତରକ ଲଗଇନ୍",
+        "description": "ବିତରକ ଡ୍ୟାସବୋର୍ଡକୁ ପ୍ରବେଶ କରିବାକୁ ଆପଣଙ୍କର ପ୍ରମାଣପତ୍ର ପ୍ରବେଶ କରନ୍ତୁ।",
+        "nameLabel": "ନାମ",
+        "namePlaceholder": "ଉଦା., ଡିଷ୍ଟ୍ରୋ",
+        "codeLabel": "ପ୍ରବେଶ କୋଡ୍",
+        "codePlaceholder": "ଉଦା., 1234"
+    },
+    "retailerLogin": {
+        "title": "ଖୁଚୁରା ବ୍ୟବସାୟୀ ଲଗଇନ୍",
+        "description": "ଖୁଚୁରା ବ୍ୟବସାୟୀ ଡ୍ୟାସବୋର୍ଡକୁ ପ୍ରବେଶ କରିବାକୁ ଆପଣଙ୍କର ପ୍ରମାଣପତ୍ର ପ୍ରବେଶ କରନ୍ତୁ।",
+        "nameLabel": "ଷ୍ଟୋର୍ ନାମ",
+        "namePlaceholder": "ଉଦା., ରିଟେଲ୍",
+        "codeLabel": "ପ୍ରବେଶ କୋଡ୍",
+        "codePlaceholder": "ଉଦା., 5678"
+    },
+    "general": {
+        "backToDashboard": "ଡ୍ୟାସବୋର୍ଡକୁ ଫେରନ୍ତୁ",
+        "backToHome": "ହୋମକୁ ଫେରନ୍ତୁ",
+        "logout": "ଲଗ୍ ଆଉଟ୍",
+        "error": "ତ୍ରୁଟି",
+        "search": "ଖୋଜନ୍ତୁ",
+        "cancel": "ବାତିଲ୍ କରନ୍ତୁ",
+        "submit": "ଦାଖଲ କରନ୍ତୁ"
+    },
+    "distributorView": {
+        "tabs": {
+            "scan": "ଲଟ୍ ସ୍କାନ୍ କରନ୍ତୁ",
+            "available": "ଉପଲବ୍ଧ ଫସଲ",
+            "purchased": "କିଣାଯାଇଥିବା ଲଟ୍",
+            "dispatched": "ପଠାଯାଇଥିବା ଲଟ୍",
+            "analytics": "ଆନାଲିଟିକ୍ସ"
+        },
+        "scanTab": {
+            "title": "ଲଟ୍ ସ୍କାନ୍ କିମ୍ବା ପରିଚାଳନା କରନ୍ତୁ",
+            "description": "ଏହାର ବିବରଣୀ ପରିଚାଳନା ପାଇଁ ଏକ ଲଟ୍ ID ପ୍ରବେଶ କରନ୍ତୁ।",
+            "placeholder": "ଉଦା., LOT-20240101-001"
+        },
+        "availableTab": {
+            "title": "କିଣିବା ପାଇଁ ଉପଲବ୍ଧ ଫସଲ",
+            "description": "ବର୍ତ୍ତମାନ ସିଧାସଳଖ କୃଷକମାନଙ୍କଠାରୁ ଉପଲବ୍ଧ ଫସଲଗୁଡିକ ବ୍ରାଉଜ୍ କରନ୍ତୁ।",
+            "noLots": "ବର୍ତ୍ତମାନ କିଣିବା ପାଇଁ କୌଣସି ଲଟ୍ ଉପଲବ୍ଧ ନାହିଁ।"
+        },
+        "purchasedTab": {
+            "title": "ଆପଣଙ୍କର କିଣାଯାଇଥିବା ଲଟ୍",
+            "description": "ଏଗୁଡ଼ିକ ଆପଣଙ୍କ ମାଲିକାନାରେ ଥିବା ଲଟ୍। ଖୁଚୁରା ବ୍ୟବସାୟୀଙ୍କ ପାଇଁ ସବ୍-ଲଟ୍ ତିଆରି କରିବାକୁ ଏକ ଲଟ୍ ବାଛନ୍ତୁ।",
+            "noLots": "ଆପଣ ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଲଟ୍ କିଣିନାହାଁନ୍ତି। ଗୋଟିଏ କିଣିବାକୁ \"ଉପଲବ୍ଧ ଫସଲ\" ଟ୍ୟାବକୁ ଯାଆନ୍ତୁ।"
+        },
+        "dispatchedTab": {
+            "title": "ଆପଣଙ୍କର ପଠାଯାଇଥିବା ଲଟ୍",
+            "description": "ଏହି ଲଟ୍‌ଗୁଡ଼ିକର ଅଗ୍ରୀମ ଦେୟ ଜଣେ ଖୁଚୁରା ବ୍ୟବସାୟୀ ଦ୍ୱାରା କରାଯାଇଛି ଏବଂ ପରିବହନ ଆବଣ୍ଟନ ପାଇଁ ପ୍ରସ୍ତୁତ।",
+            "noLots": "ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଲଟ୍ ପଠାଯାଇନାହିଁ।"
+        },
+        "lotDetails": {
+            "title": "ଲଟ୍ ବିବରଣୀ",
+            "createSubLotsTitle": "ସବ୍-ଲଟ୍ ତିଆରି କରନ୍ତୁ କିମ୍ବା ପରିଚାଳନା କରନ୍ତୁ",
+            "createSubLotsDescription": "ଏହି ଲଟ୍‌କୁ ଛୋଟ ପରିମାଣରେ ବିଭାଜନ କରନ୍ତୁ। ଏଗୁଡ଼ିକ ଖୁଚୁରା ବ୍ୟବସାୟୀଙ୍କ ପାଇଁ କିଣିବାକୁ ଉପଲବ୍ଧ ହେବ।",
+            "splitDoneDescription": "ଏହି ଲଟ୍ ପୂର୍ବରୁ ବିଭାଜିତ ହୋଇସାରିଛି, କିମ୍ବା ଏହା ନିଜେ ଏକ ସବ୍-ଲଟ୍।",
+            "generatedSubLotsTitle": "ସୃଷ୍ଟି ହୋଇଥିବା ସବ୍-ଲଟ୍ (ଖୁଚୁରା ବ୍ୟବସାୟୀଙ୍କ ପାଇଁ ଉପଲବ୍ଧ):",
+            "subLotAvailability": "ଏହି ଲଟ୍ ଏବେ ଖୁଚୁରା ବ୍ୟବସାୟୀଙ୍କ ପାଇଁ କିଣିବାକୁ ଉପଲବ୍ଧ।",
+            "splitPlaceholder": "{weight} କ୍ୱିଣ୍ଟାଲ ଲଟ୍‌କୁ ବିଭାଜନ କରନ୍ତୁ..."
+        },
+        "buttons": {
+            "viewCertificate": "ପ୍ରମାଣପତ୍ର ଦେଖନ୍ତୁ",
+            "buyLot": "ଲଟ୍ କିଣନ୍ତୁ",
+            "createSubLots": "ସବ୍-ଲଟ୍ ତିଆରି କରନ୍ତୁ",
+            "addTransport": "ପରିବହନ ଯୋଗ କରନ୍ତୁ",
+            "downloadQR": "ପଠାଇବା ପାଇଁ QR ଡାଉନଲୋଡ୍ କରନ୍ତୁ"
+        },
+        "dialogs": {
+            "confirmPurchaseTitle": "କିଣିବା ନିଶ୍ଚିତ କରନ୍ତୁ",
+            "confirmPurchaseDescription": "ଆପଣ ନିଶ୍ଚିତ କି ଲଟ୍ {lotId} କୁ ମୋଟ ₹{totalPrice} ରେ କିଣିବାକୁ ଚାହୁଁଛନ୍ତି? ଏହି କାର୍ଯ୍ୟ ଲେଜରରେ ରେକର୍ଡ କରାଯିବ।",
+            "confirmPurchaseAction": "କିଣିବା ନିଶ୍ଚିତ କରନ୍ତୁ",
+            "finalizePaymentTitle": "ଦେୟ ଚୂଡ଼ାନ୍ତ କରନ୍ତୁ",
+            "finalizePaymentDescription": "ଲଟ୍ {lotId} ପାଇଁ କୃଷକଙ୍କୁ ଦେୟ ଦେବାକୁ ଆଗକୁ ବଢନ୍ତୁ। <br /> ମୋଟ ରାଶି: <span class='font-bold'>₹{totalPrice}</span>",
+            "paymentSuccessTitle": "କିଣିବା ସଫଳ!",
+            "paymentSuccessDescription": "ଆପଣ ଏବେ ମଣ୍ଡିରୁ ଫସଲ ସଂଗ୍ରହ କରିପାରିବେ: <br/> <span class='font-semibold text-foreground'>{location}</span>",
+            "downloadReceipt": "ରସିଦ ଡାଉନଲୋଡ୍ କରନ୍ତୁ",
+            "done": "ସମାପ୍ତ",
+            "payWithUPI": "UPI ସହିତ ଦେୟ କରନ୍ତୁ",
+            "upiDescription": "ଆପଣଙ୍କ UPI ଆପ୍ ସହିତ QR କୋଡ୍ ସ୍କାନ୍ କରନ୍ତୁ।",
+            "upiId": "କିମ୍ବା UPI ID ରେ ଦେୟ କରନ୍ତୁ: {id}",
+            "bankTransfer": "ବ୍ୟାଙ୍କ୍ ଟ୍ରାନ୍ସଫର୍",
+            "bankTransferDetailsTitle": "ବ୍ୟାଙ୍କ୍ ଟ୍ରାନ୍ସଫର୍ ବିବରଣୀ",
+            "bankTransferDetailsDescription": "ବ୍ୟାଙ୍କ୍ ଟ୍ରାନ୍ସଫର୍ କରିବାକୁ ଏହି ବିବରଣୀ ବ୍ୟବହାର କରନ୍ତୁ।",
+            "assignTransportTitle": "ଲଟ୍ {lotId} ପାଇଁ ପରିବହନ ଆବଣ୍ଟନ କରନ୍ତୁ",
+            "assignTransportDescription": "ଖୁଚୁରା ବ୍ୟବସାୟୀଙ୍କ ପାଇଁ ପଠାଇବା ବିବରଣୀ ପୂରଣ କରନ୍ତୁ।",
+            "assignTransportAction": "ପରିବହନ ଆବଣ୍ଟନ କରନ୍ତୁ",
+            "vehicleNumberLabel": "ଗାଡ଼ି ନମ୍ବର",
+            "vehicleNumberPlaceholder": "ଉଦା., MH-12-AB-3456",
+            "dispatchDateLabel": "ପଠାଇବା ତାରିଖ"
+        },
+        "toasts": {
+            "subLotsCreatedTitle": "ସବ୍-ଲଟ୍ ତିଆରି ହେଲା!",
+            "subLotsCreatedDescription": "{count} ଟି ନୂଆ ଲଟ୍ ତିଆରି ହୋଇଛି ଏବଂ ଖୁଚୁରା ବ୍ୟବସାୟୀଙ୍କ ପାଇଁ କିଣିବାକୁ ଉପଲବ୍ଧ।",
+            "transportAssignedTitle": "ପରିବହନ ଆବଣ୍ଟନ କରାଗଲା!",
+            "transportAssignedDescription": "ଲଟ୍ {lotId} ପାଇଁ ପରିବହନ ବିବରଣୀ ଯୋଗ କରାଗଲା।"
+        }
+    },
+    "retailerView": {
+        "tabs": {
+            "scan": "ଲଟ୍ ସ୍କାନ୍ କରନ୍ତୁ",
+            "marketplace": "ବଜାର",
+            "inventory": "ଆପଣଙ୍କ ଇନଭେଣ୍ଟୋରୀ",
+            "analytics": "ଆନାଲିଟିକ୍ସ"
+        }
     }
 }

@@ -6,6 +6,7 @@ import { DistributorView } from "./components/DistributorView";
 import { DistributorLogin, type DistributorLoginCredentials } from "./components/DistributorLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
+import { useLocale } from "@/hooks/use-locale";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -16,19 +17,20 @@ const VALID_CREDENTIALS = {
 export default function DistributorPage() {
   const [distributor, setDistributor] = useState<string | null>(null);
   const { toast } = useToast();
+  const { t } = useLocale();
 
   const handleLogin = (credentials: DistributorLoginCredentials) => {
     if (credentials.name === VALID_CREDENTIALS.name && credentials.code === VALID_CREDENTIALS.code) {
       setDistributor(credentials.name);
       toast({
-        title: "Login Successful",
-        description: `Welcome back, ${credentials.name}!`,
+        title: t('login.success'),
+        description: t('login.welcomeBack', { name: credentials.name }),
       });
     } else {
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
+        title: t('login.failed'),
+        description: t('login.invalidCredentials'),
       });
     }
   };
@@ -36,16 +38,16 @@ export default function DistributorPage() {
   const handleLogout = () => {
     setDistributor(null);
     toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out."
+        title: t('login.logout'),
+        description: t('login.logoutSuccess')
     })
   }
 
   return (
     <>
       <PageHeader 
-        title="Distributor Portal"
-        description="Purchase lots, manage sub-lots, and handle logistics."
+        title={t('pageHeaders.distributor.title')}
+        description={t('pageHeaders.distributor.description')}
         isLoggedIn={!!distributor}
         onLogout={handleLogout}
       />

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { KeyRound, LogIn, User } from "lucide-react";
+import { useLocale } from "@/hooks/use-locale";
 
 const loginSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -21,6 +22,7 @@ interface DistributorLoginProps {
 }
 
 export function DistributorLogin({ onLogin }: DistributorLoginProps) {
+  const { t } = useLocale();
   const form = useForm<DistributorLoginCredentials>({
     resolver: zodResolver(loginSchema),
     defaultValues: { name: "distro", code: "1234" },
@@ -35,9 +37,9 @@ export function DistributorLogin({ onLogin }: DistributorLoginProps) {
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center">
-            <User className="mr-2" /> Distributor Login
+            <User className="mr-2" /> {t('distributorLogin.title')}
           </CardTitle>
-          <CardDescription>Enter your credentials to access the distributor dashboard.</CardDescription>
+          <CardDescription>{t('distributorLogin.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -47,11 +49,11 @@ export function DistributorLogin({ onLogin }: DistributorLoginProps) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>{t('distributorLogin.nameLabel')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="e.g., distro" {...field} className="pl-10" />
+                        <Input placeholder={t('distributorLogin.namePlaceholder')} {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -63,11 +65,11 @@ export function DistributorLogin({ onLogin }: DistributorLoginProps) {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Access Code</FormLabel>
+                    <FormLabel>{t('distributorLogin.codeLabel')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input type="password" placeholder="e.g., 1234" {...field} className="pl-10" />
+                        <Input type="password" placeholder={t('distributorLogin.codePlaceholder')} {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -75,14 +77,14 @@ export function DistributorLogin({ onLogin }: DistributorLoginProps) {
                 )}
               />
               <Button type="submit" className="w-full" size="lg">
-                <LogIn className="mr-2" /> Login
+                <LogIn className="mr-2" /> {t('login.login')}
               </Button>
             </form>
           </Form>
            <div className="mt-6 text-center text-sm">
-                Don't have an account?{' '}
+                {t('login.dontHaveAccount')}{' '}
                 <Button variant="link" className="p-0 h-auto">
-                    Register
+                    {t('login.register')}
                 </Button>
             </div>
         </CardContent>

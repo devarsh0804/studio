@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { KeyRound, LogIn, User, CircleUserRound } from "lucide-react";
+import { useLocale } from "@/hooks/use-locale";
 
 const loginSchema = z.object({
   farmerName: z.string().min(1, "Farmer name is required"),
@@ -22,6 +23,7 @@ interface FarmerLoginProps {
 }
 
 export function FarmerLogin({ onLogin }: FarmerLoginProps) {
+  const { t } = useLocale();
   const form = useForm<FarmerLoginCredentials>({
     resolver: zodResolver(loginSchema),
     defaultValues: { farmerName: "Ramesh", farmerId: "123456789012", farmerCode: "7890" },
@@ -36,9 +38,9 @@ export function FarmerLogin({ onLogin }: FarmerLoginProps) {
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center">
-            <User className="mr-2" /> Farmer Login
+            <User className="mr-2" /> {t('farmerLogin.title')}
           </CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
+          <CardDescription>{t('farmerLogin.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -48,11 +50,11 @@ export function FarmerLogin({ onLogin }: FarmerLoginProps) {
                 name="farmerName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Farmer Name</FormLabel>
+                    <FormLabel>{t('farmerLogin.nameLabel')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="e.g., Ramesh" {...field} className="pl-10" />
+                        <Input placeholder={t('farmerLogin.namePlaceholder')} {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -64,11 +66,11 @@ export function FarmerLogin({ onLogin }: FarmerLoginProps) {
                 name="farmerId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Farmer ID No</FormLabel>
+                    <FormLabel>{t('farmerLogin.idLabel')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <CircleUserRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="e.g., 123456789012" {...field} className="pl-10" />
+                        <Input placeholder={t('farmerLogin.idPlaceholder')} {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -80,11 +82,11 @@ export function FarmerLogin({ onLogin }: FarmerLoginProps) {
                 name="farmerCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Access Code</FormLabel>
+                    <FormLabel>{t('farmerLogin.codeLabel')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input type="password" placeholder="e.g., 7890" {...field} className="pl-10" />
+                        <Input type="password" placeholder={t('farmerLogin.codePlaceholder')} {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -92,14 +94,14 @@ export function FarmerLogin({ onLogin }: FarmerLoginProps) {
                 )}
               />
               <Button type="submit" className="w-full" size="lg">
-                <LogIn className="mr-2" /> Login
+                <LogIn className="mr-2" /> {t('login.login')}
               </Button>
             </form>
           </Form>
            <div className="mt-6 text-center text-sm">
-                Don't have an account?{' '}
+                {t('login.dontHaveAccount')}{' '}
                 <Button variant="link" className="p-0 h-auto">
-                    Register
+                    {t('login.register')}
                 </Button>
             </div>
         </CardContent>

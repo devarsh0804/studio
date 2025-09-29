@@ -10,6 +10,7 @@ import { RegisteredLotsList } from "./RegisteredLotsList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileCheck2, List, User, LineChart as LineChartIcon } from "lucide-react";
 import { FarmerAnalytics } from "./FarmerAnalytics";
+import { useLocale } from "@/hooks/use-locale";
 
 
 interface FarmerViewProps {
@@ -20,6 +21,7 @@ export function FarmerView({ farmerName }: FarmerViewProps) {
   const [registeredLot, setRegisteredLot] = useState<Lot | null>(null);
   const { addLot } = useAgriChainStore();
   const [activeTab, setActiveTab] = useState("register");
+  const { t } = useLocale();
 
   const handleRegister = (lot: Lot) => {
     addLot(lot);
@@ -37,13 +39,13 @@ export function FarmerView({ farmerName }: FarmerViewProps) {
        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 h-12">
                 <TabsTrigger value="register">
-                    <FileCheck2 className="mr-2"/> Register New Lot
+                    <FileCheck2 className="mr-2"/> {t('farmerView.tabs.register')}
                 </TabsTrigger>
                 <TabsTrigger value="lots">
-                    <List className="mr-2"/> Your Registered Lots
+                    <List className="mr-2"/> {t('farmerView.tabs.lots')}
                 </TabsTrigger>
                 <TabsTrigger value="analytics">
-                    <LineChartIcon className="mr-2"/> Analytics
+                    <LineChartIcon className="mr-2"/> {t('farmerView.tabs.analytics')}
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="register">

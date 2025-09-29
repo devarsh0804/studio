@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef } from "react";
@@ -7,6 +8,7 @@ import { Download, ChevronsRight } from "lucide-react";
 import type { Lot } from "@/lib/types";
 import { LotDetailsCard } from "@/components/LotDetailsCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useLocale } from "@/hooks/use-locale";
 
 interface QrCodeDialogProps {
   lot: Lot | null;
@@ -16,6 +18,7 @@ interface QrCodeDialogProps {
 
 export function QrCodeDialog({ lot, isOpen, onClose }: QrCodeDialogProps) {
   const qrRef = useRef<HTMLDivElement>(null);
+  const { t } = useLocale();
 
   if (!lot) return null;
 
@@ -36,9 +39,9 @@ export function QrCodeDialog({ lot, isOpen, onClose }: QrCodeDialogProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl text-center">
             <DialogHeader>
-                <DialogTitle className="text-2xl text-primary">Lot Registered Successfully!</DialogTitle>
+                <DialogTitle className="text-2xl text-primary">{t('farmerView.qrDialog.title')}</DialogTitle>
                 <DialogDescription>
-                    This QR code is now ready for the next stage in the supply chain.
+                    {t('farmerView.qrDialog.description')}
                 </DialogDescription>
             </DialogHeader>
 
@@ -53,7 +56,7 @@ export function QrCodeDialog({ lot, isOpen, onClose }: QrCodeDialogProps) {
                         />
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Lot ID</p>
+                        <p className="text-sm text-muted-foreground">{t('farmerView.qrDialog.lotIdLabel')}</p>
                         <p className="font-mono text-lg font-bold">{lot.lotId}</p>
                     </div>
                 </div>
@@ -65,10 +68,10 @@ export function QrCodeDialog({ lot, isOpen, onClose }: QrCodeDialogProps) {
 
             <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
                  <Button onClick={downloadQR} className="w-full" variant="secondary">
-                    <Download className="mr-2 h-4 w-4" /> Download / Print QR
+                    <Download className="mr-2 h-4 w-4" /> {t('farmerView.qrDialog.buttons.download')}
                 </Button>
                 <Button onClick={onClose} className="w-full">
-                    Done <ChevronsRight className="ml-2 h-4 w-4" />
+                    {t('farmerView.qrDialog.buttons.done')} <ChevronsRight className="ml-2 h-4 w-4" />
                 </Button>
             </DialogFooter>
         </DialogContent>

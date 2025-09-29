@@ -32,5 +32,203 @@
         "en": "English",
         "hi": "हिंदी (Hindi)",
         "or": "ଓଡ଼ିଆ (Odia)"
+    },
+    "pageHeaders": {
+        "farmer": {
+            "title": "किसान पोर्टल",
+            "description": "फसलें पंजीकृत करें, डिजिटल प्रमाण पत्र बनाएं और अपनी बिक्री को ट्रैक करें।"
+        },
+        "distributor": {
+            "title": "वितरक पोर्टल",
+            "description": "लॉट खरीदें, उप-लॉट प्रबंधित करें, और लॉजिस्टिक्स संभालें।"
+        },
+        "retailer": {
+            "title": "खुदरा विक्रेता पोर्टल",
+            "description": "वितरकों से लॉट खरीदें, अपनी इन्वेंट्री प्रबंधित करें और उत्पाद इतिहास देखें।"
+        },
+        "trace": {
+            "title": "उत्पाद ट्रेस करें",
+            "description": "किसी उत्पाद की पूरी यात्रा देखने के लिए उसका क्यूआर कोड स्कैन करें।"
+        }
+    },
+    "login": {
+        "welcomeBack": "वापस स्वागत है, {name}!",
+        "success": "लॉगिन सफल",
+        "failed": "लॉगिन विफल",
+        "invalidCredentials": "अमान्य क्रेडेंशियल। कृपया पुनः प्रयास करें।",
+        "logout": "लॉग आउट",
+        "logoutSuccess": "आप सफलतापूर्वक लॉग आउट हो गए हैं।",
+        "dontHaveAccount": "खाता नहीं है?",
+        "register": "रजिस्टर करें",
+        "login": "लॉगिन करें"
+    },
+    "farmerLogin": {
+        "title": "किसान लॉगिन",
+        "description": "डैशबोर्ड तक पहुंचने के लिए अपने क्रेडेंशियल दर्ज करें।",
+        "nameLabel": "किसान का नाम",
+        "namePlaceholder": "उदा., रमेश",
+        "idLabel": "किसान आईडी नंबर",
+        "idPlaceholder": "उदा., 123456789012",
+        "codeLabel": "एक्सेस कोड",
+        "codePlaceholder": "उदा., 7890"
+    },
+    "farmerView": {
+        "tabs": {
+            "register": "नया लॉट पंजीकृत करें",
+            "lots": "आपके पंजीकृत लॉट",
+            "analytics": "एनालिटिक्स"
+        },
+        "registerForm": {
+            "title": "नया लॉट पंजीकृत करें",
+            "description": "फसल को पंजीकृत करने और आपूर्ति श्रृंखला के लिए एक क्यूआर कोड उत्पन्न करने के लिए नीचे दिए गए विवरण भरें।",
+            "labels": {
+                "farmerName": "किसान का नाम",
+                "location": "स्थान (मंडी)",
+                "cropName": "फसल का नाम",
+                "weight": "वजन (क्विंटल)",
+                "price": "मूल्य (प्रति क्विंटल)",
+                "harvestDate": "कटाई की तारीख",
+                "quality": "गुणवत्ता ग्रेड",
+                "photo": "फसल का फोटो"
+            },
+            "placeholders": {
+                "farmerName": "उदा., रमेश कुमार",
+                "location": "उदा., APMC, पंजाब",
+                "cropName": "उदा., गेहूं, चावल",
+                "weight": "उदा., 5",
+                "price": "उदा., 2000",
+                "quality": "फसल के लिए एक गुणवत्ता ग्रेड चुनें"
+            },
+            "buttons": {
+                "uploadPhoto": "फोटो अपलोड करें",
+                "uploadCertificate": "प्रमाणपत्र अपलोड करें",
+                "submit": "लॉट पंजीकृत करें और क्यूआर उत्पन्न करें"
+            },
+            "toast": {
+                "successTitle": "लॉट सफलतापूर्वक पंजीकृत!",
+                "successDescription": "लॉट आईडी {lotId} के लिए क्यूआर कोड अब तैयार है।"
+            }
+        },
+        "qrDialog": {
+            "title": "लॉट सफलतापूर्वक पंजीकृत!",
+            "description": "यह क्यूआर कोड अब आपूर्ति श्रृंखला के अगले चरण के लिए तैयार है।",
+            "lotIdLabel": "लॉट आईडी",
+            "buttons": {
+                "download": "क्यूआर डाउनलोड / प्रिंट करें",
+                "done": "पूर्ण"
+            }
+        },
+        "lotList": {
+            "title": "पंजीकृत लॉट",
+            "description": "नीचे अपने सभी पंजीकृत फसल लॉट का विवरण देखें।",
+            "noLots": "अभी तक कोई लॉट पंजीकृत नहीं किया गया है।"
+        }
+    },
+    "distributorLogin": {
+        "title": "वितरक लॉगिन",
+        "description": "वितरक डैशबोर्ड तक पहुंचने के लिए अपने क्रेडेंशियल दर्ज करें।",
+        "nameLabel": "नाम",
+        "namePlaceholder": "उदा., डिस्ट्रो",
+        "codeLabel": "एक्सेस कोड",
+        "codePlaceholder": "उदा., 1234"
+    },
+    "retailerLogin": {
+        "title": "खुदरा विक्रेता लॉगिन",
+        "description": "खुदरा विक्रेता डैशबोर्ड तक पहुंचने के लिए अपने क्रेडेंशियल दर्ज करें।",
+        "nameLabel": "स्टोर का नाम",
+        "namePlaceholder": "उदा., रिटेल",
+        "codeLabel": "एक्सेस कोड",
+        "codePlaceholder": "उदा., 5678"
+    },
+    "general": {
+        "backToDashboard": "डैशबोर्ड पर वापस",
+        "backToHome": "होम पर वापस",
+        "logout": "लॉग आउट",
+        "error": "त्रुटि",
+        "search": "खोज",
+        "cancel": "रद्द करें",
+        "submit": "सबमिट करें"
+    },
+    "distributorView": {
+        "tabs": {
+            "scan": "लॉट स्कैन करें",
+            "available": "उपलब्ध फसलें",
+            "purchased": "खरीदे गए लॉट",
+            "dispatched": "भेजे गए लॉट",
+            "analytics": "एनालिटिक्स"
+        },
+        "scanTab": {
+            "title": "लॉट स्कैन या प्रबंधित करें",
+            "description": "प्रबंधन के लिए इसके विवरण प्राप्त करने के लिए एक लॉट आईडी दर्ज करें।",
+            "placeholder": "उदा., LOT-20240101-001"
+        },
+        "availableTab": {
+            "title": "खरीद के लिए उपलब्ध फसलें",
+            "description": "किसानों से सीधे उपलब्ध फसलों को ब्राउज़ करें।",
+            "noLots": "वर्तमान में खरीद के लिए कोई लॉट उपलब्ध नहीं है।"
+        },
+        "purchasedTab": {
+            "title": "आपके खरीदे गए लॉट",
+            "description": "ये आपके स्वामित्व वाले लॉट हैं। खुदरा विक्रेताओं के लिए उप-लॉट बनाने के लिए एक लॉट चुनें।",
+            "noLots": "आपने अभी तक कोई लॉट नहीं खरीदा है। खरीदने के लिए \"उपलब्ध फसलें\" टैब पर जाएं।"
+        },
+        "dispatchedTab": {
+            "title": "आपके भेजे गए लॉट",
+            "description": "इन लॉट का अग्रिम भुगतान एक खुदरा विक्रेता द्वारा किया गया है और परिवहन असाइनमेंट के लिए तैयार हैं।",
+            "noLots": "अभी तक कोई लॉट नहीं भेजा गया है।"
+        },
+        "lotDetails": {
+            "title": "लॉट विवरण",
+            "createSubLotsTitle": "उप-लॉट बनाएं या प्रबंधित करें",
+            "createSubLotsDescription": "इस लॉट को छोटी मात्रा में विभाजित करें। ये खुदरा विक्रेताओं के लिए खरीदने के लिए उपलब्ध होंगे।",
+            "splitDoneDescription": "यह लॉट पहले ही विभाजित हो चुका है, या यह स्वयं एक उप-लॉट है।",
+            "generatedSubLotsTitle": "उत्पन्न उप-लॉट (खुदरा विक्रेताओं के लिए उपलब्ध):",
+            "subLotAvailability": "यह लॉट अब खुदरा विक्रेताओं के लिए खरीदने के लिए उपलब्ध है।",
+            "splitPlaceholder": "{weight} क्विंटल लॉट को इसमें विभाजित करें..."
+        },
+        "buttons": {
+            "viewCertificate": "प्रमाणपत्र देखें",
+            "buyLot": "लॉट खरीदें",
+            "createSubLots": "उप-लॉट बनाएं",
+            "addTransport": "परिवहन जोड़ें",
+            "downloadQR": "शिपमेंट के लिए क्यूआर डाउनलोड करें"
+        },
+        "dialogs": {
+            "confirmPurchaseTitle": "खरीद की पुष्टि करें",
+            "confirmPurchaseDescription": "क्या आप वाकई लॉट {lotId} को कुल ₹{totalPrice} में खरीदना चाहते हैं? यह कार्रवाई लेजर पर दर्ज की जाएगी।",
+            "confirmPurchaseAction": "खरीद की पुष्टि करें",
+            "finalizePaymentTitle": "भुगतान को अंतिम रूप दें",
+            "finalizePaymentDescription": "लॉट {lotId} के लिए किसान को भुगतान करने के लिए आगे बढ़ें। <br /> कुल राशि: <span class='font-bold'>₹{totalPrice}</span>",
+            "paymentSuccessTitle": "खरीद सफल!",
+            "paymentSuccessDescription": "अब आप मंडी से फसल एकत्र कर सकते हैं: <br/> <span class='font-semibold text-foreground'>{location}</span>",
+            "downloadReceipt": "रसीद डाउनलोड करें",
+            "done": "पूर्ण",
+            "payWithUPI": "UPI से भुगतान करें",
+            "upiDescription": "अपने UPI ऐप से QR कोड स्कैन करें।",
+            "upiId": "या UPI आईडी पर भुगतान करें: {id}",
+            "bankTransfer": "बैंक ट्रांसफर",
+            "bankTransferDetailsTitle": "बैंक ट्रांसफर विवरण",
+            "bankTransferDetailsDescription": "बैंक ट्रांसफर करने के लिए इन विवरणों का उपयोग करें।",
+            "assignTransportTitle": "लॉट {lotId} के लिए परिवहन असाइन करें",
+            "assignTransportDescription": "खुदरा विक्रेता के लिए प्रेषण विवरण भरें।",
+            "assignTransportAction": "परिवहन असाइन करें",
+            "vehicleNumberLabel": "वाहन संख्या",
+            "vehicleNumberPlaceholder": "उदा., MH-12-AB-3456",
+            "dispatchDateLabel": "प्रेषण तिथि"
+        },
+        "toasts": {
+            "subLotsCreatedTitle": "उप-लॉट बनाए गए!",
+            "subLotsCreatedDescription": "{count} नए लॉट बनाए गए हैं और खुदरा विक्रेताओं के लिए खरीदने के लिए उपलब्ध हैं।",
+            "transportAssignedTitle": "परिवहन असाइन किया गया!",
+            "transportAssignedDescription": "लॉट {lotId} के लिए परिवहन विवरण जोड़े गए।"
+        }
+    },
+    "retailerView": {
+        "tabs": {
+            "scan": "लॉट स्कैन करें",
+            "marketplace": "मार्केटप्लेस",
+            "inventory": "आपकी इन्वेंट्री",
+            "analytics": "एनालिटिक्स"
+        }
     }
 }

@@ -6,6 +6,7 @@ import { RetailerView } from "./components/RetailerView";
 import { RetailerLogin, type RetailerLoginCredentials } from "./components/RetailerLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
+import { useLocale } from "@/hooks/use-locale";
 
 // In a real app, this would come from a secure source
 const VALID_CREDENTIALS = {
@@ -16,19 +17,20 @@ const VALID_CREDENTIALS = {
 export default function RetailerPage() {
   const [retailer, setRetailer] = useState<string | null>(null);
   const { toast } = useToast();
+  const { t } = useLocale();
 
   const handleLogin = (credentials: RetailerLoginCredentials) => {
     if (credentials.storeName === VALID_CREDENTIALS.storeName && credentials.storeCode === VALID_CREDENTIALS.storeCode) {
       setRetailer(credentials.storeName);
       toast({
-        title: "Login Successful",
-        description: `Welcome to ${credentials.storeName}!`,
+        title: t('login.success'),
+        description: t('login.welcomeBack', { name: credentials.storeName }),
       });
     } else {
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
+        title: t('login.failed'),
+        description: t('login.invalidCredentials'),
       });
     }
   };
@@ -36,16 +38,16 @@ export default function RetailerPage() {
   const handleLogout = () => {
     setRetailer(null);
     toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out."
+        title: t('login.logout'),
+        description: t('login.logoutSuccess')
     })
   }
 
   return (
     <>
        <PageHeader 
-        title="Retailer Portal"
-        description="Purchase lots from distributors, manage your inventory, and view product history."
+        title={t('pageHeaders.retailer.title')}
+        description={t('pageHeaders.retailer.description')}
         isLoggedIn={!!retailer}
         onLogout={handleLogout}
       />

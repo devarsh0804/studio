@@ -32,5 +32,203 @@
         "en": "English",
         "hi": "हिंदी (Hindi)",
         "or": "ଓଡ଼ିଆ (Odia)"
+    },
+    "pageHeaders": {
+        "farmer": {
+            "title": "Farmer Portal",
+            "description": "Register crops, generate digital certificates, and track your sales."
+        },
+        "distributor": {
+            "title": "Distributor Portal",
+            "description": "Purchase lots, manage sub-lots, and handle logistics."
+        },
+        "retailer": {
+            "title": "Retailer Portal",
+            "description": "Purchase lots, manage inventory, and view product history."
+        },
+        "trace": {
+            "title": "Trace Product",
+            "description": "Scan a product QR code to see its full journey."
+        }
+    },
+    "login": {
+        "welcomeBack": "Welcome back, {name}!",
+        "success": "Login Successful",
+        "failed": "Login Failed",
+        "invalidCredentials": "Invalid credentials. Please try again.",
+        "logout": "Logged Out",
+        "logoutSuccess": "You have been successfully logged out.",
+        "dontHaveAccount": "Don't have an account?",
+        "register": "Register",
+        "login": "Login"
+    },
+    "farmerLogin": {
+        "title": "Farmer Login",
+        "description": "Enter your credentials to access the dashboard.",
+        "nameLabel": "Farmer Name",
+        "namePlaceholder": "e.g., Ramesh",
+        "idLabel": "Farmer ID No",
+        "idPlaceholder": "e.g., 123456789012",
+        "codeLabel": "Access Code",
+        "codePlaceholder": "e.g., 7890"
+    },
+    "farmerView": {
+        "tabs": {
+            "register": "Register New Lot",
+            "lots": "Your Registered Lots",
+            "analytics": "Analytics"
+        },
+        "registerForm": {
+            "title": "Register New Lot",
+            "description": "Fill in the details below to register the crop and generate a QR code for the supply chain.",
+            "labels": {
+                "farmerName": "Farmer Name",
+                "location": "Location (Mandi)",
+                "cropName": "Crop Name",
+                "weight": "Weight (quintals)",
+                "price": "Price (per quintal)",
+                "harvestDate": "Harvest Date",
+                "quality": "Quality Grade",
+                "photo": "Crop Photo"
+            },
+            "placeholders": {
+                "farmerName": "e.g., Ramesh Kumar",
+                "location": "e.g., APMC, Punjab",
+                "cropName": "e.g., Wheat, Rice",
+                "weight": "e.g., 5",
+                "price": "e.g., 2000",
+                "quality": "Select a quality grade for the crop"
+            },
+            "buttons": {
+                "uploadPhoto": "Upload Photo",
+                "uploadCertificate": "Upload Certificate",
+                "submit": "Register Lot & Generate QR"
+            },
+            "toast": {
+                "successTitle": "Lot Registered Successfully!",
+                "successDescription": "The QR code for Lot ID {lotId} is now ready."
+            }
+        },
+        "qrDialog": {
+            "title": "Lot Registered Successfully!",
+            "description": "This QR code is now ready for the next stage in the supply chain.",
+            "lotIdLabel": "Lot ID",
+            "buttons": {
+                "download": "Download / Print QR",
+                "done": "Done"
+            }
+        },
+        "lotList": {
+            "title": "Registered Lots",
+            "description": "View the details of all your registered crop lots below.",
+            "noLots": "No lots have been registered yet."
+        }
+    },
+    "distributorLogin": {
+        "title": "Distributor Login",
+        "description": "Enter your credentials to access the distributor dashboard.",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g., distro",
+        "codeLabel": "Access Code",
+        "codePlaceholder": "e.g., 1234"
+    },
+    "retailerLogin": {
+        "title": "Retailer Login",
+        "description": "Enter your credentials to access the retailer dashboard.",
+        "nameLabel": "Store Name",
+        "namePlaceholder": "e.g., retail",
+        "codeLabel": "Access Code",
+        "codePlaceholder": "e.g., 5678"
+    },
+    "general": {
+        "backToDashboard": "Back to Dashboard",
+        "backToHome": "Back to Home",
+        "logout": "Logout",
+        "error": "Error",
+        "search": "Search",
+        "cancel": "Cancel",
+        "submit": "Submit"
+    },
+    "distributorView": {
+        "tabs": {
+            "scan": "Scan Lot",
+            "available": "Available Crops",
+            "purchased": "Purchased Lots",
+            "dispatched": "Dispatched Lots",
+            "analytics": "Analytics"
+        },
+        "scanTab": {
+            "title": "Scan or Manage Lot",
+            "description": "Enter a Lot ID to fetch its details for management.",
+            "placeholder": "e.g., LOT-20240101-001"
+        },
+        "availableTab": {
+            "title": "Available Crops for Purchase",
+            "description": "Browse crops currently available directly from farmers.",
+            "noLots": "There are no lots currently available for purchase."
+        },
+        "purchasedTab": {
+            "title": "Your Purchased Lots",
+            "description": "These are lots you own. Select a lot to create sub-lots for retailers.",
+            "noLots": "You have not purchased any lots yet. Go to the \"Available Crops\" tab to buy one."
+        },
+        "dispatchedTab": {
+            "title": "Your Dispatched Lots",
+            "description": "These lots have had their advance paid by a retailer and are ready for transport assignment.",
+            "noLots": "No lots have been dispatched yet."
+        },
+        "lotDetails": {
+            "title": "Lot Details",
+            "createSubLotsTitle": "Create or Manage Sub-lots",
+            "createSubLotsDescription": "Split this lot into smaller quantities. These will be available for retailers to purchase.",
+            "splitDoneDescription": "This lot has already been split, or it is a sub-lot itself.",
+            "generatedSubLotsTitle": "Generated Sub-lots (Available to Retailers):",
+            "subLotAvailability": "This lot is now available for retailers to buy.",
+            "splitPlaceholder": "Split {weight} quintal lot into..."
+        },
+        "buttons": {
+            "viewCertificate": "View Certificate",
+            "buyLot": "Buy Lot",
+            "createSubLots": "Create Sub-Lots",
+            "addTransport": "Add Transport",
+            "downloadQR": "Download QR for Shipment"
+        },
+        "dialogs": {
+            "confirmPurchaseTitle": "Confirm Purchase",
+            "confirmPurchaseDescription": "Are you sure you want to purchase Lot {lotId} for a total of ₹{totalPrice}? This action will be recorded on the ledger.",
+            "confirmPurchaseAction": "Confirm Purchase",
+            "finalizePaymentTitle": "Finalize Payment",
+            "finalizePaymentDescription": "Proceed to pay the farmer for Lot {lotId}. <br /> Total amount: <span class='font-bold'>₹{totalPrice}</span>",
+            "paymentSuccessTitle": "Purchase Successful!",
+            "paymentSuccessDescription": "You can now collect the crop from the mandi at: <br/> <span class='font-semibold text-foreground'>{location}</span>",
+            "downloadReceipt": "Download Receipt",
+            "done": "Done",
+            "payWithUPI": "Pay with UPI",
+            "upiDescription": "Scan the QR code with your UPI app.",
+            "upiId": "Or pay to UPI ID: {id}",
+            "bankTransfer": "Bank Transfer",
+            "bankTransferDetailsTitle": "Bank Transfer Details",
+            "bankTransferDetailsDescription": "Use these details to make a bank transfer.",
+            "assignTransportTitle": "Assign Transport for Lot {lotId}",
+            "assignTransportDescription": "Fill in the dispatch details for the retailer.",
+            "assignTransportAction": "Assign Transport",
+            "vehicleNumberLabel": "Vehicle Number",
+            "vehicleNumberPlaceholder": "e.g., MH-12-AB-3456",
+            "dispatchDateLabel": "Dispatch Date"
+        },
+        "toasts": {
+            "subLotsCreatedTitle": "Sub-lots Created!",
+            "subLotsCreatedDescription": "{count} new lots have been created and are available for retailers to purchase.",
+            "transportAssignedTitle": "Transport Assigned!",
+            "transportAssignedDescription": "Transport details added for Lot {lotId}."
+        }
+    },
+    "retailerView": {
+        "tabs": {
+            "scan": "Scan Lot",
+            "marketplace": "Marketplace",
+            "inventory": "Your Inventory",
+            "analytics": "Analytics"
+        }
     }
 }

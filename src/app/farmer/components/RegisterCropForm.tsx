@@ -27,6 +27,7 @@ import { placeHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useLocale } from "@/hooks/use-locale";
 
 const formSchema = z.object({
   farmerName: z.string().min(2, { message: "Farmer name must be at least 2 characters." }),
@@ -46,6 +47,7 @@ interface RegisterCropFormProps {
 export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useLocale();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -100,8 +102,8 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
     setTimeout(() => {
         onRegister(newLot);
         toast({
-          title: "Lot Registered Successfully!",
-          description: `The QR code for Lot ID ${lotId} is now ready.`,
+          title: t('farmerView.registerForm.toast.successTitle'),
+          description: t('farmerView.registerForm.toast.successDescription', { lotId }),
         });
         setIsSubmitting(false);
     }, 500);
@@ -111,10 +113,10 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center">
-            <FileCheck2 className="mr-2"/> Register New Lot
+            <FileCheck2 className="mr-2"/> {t('farmerView.registerForm.title')}
         </CardTitle>
         <CardDescription>
-            Fill in the details below to register the crop and generate a QR code for the supply chain.
+            {t('farmerView.registerForm.description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -128,11 +130,11 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                     name="farmerName"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Farmer Name</FormLabel>
+                        <FormLabel>{t('farmerView.registerForm.labels.farmerName')}</FormLabel>
                         <FormControl>
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="e.g., Ramesh Kumar" {...field} className="pl-10" />
+                                <Input placeholder={t('farmerView.registerForm.placeholders.farmerName')} {...field} className="pl-10" />
                             </div>
                         </FormControl>
                         <FormMessage />
@@ -144,11 +146,11 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                     name="location"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Location (Mandi)</FormLabel>
+                        <FormLabel>{t('farmerView.registerForm.labels.location')}</FormLabel>
                         <FormControl>
                             <div className="relative">
                                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="e.g., APMC, Punjab" {...field} className="pl-10" />
+                                <Input placeholder={t('farmerView.registerForm.placeholders.location')} {...field} className="pl-10" />
                             </div>
                         </FormControl>
                         <FormMessage />
@@ -160,11 +162,11 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                     name="cropName"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Crop Name</FormLabel>
+                        <FormLabel>{t('farmerView.registerForm.labels.cropName')}</FormLabel>
                         <FormControl>
                             <div className="relative">
                                 <Wheat className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="e.g., Wheat, Rice" {...field} className="pl-10"/>
+                                <Input placeholder={t('farmerView.registerForm.placeholders.cropName')} {...field} className="pl-10"/>
                             </div>
                         </FormControl>
                         <FormMessage />
@@ -177,11 +179,11 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         name="weight"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Weight (quintals)</FormLabel>
+                            <FormLabel>{t('farmerView.registerForm.labels.weight')}</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input type="number" placeholder="e.g., 5" {...field} className="pl-10"/>
+                                    <Input type="number" placeholder={t('farmerView.registerForm.placeholders.weight')} {...field} className="pl-10"/>
                                 </div>
                             </FormControl>
                             <FormMessage />
@@ -193,11 +195,11 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         name="price"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Price (per quintal)</FormLabel>
+                            <FormLabel>{t('farmerView.registerForm.labels.price')}</FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input type="number" placeholder="e.g., 2000" {...field} className="pl-10" />
+                                        <Input type="number" placeholder={t('farmerView.registerForm.placeholders.price')} {...field} className="pl-10" />
                                     </div>
                                 </FormControl>
                             <FormMessage />
@@ -210,7 +212,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         name="harvestDate"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Harvest Date</FormLabel>
+                            <FormLabel>{t('farmerView.registerForm.labels.harvestDate')}</FormLabel>
                             <Popover>
                                 <PopoverTrigger asChild>
                                 <FormControl>
@@ -251,11 +253,11 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         name="quality"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Quality Grade</FormLabel>
+                                <FormLabel>{t('farmerView.registerForm.labels.quality')}</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select a quality grade for the crop" />
+                                            <SelectValue placeholder={t('farmerView.registerForm.placeholders.quality')} />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -273,7 +275,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                  {/* Right Column */}
                 <div className="space-y-4">
                      <div className="space-y-2">
-                        <FormLabel>Crop Photo</FormLabel>
+                        <FormLabel>{t('farmerView.registerForm.labels.photo')}</FormLabel>
                         <div className="w-full aspect-[4/3] rounded-lg border border-dashed flex items-center justify-center bg-muted/40 relative overflow-hidden shrink-0">
                             {cropImage ? (
                                 <Image src={cropImage.imageUrl} alt={cropImage.description} layout="fill" objectFit="cover" data-ai-hint={cropImage.imageHint}/>
@@ -283,17 +285,17 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         </div>
                     </div>
                     <Button type="button" variant="outline" className="w-full">
-                        <Camera className="mr-2 h-4 w-4" /> Upload Photo
+                        <Camera className="mr-2 h-4 w-4" /> {t('farmerView.registerForm.buttons.uploadPhoto')}
                     </Button>
                     <Button type="button" variant="outline" className="w-full">
-                        <FileText className="mr-2 h-4 w-4" /> Upload Certificate
+                        <FileText className="mr-2 h-4 w-4" /> {t('farmerView.registerForm.buttons.uploadCertificate')}
                     </Button>
                 </div>
             </div>
             <div className="pt-6 border-t">
               <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Register Lot & Generate QR
+                  {t('farmerView.registerForm.buttons.submit')}
               </Button>
             </div>
           </form>
@@ -302,5 +304,3 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
     </Card>
   );
 }
-
-    
