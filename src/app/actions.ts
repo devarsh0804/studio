@@ -6,7 +6,6 @@ import { distributorUpdateConflictDetection, type DistributorUpdateConflictDetec
 import type { Lot, RetailEvent } from "@/lib/types";
 import { db } from "@/lib/firebase";
 import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch, deleteDoc } from "firebase/firestore";
-import { seedLots } from "@/lib/seed-data";
 
 
 // Firestore Collection References
