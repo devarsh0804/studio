@@ -100,8 +100,8 @@
                 "quality": "Select a quality grade for the crop"
             },
             "buttons": {
-                "uploadPhoto": "Upload Photo",
-                "uploadCertificate": "Upload Certificate",
+                "uploadPhoto": "Upload Crop Photo",
+                "uploadCertificate": "Fetch IoT Certificate Data",
                 "submit": "Register Lot & Generate QR"
             },
             "toast": {

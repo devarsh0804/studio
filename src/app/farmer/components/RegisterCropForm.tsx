@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight, FileText } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight, FileText, Wifi } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -48,6 +48,7 @@ interface RegisterCropFormProps {
 export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingCertificate, setIsFetchingCertificate] = useState(false);
   const { t } = useLocale();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -137,6 +138,17 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
         setIsSubmitting(false);
     }
   }
+
+  const handleFetchCertificate = () => {
+    setIsFetchingCertificate(true);
+    setTimeout(() => {
+        setIsFetchingCertificate(false);
+        toast({
+            title: "Certificate Data Fetched",
+            description: "IoT and AI camera data has been simulated.",
+        });
+    }, 3000); // Simulate a 3-second fetch
+  };
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -295,8 +307,17 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                     <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()} disabled>
                         <Camera className="mr-2 h-4 w-4" /> {t('farmerView.registerForm.buttons.uploadPhoto')}
                     </Button>
-                    <Button type="button" variant="outline" className="w-full">
-                        <FileText className="mr-2 h-4 w-4" /> {t('farmerView.registerForm.buttons.uploadCertificate')}
+                    <Button type="button" variant="outline" className="w-full" onClick={handleFetchCertificate} disabled={isFetchingCertificate}>
+                        {isFetchingCertificate ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Fetching from IoT sensors...
+                            </>
+                        ) : (
+                            <>
+                                <Wifi className="mr-2 h-4 w-4" /> {t('farmerView.registerForm.buttons.uploadCertificate')}
+                            </>
+                        )}
                     </Button>
                 </div>
             </div>
@@ -312,3 +333,4 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
     </Card>
   );
 }
+
