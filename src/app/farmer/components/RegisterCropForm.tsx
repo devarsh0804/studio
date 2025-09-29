@@ -308,7 +308,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                         </div>
                     </div>
                     <Input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handlePhotoUpload} />
-                    <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                    <Button type="button" variant="outline" className="w-full">
                         <Camera className="mr-2 h-4 w-4" /> {t('farmerView.registerForm.buttons.uploadPhoto')}
                     </Button>
                     <Button type="button" variant="outline" className="w-full">
