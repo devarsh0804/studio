@@ -55,15 +55,45 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
   const [subLots, setSubLots] = useState<Lot[]>([]);
   const [activeTab, setActiveTab] = useState('scan-lot');
+  const [showCamera, setShowCamera] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
 
   const { findLot, updateLot, getAllLots, addLots } = useAgriChainStore();
   const { toast } = useToast();
   const { t } = useLocale();
   const qrRef = useRef<HTMLDivElement>(null);
-
-  const [showCamera, setShowCamera] = useState(false);
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema), defaultValues: { lotId: "" } });
+  const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
+  const transportForm = useForm<TransportFormValues>({ 
+    resolver: zodResolver(transportSchema),
+    defaultValues: {
+      vehicleNumber: "",
+      dispatchDate: new Date().toISOString().split('T')[0],
+    }
+  });
+
+  const handleScan: SubmitHandler<ScanFormValues> = (data) => {
+    setIsLoading(true);
+    setError(null);
+    setSubLots([]);
+    setShowCamera(false);
+    
+    const lot = findLot(data.lotId);
+    setTimeout(() => {
+      if (lot) {
+        setScannedLot(lot);
+        const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId && l.paymentStatus === 'Unpaid');
+        setSubLots(childLots);
+        subLotForm.reset({subLotCount: 2});
+      } else {
+        setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
+        setScannedLot(null);
+      }
+      setIsLoading(false);
+    }, 500); // Simulate network delay
+  };
   
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
@@ -128,7 +158,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
         stopScan();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showCamera, scanForm]);
+  }, [showCamera]);
 
 
   useEffect(() => {
@@ -140,45 +170,12 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
     }
   }, [scannedLot, getAllLots]);
   
-
-  const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema), defaultValues: { lotId: "" } });
-  const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
-  const transportForm = useForm<TransportFormValues>({ 
-    resolver: zodResolver(transportSchema),
-    defaultValues: {
-      vehicleNumber: "",
-      dispatchDate: new Date().toISOString().split('T')[0],
-    }
-  });
-
   const allLots = getAllLots();
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
   const purchasedLots = allLots.filter((lot) => !lot.parentLotId && lot.owner !== lot.farmer);
   const dispatchedLots = allLots.filter(
     (lot) => (lot.paymentStatus === 'Advance Paid' || lot.paymentStatus === 'Fully Paid') && lot.parentLotId && findLot(lot.parentLotId!)?.owner === distributorId
   );
-
-
-  const handleScan: SubmitHandler<ScanFormValues> = (data) => {
-    setIsLoading(true);
-    setError(null);
-    setSubLots([]);
-    setShowCamera(false);
-    
-    const lot = findLot(data.lotId);
-    setTimeout(() => {
-      if (lot) {
-        setScannedLot(lot);
-        const childLots = getAllLots().filter((l) => l.parentLotId === lot.lotId && l.paymentStatus === 'Unpaid');
-        setSubLots(childLots);
-        subLotForm.reset({subLotCount: 2});
-      } else {
-        setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
-        setScannedLot(null);
-      }
-      setIsLoading(false);
-    }, 500); // Simulate network delay
-  };
 
   const handleConfirmPurchase = () => {
     if (!lotToBuy) return;
