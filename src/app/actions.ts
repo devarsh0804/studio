@@ -168,13 +168,4 @@ export async function resetData(): Promise<void> {
         deleteRetailEventsBatch.delete(doc.ref);
     });
     await deleteRetailEventsBatch.commit();
-
-    // Add the seed data
-    const seedBatch = writeBatch(db);
-    seedLots.forEach(lot => {
-        const { lotId, ...lotData } = lot;
-        const lotRef = doc(db, "lots", lotId);
-        seedBatch.set(lotRef, lotData);
-    });
-    await seedBatch.commit();
 }
