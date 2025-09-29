@@ -181,8 +181,8 @@ export async function registerUser(user: User): Promise<{ success: boolean; mess
 
 export async function loginUser(credentials: Omit<User, 'id'>): Promise<{ success: boolean; message: string; user?: User }> {
     let q;
-    if (credentials.role === 'farmer') {
-        q = query(
+    if (credentials.role === 'farmer' && credentials.identifier) {
+         q = query(
             usersCollection,
             where("role", "==", credentials.role),
             where("name", "==", credentials.name),
@@ -190,7 +190,7 @@ export async function loginUser(credentials: Omit<User, 'id'>): Promise<{ succes
             where("accessCode", "==", credentials.accessCode)
         );
     } else {
-        q = query(
+         q = query(
             usersCollection,
             where("role", "==", credentials.role),
             where("name", "==", credentials.name),

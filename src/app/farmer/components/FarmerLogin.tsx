@@ -12,36 +12,44 @@ import { KeyRound, LogIn, User, CircleUserRound, UserPlus } from "lucide-react";
 import { useLocale } from "@/hooks/use-locale";
 import { useState } from "react";
 
-const loginSchema = z.object({
+const registerSchema = z.object({
   farmerName: z.string().min(1, "Farmer name is required"),
   farmerId: z.string().regex(/^\d{12}$/, "Farmer ID must be a 12-digit number."),
   farmerCode: z.string().min(4, "Code must be at least 4 characters."),
 });
+
+const loginSchema = z.object({
+  farmerName: z.string().min(1, "Farmer name is required"),
+  farmerId: z.string().optional(), // Optional for login
+  farmerCode: z.string().min(4, "Code must be at least 4 characters."),
+});
+
 export type FarmerLoginCredentials = z.infer<typeof loginSchema>;
+export type FarmerRegisterCredentials = z.infer<typeof registerSchema>;
 
 interface FarmerLoginProps {
   onLogin: (credentials: FarmerLoginCredentials) => Promise<void>;
-  onRegister: (credentials: FarmerLoginCredentials) => Promise<boolean>;
+  onRegister: (credentials: FarmerRegisterCredentials) => Promise<boolean>;
 }
 
 export function FarmerLogin({ onLogin, onRegister }: FarmerLoginProps) {
   const { t } = useLocale();
   const [isRegistering, setIsRegistering] = useState(false);
   
-  const form = useForm<FarmerLoginCredentials>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<FarmerLoginCredentials | FarmerRegisterCredentials>({
+    resolver: zodResolver(isRegistering ? registerSchema : loginSchema),
     defaultValues: { farmerName: "", farmerId: "", farmerCode: "" },
   });
 
-  const onSubmit: SubmitHandler<FarmerLoginCredentials> = async (data) => {
+  const onSubmit: SubmitHandler<FarmerLoginCredentials | FarmerRegisterCredentials> = async (data) => {
     if (isRegistering) {
-      const success = await onRegister(data);
+      const success = await onRegister(data as FarmerRegisterCredentials);
       if (success) {
         setIsRegistering(false); // Switch back to login after successful registration
         form.reset();
       }
     } else {
-      await onLogin(data);
+      await onLogin(data as FarmerLoginCredentials);
     }
   };
 
@@ -78,22 +86,24 @@ export function FarmerLogin({ onLogin, onRegister }: FarmerLoginProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="farmerId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('farmerLogin.idLabel')}</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <CircleUserRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder={t('farmerLogin.idPlaceholder')} {...field} className="pl-10" />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {isRegistering && (
+                <FormField
+                  control={form.control}
+                  name="farmerId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('farmerLogin.idLabel')}</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <CircleUserRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input placeholder={t('farmerLogin.idPlaceholder')} {...field} className="pl-10" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="farmerCode"
@@ -117,7 +127,10 @@ export function FarmerLogin({ onLogin, onRegister }: FarmerLoginProps) {
           </Form>
            <div className="mt-6 text-center text-sm">
                 {isRegistering ? "Already have an account?" : t('login.dontHaveAccount')}{' '}
-                <Button variant="link" className="p-0 h-auto" onClick={() => setIsRegistering(!isRegistering)}>
+                <Button variant="link" className="p-0 h-auto" onClick={() => {
+                    setIsRegistering(!isRegistering);
+                    form.reset();
+                }}>
                     {isRegistering ? "Login" : t('login.register')}
                 </Button>
             </div>

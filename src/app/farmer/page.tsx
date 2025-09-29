@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { FarmerView } from "./components/FarmerView";
-import { FarmerLogin, type FarmerLoginCredentials } from "./components/FarmerLogin";
+import { FarmerLogin, type FarmerLoginCredentials, type FarmerRegisterCredentials } from "./components/FarmerLogin";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/hooks/use-locale";
@@ -20,7 +20,6 @@ export default function FarmerPage() {
     const result = await loginUser({
       role: 'farmer',
       name: credentials.farmerName,
-      identifier: credentials.farmerId,
       accessCode: credentials.farmerCode
     });
     
@@ -41,7 +40,7 @@ export default function FarmerPage() {
     }
   };
 
-  const handleRegister = async (credentials: FarmerLoginCredentials) => {
+  const handleRegister = async (credentials: FarmerRegisterCredentials) => {
     const result = await registerUser({
       role: 'farmer',
       name: credentials.farmerName,
