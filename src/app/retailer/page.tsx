@@ -7,19 +7,13 @@ import { RetailerLogin, type RetailerLoginCredentials } from "./components/Retai
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/hooks/use-locale";
-import type { Lot } from "@/lib/types";
-import { getAllLots, getLot } from "../actions";
+import type { Lot, User } from "@/lib/types";
+import { getAllLots, loginUser, registerUser } from "../actions";
 import { Loader2 } from "lucide-react";
 
 
-// In a real app, this would come from a secure source
-const VALID_CREDENTIALS = {
-  storeName: "retail",
-  storeCode: "5678"
-};
-
 export default function RetailerPage() {
-  const [retailer, setRetailer] = useState<string | null>(null);
+  const [retailer, setRetailer] = useState<User | null>(null);
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -35,21 +29,43 @@ export default function RetailerPage() {
     fetchLots();
   }, []);
 
-  const handleLogin = (credentials: RetailerLoginCredentials) => {
-    if (credentials.storeName === VALID_CREDENTIALS.storeName && credentials.storeCode === VALID_CREDENTIALS.storeCode) {
-      setRetailer(credentials.storeName);
+  const handleLogin = async (credentials: RetailerLoginCredentials) => {
+    const result = await loginUser({
+      role: 'retailer',
+      name: credentials.storeName,
+      accessCode: credentials.storeCode,
+    });
+
+    if (result.success && result.user) {
+      setRetailer(result.user);
       toast({
         title: t('login.success'),
-        description: t('login.welcomeBack', { name: credentials.storeName }),
+        description: t('login.welcomeBack', { name: result.user.name }),
       });
     } else {
       toast({
         variant: "destructive",
         title: t('login.failed'),
-        description: t('login.invalidCredentials'),
+        description: result.message,
       });
     }
   };
+
+  const handleRegister = async (credentials: RetailerLoginCredentials) => {
+    const result = await registerUser({
+      role: 'retailer',
+      name: credentials.storeName,
+      accessCode: credentials.storeCode,
+    });
+
+    toast({
+        title: result.success ? "Registration Successful" : "Registration Failed",
+        description: result.message,
+        variant: result.success ? "default" : "destructive",
+    });
+
+    return result.success;
+  }
 
   const handleLogout = () => {
     setRetailer(null);
@@ -74,14 +90,14 @@ export default function RetailerPage() {
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!retailer ? (
-          <RetailerLogin onLogin={handleLogin} />
+          <RetailerLogin onLogin={handleLogin} onRegister={handleRegister} />
         ) : loading ? (
              <div className="flex justify-center items-center h-64">
                 <Loader2 className="animate-spin w-12 h-12" />
             </div>
         ) : (
           <RetailerView 
-            retailerId={retailer} 
+            retailerId={retailer.name} 
             allLots={lots}
             onLotUpdate={refreshLots}
             />

@@ -1,5 +1,6 @@
 
 
+
 export interface Lot {
   lotId: string;
   farmer: string;
@@ -49,4 +50,14 @@ export interface LotHistory {
   retailEvents: RetailEvent[];
   parentLot?: Lot;
   childLots?: Lot[];
+}
+
+export type UserRole = 'farmer' | 'distributor' | 'retailer';
+
+export interface User {
+  id?: string;
+  role: UserRole;
+  name: string; // For farmer, or storeName for retailer
+  identifier?: string; // farmerId for farmer, null for others
+  accessCode: string; // The "password"
 }

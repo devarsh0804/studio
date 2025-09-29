@@ -7,18 +7,12 @@ import { DistributorLogin, type DistributorLoginCredentials } from "./components
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/hooks/use-locale";
-import { getAllLots, getLot } from "../actions";
-import type { Lot } from "@/lib/types";
+import { getAllLots, loginUser, registerUser } from "../actions";
+import type { Lot, User } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
-// In a real app, this would come from a secure source
-const VALID_CREDENTIALS = {
-  name: "distro",
-  code: "1234"
-};
-
 export default function DistributorPage() {
-  const [distributor, setDistributor] = useState<string | null>(null);
+  const [distributor, setDistributor] = useState<User | null>(null);
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -34,21 +28,43 @@ export default function DistributorPage() {
     fetchLots();
   }, []);
 
-  const handleLogin = (credentials: DistributorLoginCredentials) => {
-    if (credentials.name === VALID_CREDENTIALS.name && credentials.code === VALID_CREDENTIALS.code) {
-      setDistributor(credentials.name);
+  const handleLogin = async (credentials: DistributorLoginCredentials) => {
+    const result = await loginUser({
+      role: 'distributor',
+      name: credentials.name,
+      accessCode: credentials.code
+    });
+
+    if (result.success && result.user) {
+      setDistributor(result.user);
       toast({
         title: t('login.success'),
-        description: t('login.welcomeBack', { name: credentials.name }),
+        description: t('login.welcomeBack', { name: result.user.name }),
       });
     } else {
       toast({
         variant: "destructive",
         title: t('login.failed'),
-        description: t('login.invalidCredentials'),
+        description: result.message,
       });
     }
   };
+
+  const handleRegister = async (credentials: DistributorLoginCredentials) => {
+      const result = await registerUser({
+          role: 'distributor',
+          name: credentials.name,
+          accessCode: credentials.code
+      });
+
+      toast({
+          title: result.success ? "Registration Successful" : "Registration Failed",
+          description: result.message,
+          variant: result.success ? "default" : "destructive",
+      });
+
+      return result.success;
+  }
 
   const handleLogout = () => {
     setDistributor(null);
@@ -58,13 +74,6 @@ export default function DistributorPage() {
     })
   }
 
-  const refreshLot = async (lotId: string) => {
-      const freshLot = await getLot(lotId);
-      if (freshLot) {
-          setLots(prev => prev.map(l => l.lotId === lotId ? freshLot : l));
-      }
-  }
-  
   const refreshAllLots = async () => {
       const allLots = await getAllLots();
       setLots(allLots);
@@ -80,14 +89,14 @@ export default function DistributorPage() {
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!distributor ? (
-          <DistributorLogin onLogin={handleLogin} />
+          <DistributorLogin onLogin={handleLogin} onRegister={handleRegister} />
         ) : loading ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="animate-spin w-12 h-12" />
           </div>
         ) : (
           <DistributorView 
-            distributorId={distributor}
+            distributorId={distributor.name}
             allLots={lots}
             onLotUpdate={refreshAllLots}
            />

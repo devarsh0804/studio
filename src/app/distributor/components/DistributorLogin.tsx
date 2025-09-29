@@ -8,28 +8,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { KeyRound, LogIn, User } from "lucide-react";
+import { KeyRound, LogIn, User, UserPlus } from "lucide-react";
 import { useLocale } from "@/hooks/use-locale";
+import { useState } from "react";
 
 const loginSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  code: z.string().min(1, "Code is required"),
+  code: z.string().min(4, "Code must be at least 4 characters."),
 });
 export type DistributorLoginCredentials = z.infer<typeof loginSchema>;
 
 interface DistributorLoginProps {
-  onLogin: (credentials: DistributorLoginCredentials) => void;
+  onLogin: (credentials: DistributorLoginCredentials) => Promise<void>;
+  onRegister: (credentials: DistributorLoginCredentials) => Promise<boolean>;
 }
 
-export function DistributorLogin({ onLogin }: DistributorLoginProps) {
+export function DistributorLogin({ onLogin, onRegister }: DistributorLoginProps) {
   const { t } = useLocale();
+  const [isRegistering, setIsRegistering] = useState(false);
+
   const form = useForm<DistributorLoginCredentials>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { name: "distro", code: "1234" },
+    defaultValues: { name: "", code: "" },
   });
 
-  const onSubmit: SubmitHandler<DistributorLoginCredentials> = (data) => {
-    onLogin(data);
+  const onSubmit: SubmitHandler<DistributorLoginCredentials> = async (data) => {
+    if (isRegistering) {
+      const success = await onRegister(data);
+      if (success) {
+        setIsRegistering(false); // Switch back to login
+        form.reset();
+      }
+    } else {
+      await onLogin(data);
+    }
   };
 
   return (
@@ -37,9 +49,14 @@ export function DistributorLogin({ onLogin }: DistributorLoginProps) {
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center">
-            <User className="mr-2" /> {t('distributorLogin.title')}
+            <User className="mr-2" /> {isRegistering ? "Register as Distributor" : t('distributorLogin.title')}
           </CardTitle>
-          <CardDescription>{t('distributorLogin.description')}</CardDescription>
+          <CardDescription>
+            {isRegistering 
+              ? "Create a new distributor account."
+              : t('distributorLogin.description')
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -69,7 +86,7 @@ export function DistributorLogin({ onLogin }: DistributorLoginProps) {
                     <FormControl>
                       <div className="relative">
                         <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input type="password" placeholder={t('distributorLogin.codePlaceholder')} {...field} className="pl-10" />
+                        <Input type="password" placeholder={isRegistering ? "Create a 4-digit access code" : t('distributorLogin.codePlaceholder')} {...field} className="pl-10" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -77,14 +94,14 @@ export function DistributorLogin({ onLogin }: DistributorLoginProps) {
                 )}
               />
               <Button type="submit" className="w-full" size="lg">
-                <LogIn className="mr-2" /> {t('login.login')}
+                 {isRegistering ? <><UserPlus className="mr-2" /> Register</> : <><LogIn className="mr-2" /> {t('login.login')}</>}
               </Button>
             </form>
           </Form>
            <div className="mt-6 text-center text-sm">
-                {t('login.dontHaveAccount')}{' '}
-                <Button variant="link" className="p-0 h-auto">
-                    {t('login.register')}
+                {isRegistering ? "Already have an account?" : t('login.dontHaveAccount')}{' '}
+                <Button variant="link" className="p-0 h-auto" onClick={() => setIsRegistering(!isRegistering)}>
+                    {isRegistering ? "Login" : t('login.register')}
                 </Button>
             </div>
         </CardContent>

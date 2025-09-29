@@ -7,43 +7,56 @@ import { FarmerLogin, type FarmerLoginCredentials } from "./components/FarmerLog
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/hooks/use-locale";
-import { getLotsByFarmer } from "../actions";
-import type { Lot } from "@/lib/types";
-
-// In a real app, this would come from a secure source
-const VALID_CREDENTIALS = {
-  farmerName: "Ramesh",
-  farmerId: "123456789012",
-  farmerCode: "7890"
-};
+import { getLotsByFarmer, loginUser, registerUser } from "../actions";
+import type { Lot, User } from "@/lib/types";
 
 export default function FarmerPage() {
-  const [farmer, setFarmer] = useState<string | null>(null);
+  const [farmer, setFarmer] = useState<User | null>(null);
   const [lots, setLots] = useState<Lot[]>([]);
   const { toast } = useToast();
   const { t } = useLocale();
 
   const handleLogin = async (credentials: FarmerLoginCredentials) => {
-    if (
-      credentials.farmerName === VALID_CREDENTIALS.farmerName &&
-      credentials.farmerId === VALID_CREDENTIALS.farmerId &&
-      credentials.farmerCode === VALID_CREDENTIALS.farmerCode
-    ) {
-      setFarmer(credentials.farmerName);
-      const farmerLots = await getLotsByFarmer(credentials.farmerName);
+    const result = await loginUser({
+      role: 'farmer',
+      name: credentials.farmerName,
+      identifier: credentials.farmerId,
+      accessCode: credentials.farmerCode
+    });
+    
+    if (result.success && result.user) {
+      setFarmer(result.user);
+      const farmerLots = await getLotsByFarmer(result.user.name);
       setLots(farmerLots);
       toast({
         title: t('login.success'),
-        description: t('login.welcomeBack', { name: credentials.farmerName }),
+        description: t('login.welcomeBack', { name: result.user.name }),
       });
     } else {
       toast({
         variant: "destructive",
         title: t('login.failed'),
-        description: t('login.invalidCredentials'),
+        description: result.message,
       });
     }
   };
+
+  const handleRegister = async (credentials: FarmerLoginCredentials) => {
+    const result = await registerUser({
+      role: 'farmer',
+      name: credentials.farmerName,
+      identifier: credentials.farmerId,
+      accessCode: credentials.farmerCode
+    });
+    
+    toast({
+        title: result.success ? "Registration Successful" : "Registration Failed",
+        description: result.message,
+        variant: result.success ? "default" : "destructive",
+    });
+
+    return result.success;
+  }
   
   const handleLogout = () => {
     setFarmer(null);
@@ -68,9 +81,9 @@ export default function FarmerPage() {
       />
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {!farmer ? (
-          <FarmerLogin onLogin={handleLogin} />
+          <FarmerLogin onLogin={handleLogin} onRegister={handleRegister} />
         ) : (
-          <FarmerView farmerName={farmer} registeredLots={lots} onLotRegistered={onLotRegistered}/>
+          <FarmerView farmerName={farmer.name} registeredLots={lots} onLotRegistered={onLotRegistered}/>
         )}
       </main>
     </>

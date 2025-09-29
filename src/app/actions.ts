@@ -3,14 +3,17 @@
 
 import { gradeCrop, type GradeCropInput, type GradeCropOutput } from "@/ai/flows/grade-crop-flow";
 import { distributorUpdateConflictDetection, type DistributorUpdateConflictDetectionInput, type DistributorUpdateConflictDetectionOutput } from "@/ai/flows/distributor-update-conflict-detection";
-import type { Lot, RetailEvent } from "@/lib/types";
+import type { Lot, RetailEvent, User, UserRole } from "@/lib/types";
 import { db } from "@/lib/firebase";
-import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch, deleteDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch, addDoc } from "firebase/firestore";
+import { seedLots } from "@/lib/seed-data";
 
 
 // Firestore Collection References
 const lotsCollection = collection(db, "lots");
 const retailEventsCollection = collection(db, "retailEvents");
+const usersCollection = collection(db, "users");
+
 
 // Helper function to convert Firestore doc to Lot object
 const docToLot = (doc: any): Lot => {
@@ -76,8 +79,7 @@ export async function updateLot(lotId: string, updates: Partial<Lot>): Promise<v
 
 // Retail Event Functions
 export async function addRetailEvent(event: Omit<RetailEvent, 'id'>): Promise<void> {
-    const newDocRef = doc(collection(db, "retailEvents"));
-    await setDoc(newDocRef, event);
+    await addDoc(retailEventsCollection, event);
 }
 
 export async function getRetailEventsForLot(lotId: string): Promise<RetailEvent[]> {
@@ -95,19 +97,27 @@ export async function getLotHistory(lotId: string): Promise<{ lot: Lot, parentLo
     let parentLot: Lot | undefined = undefined;
     let parentLotId = currentLot.parentLotId;
 
-    if (parentLotId) {
-        const pLot = await getLot(parentLotId);
-        if (pLot) parentLot = pLot;
+    // Trace back to the ultimate parent if needed
+    let rootLot = currentLot;
+    while (rootLot.parentLotId) {
+        const p = await getLot(rootLot.parentLotId);
+        if (p) {
+            rootLot = p;
+        } else {
+            break; // Stop if parent isn't found
+        }
+    }
+    
+    if (currentLot.lotId !== rootLot.lotId) {
+        parentLot = rootLot;
     }
 
-    // The root lot for history is either the parent or the current lot if it has no parent
-    const rootLotId = parentLot?.lotId || currentLot.lotId;
 
     const allLots = await getAllLots();
-    const childLots = allLots.filter(l => l.parentLotId === rootLotId);
+    const childLots = allLots.filter(l => l.parentLotId === (parentLot?.lotId || currentLot.lotId));
     
     // Find all retail events related to any of the sub-lots of the root lot
-    const subLotIds = childLots.map(l => l.lotId);
+    const subLotIds = [currentLot.lotId, ...childLots.map(l => l.lotId)];
     let allRetailEvents: RetailEvent[] = [];
     if(subLotIds.length > 0) {
         const q = query(retailEventsCollection, where("lotId", "in", subLotIds));
@@ -152,6 +162,56 @@ export async function detectConflictAction(
     return result;
 }
 
+// User Management Actions
+export async function registerUser(user: User): Promise<{ success: boolean; message: string }> {
+    const q = query(
+        usersCollection, 
+        where("name", "==", user.name),
+        where("role", "==", user.role)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        return { success: false, message: `A user with the name "${user.name}" already exists for the ${user.role} role.` };
+    }
+
+    await addDoc(usersCollection, user);
+    return { success: true, message: "Registration successful! You can now log in." };
+}
+
+export async function loginUser(credentials: Omit<User, 'id'>): Promise<{ success: boolean; message: string; user?: User }> {
+    let q;
+    if (credentials.role === 'farmer') {
+        q = query(
+            usersCollection,
+            where("role", "==", credentials.role),
+            where("name", "==", credentials.name),
+            where("identifier", "==", credentials.identifier),
+            where("accessCode", "==", credentials.accessCode)
+        );
+    } else {
+        q = query(
+            usersCollection,
+            where("role", "==", credentials.role),
+            where("name", "==", credentials.name),
+            where("accessCode", "==", credentials.accessCode)
+        );
+    }
+    
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        return { success: false, message: "Invalid credentials. Please try again." };
+    }
+
+    const userDoc = querySnapshot.docs[0];
+    const user = { id: userDoc.id, ...userDoc.data() } as User;
+    
+    return { success: true, message: "Login successful!", user };
+}
+
+
+// Demo Actions
 export async function resetData(): Promise<void> {
     // Delete all documents in the 'lots' collection
     const lotsSnapshot = await getDocs(lotsCollection);
