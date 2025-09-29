@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight, FileText, Wifi } from "lucide-react";
+import { CalendarIcon, Camera, User, Wheat, MapPin, Loader2, BadgeIndianRupee, FileCheck2, Weight, FileText, Wifi, CheckCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -49,6 +49,7 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingCertificate, setIsFetchingCertificate] = useState(false);
+  const [certificateFetched, setCertificateFetched] = useState(false);
   const { t } = useLocale();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -141,8 +142,10 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
 
   const handleFetchCertificate = () => {
     setIsFetchingCertificate(true);
+    setCertificateFetched(false);
     setTimeout(() => {
         setIsFetchingCertificate(false);
+        setCertificateFetched(true);
         toast({
             title: "Certificate Data Fetched",
             description: "IoT and AI camera data has been simulated.",
@@ -313,6 +316,11 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 Fetching from IoT sensors...
                             </>
+                        ) : certificateFetched ? (
+                            <>
+                                <CheckCircle className="mr-2 h-4 w-4 text-green-500"/>
+                                Certificate Data Fetched
+                            </>
                         ) : (
                             <>
                                 <Wifi className="mr-2 h-4 w-4" /> {t('farmerView.registerForm.buttons.uploadCertificate')}
@@ -333,4 +341,3 @@ export function RegisterCropForm({ onRegister, farmerName }: RegisterCropFormPro
     </Card>
   );
 }
-
