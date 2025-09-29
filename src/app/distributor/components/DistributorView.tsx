@@ -64,46 +64,18 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
   const [showCamera, setShowCamera] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
-  let barcodeDetector: any;
-  if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
-      barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-  }
-
-
-  const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema), defaultValues: { lotId: "" } });
-  const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
-  const transportForm = useForm<TransportFormValues>({ 
-    resolver: zodResolver(transportSchema),
-    defaultValues: {
-      vehicleNumber: "",
-      dispatchDate: new Date().toISOString().split('T')[0],
-    }
-  });
-
-  const allLots = getAllLots();
-  const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
-  const purchasedLots = allLots.filter((lot) => !lot.parentLotId && lot.owner !== lot.farmer);
-  const dispatchedLots = allLots.filter(
-    (lot) => (lot.paymentStatus === 'Advance Paid' || lot.paymentStatus === 'Fully Paid') && lot.parentLotId && findLot(lot.parentLotId!)?.owner === distributorId
-  );
-
-
-  useEffect(() => {
-    if (scannedLot) {
-      const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId && l.paymentStatus === 'Unpaid');
-      if (childLots.length > 0) {
-        setSubLots(childLots);
-      }
-    }
-  }, [scannedLot, getAllLots]);
   
   useEffect(() => {
-    let stream: MediaStream | null = null;
     let intervalId: NodeJS.Timeout | null = null;
+    let stream: MediaStream | null = null;
+    let barcodeDetector: any;
+    if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
+        barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+    }
 
     const startScan = async () => {
         try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !barcodeDetector) {
                  setHasCameraPermission(false);
                  return;
             }
@@ -114,7 +86,7 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
             }
 
             const detectBarcode = async () => {
-                if (videoRef.current && barcodeDetector && videoRef.current.readyState === 4) {
+                if (videoRef.current && videoRef.current.readyState === 4) {
                     const barcodes = await barcodeDetector.detect(videoRef.current);
                     if (barcodes.length > 0) {
                         const scannedValue = barcodes[0].rawValue;
@@ -156,7 +128,35 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
         stopScan();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showCamera, barcodeDetector, scanForm]);
+  }, [showCamera, scanForm]);
+
+
+  useEffect(() => {
+    if (scannedLot) {
+      const childLots = getAllLots().filter((l) => l.parentLotId === scannedLot.lotId && l.paymentStatus === 'Unpaid');
+      if (childLots.length > 0) {
+        setSubLots(childLots);
+      }
+    }
+  }, [scannedLot, getAllLots]);
+  
+
+  const scanForm = useForm<ScanFormValues>({ resolver: zodResolver(scanSchema), defaultValues: { lotId: "" } });
+  const subLotForm = useForm<SubLotFormValues>({ resolver: zodResolver(subLotSchema), defaultValues: { subLotCount: 2 } });
+  const transportForm = useForm<TransportFormValues>({ 
+    resolver: zodResolver(transportSchema),
+    defaultValues: {
+      vehicleNumber: "",
+      dispatchDate: new Date().toISOString().split('T')[0],
+    }
+  });
+
+  const allLots = getAllLots();
+  const availableLots = allLots.filter((lot) => lot.owner === lot.farmer);
+  const purchasedLots = allLots.filter((lot) => !lot.parentLotId && lot.owner !== lot.farmer);
+  const dispatchedLots = allLots.filter(
+    (lot) => (lot.paymentStatus === 'Advance Paid' || lot.paymentStatus === 'Fully Paid') && lot.parentLotId && findLot(lot.parentLotId!)?.owner === distributorId
+  );
 
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
@@ -714,3 +714,5 @@ export function DistributorView({ distributorId }: DistributorViewProps) {
     </div>
   );
 }
+
+    

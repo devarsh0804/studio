@@ -44,31 +44,18 @@ export function TransportView() {
   const [showCamera, setShowCamera] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
-  let barcodeDetector: any;
-  if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
-      barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-  }
-
-  const scanForm = useForm<ScanFormValues>({ 
-    resolver: zodResolver(scanSchema),
-    defaultValues: { lotId: "" },
-  });
-  const transportForm = useForm<TransportFormValues>({ 
-    resolver: zodResolver(transportSchema),
-    defaultValues: {
-      vehicleNumber: "",
-      transportCondition: "Normal",
-      warehouseEntryDateTime: "",
-    }
-  });
-
+  
   useEffect(() => {
-    let stream: MediaStream | null = null;
     let intervalId: NodeJS.Timeout | null = null;
+    let stream: MediaStream | null = null;
+    let barcodeDetector: any;
+    if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
+        barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+    }
 
     const startScan = async () => {
         try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !barcodeDetector) {
                  setHasCameraPermission(false);
                  return;
             }
@@ -79,7 +66,7 @@ export function TransportView() {
             }
 
             const detectBarcode = async () => {
-                if (videoRef.current && barcodeDetector && videoRef.current.readyState === 4) {
+                if (videoRef.current && videoRef.current.readyState === 4) {
                     const barcodes = await barcodeDetector.detect(videoRef.current);
                     if (barcodes.length > 0) {
                         const scannedValue = barcodes[0].rawValue;
@@ -121,7 +108,21 @@ export function TransportView() {
         stopScan();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showCamera, barcodeDetector, scanForm]);
+  }, [showCamera, scanForm]);
+
+  
+  const scanForm = useForm<ScanFormValues>({ 
+    resolver: zodResolver(scanSchema),
+    defaultValues: { lotId: "" },
+  });
+  const transportForm = useForm<TransportFormValues>({ 
+    resolver: zodResolver(transportSchema),
+    defaultValues: {
+      vehicleNumber: "",
+      transportCondition: "Normal",
+      warehouseEntryDateTime: "",
+    }
+  });
 
   
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
@@ -313,3 +314,5 @@ export function TransportView() {
     </div>
   );
 }
+
+    

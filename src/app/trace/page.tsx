@@ -34,10 +34,73 @@ export default function TracePage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
-  let barcodeDetector: any;
-  if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
-      barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-  }
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+    let stream: MediaStream | null = null;
+    let barcodeDetector: any;
+    if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
+        barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+    }
+
+    const startScan = async () => {
+        try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !barcodeDetector) {
+                 setHasCameraPermission(false);
+                 return;
+            }
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            setHasCameraPermission(true);
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+
+            const detectBarcode = async () => {
+                if (videoRef.current && videoRef.current.readyState === 4) {
+                    const barcodes = await barcodeDetector.detect(videoRef.current);
+                    if (barcodes.length > 0) {
+                        const scannedValue = barcodes[0].rawValue;
+                        scanForm.setValue('lotId', scannedValue);
+                        handleScan({ lotId: scannedValue });
+                        stopScan();
+                    }
+                }
+            };
+
+            intervalId = setInterval(detectBarcode, 500);
+
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            setHasCameraPermission(false);
+            toast({
+                variant: 'destructive',
+                title: 'Camera Access Denied',
+                description: 'Please enable camera permissions in your browser settings.',
+            });
+        }
+    };
+
+    const stopScan = () => {
+        if (intervalId) clearInterval(intervalId);
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+        setShowCamera(false);
+    };
+    
+    if (showCamera) {
+        startScan();
+    }
+
+    return () => {
+        stopScan();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCamera, scanForm]);
+
 
   const { getLotHistory } = useAgriChainStore();
 
@@ -65,68 +128,6 @@ export default function TracePage() {
     }, 500);
   };
   
-    useEffect(() => {
-        let stream: MediaStream | null = null;
-        let intervalId: NodeJS.Timeout | null = null;
-
-        const startScan = async () => {
-            try {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                     setHasCameraPermission(false);
-                     return;
-                }
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                setHasCameraPermission(true);
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-
-                const detectBarcode = async () => {
-                    if (videoRef.current && barcodeDetector && videoRef.current.readyState === 4) {
-                        const barcodes = await barcodeDetector.detect(videoRef.current);
-                        if (barcodes.length > 0) {
-                            const scannedValue = barcodes[0].rawValue;
-                            scanForm.setValue('lotId', scannedValue);
-                            handleScan({ lotId: scannedValue });
-                            stopScan();
-                        }
-                    }
-                };
-
-                intervalId = setInterval(detectBarcode, 500);
-
-            } catch (err) {
-                console.error("Error accessing camera:", err);
-                setHasCameraPermission(false);
-                toast({
-                    variant: 'destructive',
-                    title: 'Camera Access Denied',
-                    description: 'Please enable camera permissions in your browser settings.',
-                });
-            }
-        };
-
-        const stopScan = () => {
-            if (intervalId) clearInterval(intervalId);
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-            if (videoRef.current) {
-                videoRef.current.srcObject = null;
-            }
-            setShowCamera(false);
-        };
-        
-        if (showCamera) {
-            startScan();
-        }
-
-        return () => {
-            stopScan();
-        };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [showCamera]);
-
 
   const getTimelineEvents = () => {
     if (!history || !history.parentLot) return [];
@@ -300,3 +301,5 @@ export default function TracePage() {
     </>
   );
 }
+
+    

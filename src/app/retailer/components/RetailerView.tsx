@@ -56,24 +56,18 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
   const [showCamera, setShowCamera] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
-  let barcodeDetector: any;
-  if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
-      barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-  }
-
-  const scanForm = useForm<ScanFormValues>({ 
-    resolver: zodResolver(scanSchema),
-    defaultValues: { lotId: "" } 
-  });
-  const retailerForm = useForm<RetailerFormValues>({ resolver: zodResolver(retailerSchema), defaultValues: { shelfDate: "" } });
 
   useEffect(() => {
-    let stream: MediaStream | null = null;
     let intervalId: NodeJS.Timeout | null = null;
+    let stream: MediaStream | null = null;
+    let barcodeDetector: any;
+    if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
+        barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+    }
 
     const startScan = async () => {
         try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !barcodeDetector) {
                  setHasCameraPermission(false);
                  return;
             }
@@ -84,7 +78,7 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
             }
 
             const detectBarcode = async () => {
-                if (videoRef.current && barcodeDetector && videoRef.current.readyState === 4) {
+                if (videoRef.current && videoRef.current.readyState === 4) {
                     const barcodes = await barcodeDetector.detect(videoRef.current);
                     if (barcodes.length > 0) {
                         const scannedValue = barcodes[0].rawValue;
@@ -127,7 +121,15 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
         stopScan();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showCamera]);
+  }, [showCamera, scanForm]);
+
+
+  const scanForm = useForm<ScanFormValues>({ 
+    resolver: zodResolver(scanSchema),
+    defaultValues: { lotId: "" } 
+  });
+  const retailerForm = useForm<RetailerFormValues>({ resolver: zodResolver(retailerSchema), defaultValues: { shelfDate: "" } });
+
 
   const handleScan: SubmitHandler<ScanFormValues> = (data) => {
     setIsLoading(true);
@@ -622,3 +624,5 @@ export function RetailerView({ retailerId }: RetailerViewProps) {
     </div>
   );
 }
+
+    
