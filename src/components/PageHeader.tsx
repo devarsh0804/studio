@@ -7,6 +7,7 @@ import { Home, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLocale } from "@/hooks/use-locale";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface PageHeaderProps {
     title: string;
@@ -33,6 +34,7 @@ export function PageHeader({ title, description, isLoggedIn, onLogout }: PageHea
                 </div>
                 <div className="flex items-center gap-2">
                     <LanguageSwitcher />
+                    <ThemeToggle />
                     {isLoggedIn && onLogout && (
                          <Button onClick={onLogout} variant="outline">
                             <LogOut className="mr-2" /> {t('general.logout')}

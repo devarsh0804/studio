@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { Manrope, Inter } from 'next/font/google';
 import { LocaleProvider } from '@/hooks/use-locale';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -28,14 +29,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${manrope.variable} ${inter.variable}`}>
+    <html lang="en" className={`${manrope.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="font-body antialiased">
-        <LocaleProvider>
-          <div className="min-h-screen flex flex-col">
-            {children}
-          </div>
-          <Toaster />
-        </LocaleProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <LocaleProvider>
+            <div className="min-h-screen flex flex-col">
+              {children}
+            </div>
+            <Toaster />
+          </LocaleProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

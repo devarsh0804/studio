@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { resetData } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Home() {
   const { t } = useLocale();
@@ -41,8 +42,9 @@ export default function Home() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background">
-       <div className="absolute top-4 right-4 z-10">
+       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
           <LanguageSwitcher />
+          <ThemeToggle />
         </div>
       <main className="flex-grow flex flex-col items-center justify-center w-full container mx-auto px-4 py-12 md:py-16">
         <section className="w-full">
