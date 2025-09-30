@@ -5,14 +5,14 @@ import { useState, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Lot } from '@/lib/types';
+import type { Lot, LotHistory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LotDetailsCard } from '@/components/LotDetailsCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent, FileText, LineChart as LineChartIcon, Fingerprint, Camera } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, ShoppingCart, BadgeIndianRupee, CreditCard, ShoppingBag, LogOut, PackagePlus, Spline, QrCode, User, Truck, PackageCheck, Download, Landmark, CheckCircle, Rocket, Percent, FileText, LineChart as LineChartIcon, Fingerprint, Camera, History } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,8 +22,11 @@ import { Badge } from '@/components/ui/badge';
 import { DistributorAnalytics } from './DistributorAnalytics';
 import { CertificateDialog } from '@/components/CertificateDialog';
 import { useLocale } from '@/hooks/use-locale';
-import { getLot, updateLot, addLots } from '@/app/actions';
-
+import { getLot, updateLot, addLots, getLotHistory } from '@/app/actions';
+import { Timeline } from '@/components/Timeline';
+import { format, isValid } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
+import { Award, Droplets, Microscope, Palette, Ruler } from 'lucide-react';
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -39,6 +42,7 @@ const transportSchema = z.object({
 });
 type TransportFormValues = z.infer<typeof transportSchema>;
 
+type FullHistory = NonNullable<Awaited<ReturnType<typeof getLotHistory>>>;
 
 interface DistributorViewProps {
   distributorId: string;
@@ -57,7 +61,7 @@ export function DistributorView({ distributorId, allLots, onLotUpdate }: Distrib
     }
   });
 
-  const [scannedLot, setScannedLot] = useState<Lot | null>(null);
+  const [scannedLotHistory, setScannedLotHistory] = useState<FullHistory | null>(null);
   const [lotToBuy, setLotToBuy] = useState<Lot | null>(null);
   const [lotToPay, setLotToPay] = useState<Lot | null>(null);
   const [lotToTransport, setLotToTransport] = useState<Lot | null>(null);
@@ -76,28 +80,28 @@ export function DistributorView({ distributorId, allLots, onLotUpdate }: Distrib
     setError(null);
     setSubLots([]);
     
-    const lot = await getLot(data.lotId);
+    const historyData = await getLotHistory(data.lotId);
 
-    if (lot) {
-      setScannedLot(lot);
-      const childLots = allLots.filter((l) => l.parentLotId === lot.lotId && l.paymentStatus === 'Unpaid');
+    if (historyData) {
+      setScannedLotHistory(historyData);
+      const childLots = allLots.filter((l) => l.parentLotId === historyData.lot.lotId && l.paymentStatus === 'Unpaid');
       setSubLots(childLots);
       subLotForm.reset({subLotCount: 2});
     } else {
       setError(`Lot ID "${data.lotId}" not found. Please check the ID and try again.`);
-      setScannedLot(null);
+      setScannedLotHistory(null);
     }
     setIsLoading(false);
   };
   
   useEffect(() => {
-    if (scannedLot) {
-      const childLots = allLots.filter((l) => l.parentLotId === scannedLot.lotId && l.paymentStatus === 'Unpaid');
+    if (scannedLotHistory) {
+      const childLots = allLots.filter((l) => l.parentLotId === scannedLotHistory.lot.lotId && l.paymentStatus === 'Unpaid');
       if (childLots.length > 0) {
         setSubLots(childLots);
       }
     }
-  }, [scannedLot, allLots]);
+  }, [scannedLotHistory, allLots]);
   
   const availableLots = allLots.filter((lot) => lot.owner === lot.farmer && !lot.parentLotId);
   const purchasedLots = allLots.filter((lot) => !lot.parentLotId && lot.owner !== lot.farmer);
@@ -132,7 +136,8 @@ export function DistributorView({ distributorId, allLots, onLotUpdate }: Distrib
   };
 
   const handleSubLotSubmit: SubmitHandler<SubLotFormValues> = async (data) => {
-    if (!scannedLot) return;
+    if (!scannedLotHistory) return;
+    const scannedLot = scannedLotHistory.lot;
 
     const newSubLots: Lot[] = [];
     const newWeight = parseFloat((scannedLot.weight / data.subLotCount).toFixed(2));
@@ -199,15 +204,71 @@ export function DistributorView({ distributorId, allLots, onLotUpdate }: Distrib
 
 
   const resetView = () => {
-    setScannedLot(null);
+    setScannedLotHistory(null);
     setError(null);
     setSubLots([]);
     scanForm.reset();
     subLotForm.reset({subLotCount: 2});
     setActiveTab('scan-lot');
   };
+  
+    const getTimelineEvents = () => {
+        if (!scannedLotHistory) return [];
+        const events = [];
+        const { lot: currentLot, parentLot, childLots } = scannedLotHistory;
 
-  if (scannedLot) {
+        const rootLot = parentLot || currentLot;
+
+        const gradingDate = rootLot.gradingDate ? new Date(rootLot.gradingDate) : null;
+        events.push({
+            type: 'FARM',
+            title: 'Harvested & Registered',
+            timestamp: format(new Date(rootLot.harvestDate), 'PP'),
+            details: (
+                <div className="space-y-2 text-sm">
+                    <p><strong>Farmer:</strong> {rootLot.farmer}</p>
+                    <p><strong>Location:</strong> {rootLot.location}</p>
+                    <p><strong>Crop:</strong> {rootLot.cropName}</p>
+                    <p><strong>Original Lot ID:</strong> {rootLot.lotId}</p>
+                    <Separator className="my-3"/>
+                    <h4 className="font-semibold">Digital Certificate</h4>
+                     <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                        <p className="flex items-center"><Award className="w-4 h-4 mr-2 text-primary"/><strong>Grade:</strong> <span className="ml-1 font-mono">{rootLot.quality}</span></p>
+                        <p className="flex items-center"><Droplets className="w-4 h-4 mr-2 text-primary"/><strong>Moisture:</strong> <span className="ml-1 font-mono">{rootLot.moisture}</span></p>
+                        <p className="flex items-center"><Microscope className="w-4 h-4 mr-2 text-primary"/><strong>Impurities:</strong> <span className="ml-1 font-mono">{rootLot.impurities}</span></p>
+                        <p className="flex items-center"><Ruler className="w-4 h-4 mr-2 text-primary"/><strong>Size:</strong> <span className="ml-1 font-mono">{rootLot.size}</span></p>
+                        <p className="flex items-center"><Palette className="w-4 h-4 mr-2 text-primary"/><strong>Color:</strong> <span className="ml-1 font-mono">{rootLot.color}</span></p>
+                    </div>
+                    <p className="text-xs text-muted-foreground pt-1">
+                        Graded on {gradingDate && isValid(gradingDate) ? format(gradingDate, 'PPp') : 'N/A'}
+                    </p>
+                </div>
+            )
+        });
+
+        if (rootLot.owner !== rootLot.farmer) {
+             const purchaseDate = gradingDate ? new Date(gradingDate) : new Date(rootLot.harvestDate);
+             purchaseDate.setHours(purchaseDate.getHours() + 1);
+            events.push({
+                type: 'DISTRIBUTOR_BUY',
+                title: 'Purchased by Distributor',
+                timestamp: format(purchaseDate, 'PP'),
+                details: (
+                    <div className="space-y-2 text-sm">
+                        <p><strong>Distributor:</strong> {rootLot.owner}</p>
+                        <p><strong>Lot ID:</strong> {rootLot.lotId}</p>
+                        <p>Acquired full lot of {rootLot.weight} quintals.</p>
+                    </div>
+                )
+            });
+        }
+        
+        return events;
+    }
+
+
+  if (scannedLotHistory) {
+    const scannedLot = scannedLotHistory.lot;
     const isOwnedByDistributor = scannedLot.owner === distributorId;
     const canBeSplit = isOwnedByDistributor && scannedLot.status !== 'Split' && !scannedLot.parentLotId;
 
@@ -219,6 +280,16 @@ export function DistributorView({ distributorId, allLots, onLotUpdate }: Distrib
             {t('general.backToDashboard')}
           </Button>
         </div>
+        
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center"><History className="mr-2"/> Lot History</CardTitle>
+                <CardDescription>This is the journey of the lot up to its current state.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Timeline events={getTimelineEvents()} />
+            </CardContent>
+         </Card>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <LotDetailsCard lot={scannedLot} />
@@ -621,3 +692,5 @@ export function DistributorView({ distributorId, allLots, onLotUpdate }: Distrib
     </div>
   );
 }
+
+    
