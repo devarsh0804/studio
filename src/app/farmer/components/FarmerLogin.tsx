@@ -15,17 +15,17 @@ import { useState } from "react";
 const registerSchema = z.object({
   farmerName: z.string().min(1, "Farmer name is required"),
   farmerId: z.string().regex(/^\d{12}$/, "Farmer ID must be a 12-digit number."),
-  email: z.string().email("Please enter a valid email address."),
+  email: z.string().email("Please enter a valid email address.").optional().or(z.literal('')),
   mobile: z.string().regex(/^\d{10}$/, "Mobile number must be a 10-digit number."),
   farmerCode: z.string().min(4, "Code must be at least 4 characters."),
 });
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address."),
+  mobile: z.string().regex(/^\d{10}$/, "Mobile number must be a 10-digit number."),
   farmerCode: z.string().min(4, "Code must be at least 4 characters."),
   farmerName: z.string().optional(),
   farmerId: z.string().optional(),
-  mobile: z.string().optional(),
+  email: z.string().optional(),
 });
 
 export type FarmerLoginCredentials = z.infer<typeof loginSchema>;
@@ -92,23 +92,7 @@ export function FarmerLogin({ onLogin, onRegister }: FarmerLoginProps) {
                     )}
                 />
               )}
-               <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input type="email" placeholder="e.g., user@example.com" {...field} className="pl-10" />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {isRegistering && (
+               {isRegistering ? (
                 <>
                   <FormField
                     control={form.control}
@@ -142,7 +126,40 @@ export function FarmerLogin({ onLogin, onRegister }: FarmerLoginProps) {
                       </FormItem>
                     )}
                   />
+                   <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email (Optional)</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input type="email" placeholder="e.g., user@example.com" {...field} className="pl-10" />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </>
+              ) : (
+                 <FormField
+                    control={form.control}
+                    name="mobile"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mobile Number</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="e.g., 9876543210" {...field} className="pl-10" />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
               )}
               <FormField
                 control={form.control}

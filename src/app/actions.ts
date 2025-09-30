@@ -144,26 +144,40 @@ export async function detectConflictAction(
 
 // User Management Actions
 export async function registerUser(user: User): Promise<{ success: boolean; message: string }> {
+    const identityField = user.role === 'farmer' ? 'mobile' : 'email';
+    const identityValue = user[identityField];
+
+    if (!identityValue) {
+        return { success: false, message: `A ${identityField} is required for registration.` };
+    }
+
     const q = query(
         usersCollection, 
-        where("email", "==", user.email),
-        where("role", "==", user.role)
+        where("role", "==", user.role),
+        where(identityField, "==", identityValue)
     );
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-        return { success: false, message: `A user with the email "${user.email}" already exists for the ${user.role} role.` };
+        return { success: false, message: `A user with this ${identityField} already exists for the ${user.role} role.` };
     }
 
     await addDoc(usersCollection, user);
     return { success: true, message: "Registration successful! You can now log in." };
 }
 
-export async function loginUser(credentials: Omit<User, 'id' | 'name'>): Promise<{ success: boolean; message: string; user?: User }> {
+export async function loginUser(credentials: Partial<User>): Promise<{ success: boolean; message: string; user?: User }> {
+    const identityField = credentials.role === 'farmer' ? 'mobile' : 'email';
+    const identityValue = credentials[identityField];
+
+    if (!identityValue) {
+        return { success: false, message: "Invalid credentials. Please try again." };
+    }
+
     const q = query(
         usersCollection,
         where("role", "==", credentials.role),
-        where("email", "==", credentials.email),
+        where(identityField, "==", identityValue),
         where("accessCode", "==", credentials.accessCode)
     );
     
@@ -193,7 +207,7 @@ export async function resetData(): Promise<void> {
     // Delete all documents in the 'retailEvents' collection
     const retailEventsSnapshot = await getDocs(retailEventsCollection);
     const deleteRetailEventsBatch = writeBatch(db);
-    retailEventsSnapshot.forEach(doc => {
+    deleteRetailEventsSnapshot.forEach(doc => {
         deleteRetailEventsBatch.delete(doc.ref);
     });
     await deleteRetailEventsBatch.commit();
