@@ -207,7 +207,7 @@ export async function resetData(): Promise<void> {
     // Delete all documents in the 'retailEvents' collection
     const retailEventsSnapshot = await getDocs(retailEventsCollection);
     const deleteRetailEventsBatch = writeBatch(db);
-    deleteRetailEventsSnapshot.forEach(doc => {
+    retailEventsSnapshot.forEach(doc => {
         deleteRetailEventsBatch.delete(doc.ref);
     });
     await deleteRetailEventsBatch.commit();
