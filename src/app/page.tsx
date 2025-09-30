@@ -3,42 +3,13 @@
 "use client";
 
 import { RoleCard } from '@/components/RoleCard';
-import { Tractor, Truck, Store, ScanLine, RotateCw } from 'lucide-react';
-import Image from 'next/image';
-import { placeHolderImages } from '@/lib/placeholder-images';
+import { Tractor, Truck, Store, ScanLine } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useLocale } from '@/hooks/use-locale';
-import { Button } from '@/components/ui/button';
-import { resetData } from './actions';
-import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Home() {
   const { t } = useLocale();
-  const { toast } = useToast();
-  const [isResetting, setIsResetting] = useState(false);
-
-  const handleResetData = async () => {
-    setIsResetting(true);
-    try {
-      await resetData();
-      toast({
-        title: "Data Reset Successful",
-        description: "The database has been reset to its initial state.",
-      });
-    } catch (error) {
-      console.error("Failed to reset data:", error);
-      toast({
-        variant: "destructive",
-        title: "Data Reset Failed",
-        description: "There was an error while resetting the database.",
-      });
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background">
@@ -86,12 +57,8 @@ export default function Home() {
         </section>
       </main>
       <footer className="py-6 text-center">
-          <Button variant="outline" onClick={handleResetData} disabled={isResetting}>
-            <RotateCw className={`mr-2 h-4 w-4 ${isResetting ? 'animate-spin' : ''}`} />
-            {isResetting ? 'Resetting Data...' : 'Reset Data'}
-          </Button>
           <p className="text-xs text-muted-foreground mt-2">
-            For demonstration purposes only. This will reset the entire database.
+            AgriChain Trace - Supply chain transparency for agriculture.
           </p>
       </footer>
     </div>
