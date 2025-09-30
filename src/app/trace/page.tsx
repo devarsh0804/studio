@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Loader2, ScanLine, Search, XCircle, Award, Droplets, Microscope, Palette, Ruler, History, Spline, Truck, Camera } from 'lucide-react';
+import { Loader2, ScanLine, Search, XCircle, Award, Droplets, Microscope, Palette, Ruler, History, Spline, Truck, Camera, Fingerprint } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { Timeline } from '@/components/Timeline';
 import { Separator } from '@/components/ui/separator';
@@ -20,6 +20,7 @@ import { useLocale } from '@/hooks/use-locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { getLotHistory } from '../actions';
+import { CertificateDialog } from '@/components/CertificateDialog';
 
 const scanSchema = z.object({ lotId: z.string().min(1, 'Please enter a Lot ID') });
 type ScanFormValues = z.infer<typeof scanSchema>;
@@ -30,6 +31,7 @@ export default function TracePage() {
   const [history, setHistory] = useState<FullHistory | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const { t } = useLocale();
 
   const scanForm = useForm<ScanFormValues>({
@@ -189,16 +191,30 @@ export default function TracePage() {
                 </CardContent>
             </Card>
 
-            {history && (
-                <Card>
-                    <CardHeader>
-                    <CardTitle className="flex items-center"><History className="mr-2"/> Full Lot History</CardTitle>
-                    <CardDescription>This is the complete journey of the product from farm to store, verified by AgriChain Trace.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Timeline events={getTimelineEvents()} />
-                    </CardContent>
-                </Card>
+            {history && history.parentLot && (
+                <>
+                    <div className="text-center">
+                        <Button onClick={() => setIsCertificateOpen(true)}>
+                            <Fingerprint className="mr-2"/> View Digital Certificate
+                        </Button>
+                    </div>
+
+                    <Card>
+                        <CardHeader>
+                        <CardTitle className="flex items-center"><History className="mr-2"/> Full Lot History</CardTitle>
+                        <CardDescription>This is the complete journey of the product from farm to store, verified by AgriChain Trace.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Timeline events={getTimelineEvents()} />
+                        </CardContent>
+                    </Card>
+
+                    <CertificateDialog 
+                        isOpen={isCertificateOpen}
+                        onOpenChange={setIsCertificateOpen}
+                        lot={history.parentLot}
+                    />
+                </>
             )}
         </div>
       </main>
